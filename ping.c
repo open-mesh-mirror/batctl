@@ -27,19 +27,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "battool.h"
+#include "functions.h"
+
+#define VERSION "0.1 alpha"
 
 void ping_usage() {
+	printf("Battool module ping\n");
+	printf("Usage: battool ping [options] destination\n");
+	printf("\t-c count\n");
+	printf("\t-h help\n");
+	printf("\t-i interval in seconds\n");
+	printf("\t-v version\n");
+	printf("destination: 00:0a:00:93:d0:cf can write :a::93:d0:cf\n");
 	return;
 }
 
-void ping_main( uint8_t *mac, char *mac_string ) {
+int ping_main( int argc, char **argv ) {
 
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
 	int sbsize,rbsize;
-	uint8_t res;
+	uint8_t res, mac[6];
 	int32_t recv_buff_len;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
@@ -52,7 +63,51 @@ void ping_main( uint8_t *mac, char *mac_string ) {
 	int trans=0, recv=0, avg_count=0;
 	float min= -1.0, avg=0.0, max=0.0;
 
+	int optchar;
+	uint8_t found_args = 1;
+	uint8_t loop = 0;
+	int loop_count = 0;
+	int loop_interval = 0;
+	char *mac_string;
+
+	while ( ( optchar = getopt ( argc, argv, "hvc:i:" ) ) != -1 ) {
+		switch( optchar ) {
+			case 'h':
+				ping_usage();
+				exit(EXIT_SUCCESS);
+				break;
+			case 'v':
+				printf("Battool module ping %s\n", VERSION);
+				exit(EXIT_SUCCESS);
+				break;
+			case 'c':
+				loop_count = strtol(optarg, NULL , 10);
+				loop = 1;
+				found_args+=2;
+				break;
+			case 'i':
+				loop_interval = strtol(optarg, NULL , 10);
+				found_args+=2;
+				break;
+			default:
+				ping_usage();
+				exit(EXIT_FAILURE);
+		}
+	}
+
+	if ( argc <= found_args ) {
+		ping_usage();
+		exit(EXIT_FAILURE);
+	}
 	
+	mac_string = argv[found_args];
+
+	
+	if( convert_mac( mac_string, mac ) < 1 ) {
+		printf("The mac address was not correct.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	sbsize = sizeof( struct icmp_packet ) + 2;
 	rbsize = sizeof( struct icmp_packet );
 
@@ -86,6 +141,12 @@ void ping_main( uint8_t *mac, char *mac_string ) {
 	memcpy( send_buff, begin, 2 );
 	printf("PING %s\n", mac_string );
 	while( !Stop ) {
+		if( loop ) {
+			if( loop_count )
+				loop_count--;
+			else
+				break;
+		}
 
 		icmp_packet.seqno++;
 		memcpy( send_buff+2, &icmp_packet, rbsize );
@@ -108,7 +169,7 @@ void ping_main( uint8_t *mac, char *mac_string ) {
 
 		if( res > 0 )
 		{
-			
+	
 			if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
 			{
 				gettimeofday(&end,(struct timezone*)0);
@@ -133,7 +194,6 @@ void ping_main( uint8_t *mac, char *mac_string ) {
 					time_delta = (double)usec/1000;
 					printf("%d bytes from %s icmp_seq=%d ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ((struct icmp_packet *)rec_buff)->seqno,((struct icmp_packet *)rec_buff)->ttl, time_delta );
 
-					/* statistic */
 					if( time_delta < min || min == -1.0 ) min = time_delta;
 					if( time_delta > max ) max = time_delta;
 					avg += time_delta;
@@ -151,10 +211,10 @@ void ping_main( uint8_t *mac, char *mac_string ) {
 		} else if ( res == 0 ) {
 			printf("Host %s timeout\n",mac_string );
 		}
-		sleep(1);
+		sleep( loop_interval?loop_interval:1 );
 	}
 	printf("--- %s ping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min, (avg / avg_count),max, max-min );
-	return;
+	return 1;
 }

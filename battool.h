@@ -27,6 +27,6 @@ struct unix_if {
 	struct sockaddr_un addr;
 };
 
-void ping_main( uint8_t *mac,char *mac_string );
+int ping_main( int argc, char **argv );
 
 extern uint8_t Stop;

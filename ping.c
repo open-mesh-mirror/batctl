@@ -65,8 +65,7 @@ int ping_main( int argc, char **argv ) {
 
 	int optchar;
 	uint8_t found_args = 1;
-	uint8_t loop = 0;
-	int loop_count = 0;
+	int loop_count = -1;
 	int loop_interval = 0;
 	char *mac_string;
 
@@ -82,7 +81,6 @@ int ping_main( int argc, char **argv ) {
 				break;
 			case 'c':
 				loop_count = strtol(optarg, NULL , 10);
-				loop = 1;
 				found_args+=2;
 				break;
 			case 'i':
@@ -140,13 +138,9 @@ int ping_main( int argc, char **argv ) {
 
 	memcpy( send_buff, begin, 2 );
 	printf("PING %s\n", mac_string );
-	while( !Stop ) {
-		if( loop ) {
-			if( loop_count )
-				loop_count--;
-			else
-				break;
-		}
+	while( !Stop && ( loop_count == -1 || loop_count > 0 ) ) {
+		if( loop_count > 0 )
+			loop_count--;
 
 		icmp_packet.seqno++;
 		memcpy( send_buff+2, &icmp_packet, rbsize );

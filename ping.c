@@ -210,6 +210,6 @@ int ping_main( int argc, char **argv ) {
 	}
 	printf("--- %s ping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
-	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min, (avg / avg_count),max, max-min );
+	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min < 0.0 ? 0.000 : min, avg_count?(avg / avg_count):0.000 ,max, max - ( min < 0.0 ? 0.0:min) );
 	return 1;
 }

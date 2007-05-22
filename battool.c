@@ -25,8 +25,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "battool.h"
+
+
+uint8_t Stop = 0;
 
 void usage() {
 	printf("Usage: battool modus destination\n");
@@ -36,6 +40,17 @@ void usage() {
 }
 
 
+void handler( int32_t sig ) {
+	switch( sig ) {
+		case SIGINT:
+		case SIGTERM:
+			Stop = 1;
+			break;
+		default:
+			break;
+	}
+}
+
 int main( int argc, char **argv ) {
 	uint8_t mac[6];
 	char tmp[2];
@@ -44,7 +59,10 @@ int main( int argc, char **argv ) {
 	if( argc < 3 ) {
 		usage();
 	}
-
+	
+	
+	signal( SIGINT, handler );
+	signal( SIGTERM, handler );
 	
 	if( argc == 3 ) {
 
@@ -89,7 +107,7 @@ int main( int argc, char **argv ) {
 
 		if( strcmp(argv[1], "ping") == 0 ) {
 			/* call ping main function */
-			ping_main( mac );
+			ping_main( mac, argv[2] );
 
 		} else {
 			usage();

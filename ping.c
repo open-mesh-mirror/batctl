@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -33,15 +34,24 @@ void ping_usage() {
 	return;
 }
 
-
-void ping_main( uint8_t *mac ) {
+void ping_main( uint8_t *mac, char *mac_string ) {
 
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
 	int sbsize,rbsize;
+	uint8_t res;
 	int32_t recv_buff_len;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
+	struct timeval timeout,start,end;
+	double time_delta;
+
+	fd_set read_socket;
+ 	unsigned long sec,usec;
+	
+	int trans=0, recv=0, avg_count=0;
+	float min= -1.0, avg=0.0, max=0.0;
+
 	
 	sbsize = sizeof( struct icmp_packet ) + 2;
 	rbsize = sizeof( struct icmp_packet );
@@ -70,29 +80,81 @@ void ping_main( uint8_t *mac ) {
 	memcpy( &icmp_packet.dst,mac,6 );
 	icmp_packet.packet_type = 1;
 	icmp_packet.msg_type = ECHO_REQUEST;
-	icmp_packet.ttl = 20;
-	icmp_packet.seqno = 11;
+	icmp_packet.ttl = 50;
+	icmp_packet.seqno = 0;
 
 	memcpy( send_buff, begin, 2 );
-	memcpy( send_buff+2, &icmp_packet, rbsize );
+	printf("PING %s\n", mac_string );
+	while( !Stop ) {
 
-	if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
-		printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
-		close( unix_if.unix_sock );
-		free( send_buff);
-		exit(EXIT_FAILURE);
-	}
-
-	while ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 ) {
-		printf("receive %d bytes\n", recv_buff_len );
-		if( recv_buff_len != rbsize )
-			break;
-		if( ( (struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE ) {
-			printf("Host unreachable\n");
-			break;
+		icmp_packet.seqno++;
+		memcpy( send_buff+2, &icmp_packet, rbsize );
+		
+		if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
+			printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
+			close( unix_if.unix_sock );
+			free( send_buff);
+			exit(EXIT_FAILURE);
 		}
 
-		printf("%d %d\n", ((struct icmp_packet *)rec_buff)->msg_type,((struct icmp_packet *)rec_buff)->seqno );
+		gettimeofday(&start,(struct timezone*)0);
+	 	trans++;
+
+		timeout.tv_sec = 2;
+		timeout.tv_usec = 0;
+		FD_ZERO(&read_socket);
+		FD_SET( unix_if.unix_sock, &read_socket );
+		res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
+
+		if( res > 0 )
+		{
+			
+			if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
+			{
+				gettimeofday(&end,(struct timezone*)0);
+				if( recv_buff_len == rbsize && ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY )
+				{
+					
+					sec = (unsigned long)end.tv_sec - start.tv_sec;
+					if(sec>end.tv_sec) {
+						sec += 1000000000UL;
+						--sec;
+					}
+				
+					usec = (unsigned long)end.tv_usec - start.tv_usec;
+					if(usec>end.tv_usec) {
+						usec += 1000000000UL;
+						--usec;
+					}
+
+					if ( sec > 0 )
+						usec = 1000000 * sec + usec;
+			
+					time_delta = (double)usec/1000;
+					printf("%d bytes from %s icmp_seq=%d ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ((struct icmp_packet *)rec_buff)->seqno,((struct icmp_packet *)rec_buff)->ttl, time_delta );
+
+					/* statistic */
+					if( time_delta < min || min == -1.0 ) min = time_delta;
+					if( time_delta > max ) max = time_delta;
+					avg += time_delta;
+					avg_count++;
+					recv++;
+				} else {
+		
+					if( ( (struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE )
+						printf("Host %s is unreachable\n", mac_string );
+					else
+						printf("%d\n", ( (struct icmp_packet *)rec_buff)->msg_type );
+				}
+			}
+
+		} else if ( res == 0 ) {
+			printf("Host %s timeout\n",mac_string );
+		}
+		sleep(1);
 	}
+	printf("--- %s ping statistic ---\n",mac_string );
+	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
+	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min, (avg / avg_count),max, max-min );
 	return;
 }

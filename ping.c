@@ -40,6 +40,7 @@ void ping_usage() {
 	printf("\t-c count\n");
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
+	printf("\t-t timeout in seconds\n");
 	printf("\t-v version\n");
 	printf("destination: 00:0a:00:93:d0:cf can write :a::93:d0:cf\n");
 	return;
@@ -67,9 +68,10 @@ int ping_main( int argc, char **argv ) {
 	uint8_t found_args = 1;
 	int loop_count = -1;
 	int loop_interval = 0;
+	int time_out = 1;
 	char *mac_string;
 
-	while ( ( optchar = getopt ( argc, argv, "hvc:i:" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "hvc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
 				ping_usage();
@@ -86,6 +88,10 @@ int ping_main( int argc, char **argv ) {
 				break;
 			case 'i':
 				loop_interval = strtol(optarg, NULL , 10);
+				found_args+=2;
+				break;
+			case 't':
+				time_out = strtol(optarg, NULL , 10);
 				found_args+=2;
 				break;
 			default:
@@ -156,7 +162,7 @@ int ping_main( int argc, char **argv ) {
 		gettimeofday(&start,(struct timezone*)0);
 	 	trans++;
 
-		timeout.tv_sec = 2;
+		timeout.tv_sec = time_out;
 		timeout.tv_usec = 0;
 		FD_ZERO(&read_socket);
 		FD_SET( unix_if.unix_sock, &read_socket );
@@ -164,7 +170,7 @@ int ping_main( int argc, char **argv ) {
 
 		if( res > 0 )
 		{
-	
+			if( Stop ) break;	
 			if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
 			{
 				gettimeofday(&end,(struct timezone*)0);
@@ -206,7 +212,7 @@ int ping_main( int argc, char **argv ) {
 		} else if ( res == 0 ) {
 			printf("Host %s timeout\n",mac_string );
 		}
-		sleep( loop_interval?loop_interval:1 );
+		if( timeout.tv_sec > 0 ) sleep( loop_interval?loop_interval:1 );
 	}
 	printf("--- %s ping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');

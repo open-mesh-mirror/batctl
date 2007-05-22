@@ -40,6 +40,7 @@ void usage() {
 
 
 void handler( int32_t sig ) {
+	printf("sig = %d\n",sig);
 	switch( sig ) {
 		case SIGINT:
 		case SIGTERM:

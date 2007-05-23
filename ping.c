@@ -56,8 +56,8 @@ int ping_main( int argc, char **argv ) {
 	int32_t recv_buff_len;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
-	struct timeval timeout,start,end;
-	struct timespec timeout1;
+	struct timeval start,end;
+	struct timespec timeout;
 	sigset_t sigmask_old, sigmask_new;
 	double time_delta;
 
@@ -148,10 +148,11 @@ int ping_main( int argc, char **argv ) {
 
 	memcpy( send_buff, begin, 2 );
 
-
+	/* create new procmask */
 	sigemptyset( &sigmask_new );
 	sigaddset( &sigmask_new, SIGINT );
 	sigaddset( &sigmask_new, SIGTERM );
+	/* remove new procmask from current procmask */
 	sigprocmask( SIG_UNBLOCK,&sigmask_new, &sigmask_old );
 
 	printf("PING %s\n", mac_string );
@@ -173,13 +174,13 @@ int ping_main( int argc, char **argv ) {
 	 	trans++;
 
 		timeout.tv_sec = time_out;
-		timeout.tv_usec = 0;
-		timeout1.tv_sec = time_out;
-		timeout1.tv_nsec = 0;
+		timeout.tv_nsec = 0;
 
 		FD_ZERO(&read_socket);
 		FD_SET( unix_if.unix_sock, &read_socket );
-		res = pselect( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout1, &sigmask_new );
+
+		/* wait for datas at socket to read, with sigmask_new pselect doesn't abort when strg-c pressed */
+		res = pselect( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout, &sigmask_new );
 
 		if( res > 0 )
 		{

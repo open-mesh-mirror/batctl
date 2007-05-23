@@ -28,6 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "battool.h"
 #include "functions.h"
@@ -56,6 +57,8 @@ int ping_main( int argc, char **argv ) {
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval timeout,start,end;
+	struct timespec timeout1;
+	sigset_t sigmask_old, sigmask_new;
 	double time_delta;
 
 	fd_set read_socket;
@@ -144,6 +147,13 @@ int ping_main( int argc, char **argv ) {
 	icmp_packet.seqno = 0;
 
 	memcpy( send_buff, begin, 2 );
+
+
+	sigemptyset( &sigmask_new );
+	sigaddset( &sigmask_new, SIGINT );
+	sigaddset( &sigmask_new, SIGTERM );
+	sigprocmask( SIG_UNBLOCK,&sigmask_new, &sigmask_old );
+
 	printf("PING %s\n", mac_string );
 	while( !Stop && loop_count != 0 ) {
 		if( loop_count > 0 )
@@ -164,13 +174,15 @@ int ping_main( int argc, char **argv ) {
 
 		timeout.tv_sec = time_out;
 		timeout.tv_usec = 0;
+		timeout1.tv_sec = time_out;
+		timeout1.tv_nsec = 0;
+
 		FD_ZERO(&read_socket);
 		FD_SET( unix_if.unix_sock, &read_socket );
-		res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
+		res = pselect( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout1, &sigmask_new );
 
 		if( res > 0 )
 		{
-			if( Stop ) break;	
 			if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
 			{
 				gettimeofday(&end,(struct timezone*)0);

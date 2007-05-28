@@ -35,9 +35,11 @@
 
 #define VERSION "0.1 alpha"
 
+uint8_t Stop = 0;
+
 void ping_usage() {
 	printf("Battool module ping\n");
-	printf("Usage: battool ping [options] destination\n");
+	printf("Usage: battool ping|p [options] destination\n");
 	printf("\t-c count\n");
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
@@ -45,6 +47,17 @@ void ping_usage() {
 	printf("\t-v version\n");
 	printf("destination: 00:0a:00:93:d0:cf can write :a::93:d0:cf\n");
 	return;
+}
+
+void handler( int32_t sig ) {
+	switch( sig ) {
+		case SIGINT:
+		case SIGTERM:
+			Stop = 1;
+			break;
+		default:
+			break;
+	}
 }
 
 int ping_main( int argc, char **argv ) {
@@ -62,8 +75,7 @@ int ping_main( int argc, char **argv ) {
 	double time_delta;
 
 	fd_set read_socket;
- 	unsigned long sec,usec;
-	
+
 	int trans=0, recv=0, avg_count=0;
 	float min= -1.0, avg=0.0, max=0.0;
 
@@ -116,6 +128,9 @@ int ping_main( int argc, char **argv ) {
 		exit(EXIT_FAILURE);
 	}
 
+	signal( SIGINT, handler );
+	signal( SIGTERM, handler );
+	
 	sbsize = sizeof( struct icmp_packet ) + 2;
 	rbsize = sizeof( struct icmp_packet );
 
@@ -189,23 +204,8 @@ int ping_main( int argc, char **argv ) {
 				gettimeofday(&end,(struct timezone*)0);
 				if( recv_buff_len == rbsize && ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY )
 				{
-					
-					sec = (unsigned long)end.tv_sec - start.tv_sec;
-					if(sec>end.tv_sec) {
-						sec += 1000000000UL;
-						--sec;
-					}
-				
-					usec = (unsigned long)end.tv_usec - start.tv_usec;
-					if(usec>end.tv_usec) {
-						usec += 1000000000UL;
-						--usec;
-					}
 
-					if ( sec > 0 )
-						usec = 1000000 * sec + usec;
-			
-					time_delta = (double)usec/1000;
+					time_delta = time_diff( &start, &end );
 					printf("%d bytes from %s icmp_seq=%d ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ((struct icmp_packet *)rec_buff)->seqno,((struct icmp_packet *)rec_buff)->ttl, time_delta );
 
 					if( time_delta < min || min == -1.0 ) min = time_delta;
@@ -230,5 +230,5 @@ int ping_main( int argc, char **argv ) {
 	printf("--- %s ping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min < 0.0 ? 0.000 : min, avg_count?(avg / avg_count):0.000 ,max, max - ( min < 0.0 ? 0.0:min) );
-	return 1;
+	return(EXIT_SUCCESS);
 }

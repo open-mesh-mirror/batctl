@@ -28,5 +28,6 @@ struct unix_if {
 };
 
 int ping_main( int argc, char **argv );
+int traceroute_main( int argc, char **argv );
 
 extern uint8_t Stop;

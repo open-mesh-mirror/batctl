@@ -29,25 +29,12 @@
 
 #include "battool.h"
 
-uint8_t Stop = 0;
 
 void usage() {
 	printf("Usage: battool modus [options] destination\n");
-	printf("modus: ping\n");
+	printf("modus: ping|p traceroute|r\n");
 	printf("Use \"battool modus -h\" for available options\n");
 	exit(EXIT_FAILURE);
-}
-
-
-void handler( int32_t sig ) {
-	switch( sig ) {
-		case SIGINT:
-		case SIGTERM:
-			Stop = 1;
-			break;
-		default:
-			break;
-	}
 }
 
 int main( int argc, char **argv ) {
@@ -56,12 +43,14 @@ int main( int argc, char **argv ) {
 		usage();
 	}
 	
-	signal( SIGINT, handler );
-	signal( SIGTERM, handler );
 
-	if( strcmp(argv[1], "ping") == 0 ) {
+	if( strcmp(argv[1], "ping") == 0 || strcmp(argv[1], "p") == 0 ) {
 		/* call ping main function */
 		return ( ping_main( argc-1, argv+1 ) );
+
+	} else if( strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "t") == 0  ) {
+		/* call trace main function */
+		return ( traceroute_main( argc-1, argv+1 ) );
 
 	} else {
 

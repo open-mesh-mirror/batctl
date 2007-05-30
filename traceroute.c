@@ -49,29 +49,29 @@ int traceroute_main( int argc, char **argv ) {
 	char *send_buff,	/* buffer to send */
 			*rec_buff,	/* receive buffer */
 			*mac_string,	/* string of mac address */
+			return_mac[18],
 			begin[] = "p:";	/* send buffer need two chars at begin for batman-advance socket*/
 
 	int sbsize,	/* size of send buffer */
 		rbsize,	/* size of receive buffer */
-		optchar;	/* ascii code of programm option */
-	
+		optchar,	/* ascii code of programm option */
+		i,
+		count=0;
 	uint8_t res,
-				stop = 0,
-				found_args = 1,
-				mac[6];
+			stop = 0,
+			found_args = 1,
+			mac[6];
 
 	int32_t recv_buff_len;
 
-	unsigned long sec,
-						usec;
-
-	double time_delta;
+	double time_delta[3];
 	
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval start,
-							end;
-	struct timespec timeout;
+					end;
+
+	struct timeval timeout;
 
 	fd_set read_socket;
 
@@ -124,82 +124,65 @@ int traceroute_main( int argc, char **argv ) {
 	memset(send_buff, '\0', sbsize );
 	rec_buff = malloc( rbsize );
 	memset(rec_buff, '\0', rbsize );
+	
+	return_mac[0] = '\0';
 
 	memcpy( &icmp_packet.dst,mac,6 );
 	icmp_packet.packet_type = 1;
 	icmp_packet.msg_type = ECHO_REQUEST;
-	icmp_packet.ttl = 1;
-	icmp_packet.seqno = 1;
+	icmp_packet.ttl = 0;
+	icmp_packet.seqno = 0;
 
 	memcpy( send_buff, begin, 2 );
 	memcpy( send_buff+2, &icmp_packet, rbsize );
 
-// 	while( !stop ) {
-// 
-// 		if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
-// 			printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
-// 			close( unix_if.unix_sock );
-// 			free( send_buff);
-// 			exit(EXIT_FAILURE);
-// 		}
-// 
-// 		gettimeofday(&start,(struct timezone*)0);
-// 
-// 		timeout.tv_sec = time_out;
-// 		timeout.tv_nsec = 0;
-// 
-// 		FD_ZERO(&read_socket);
-// 		FD_SET( unix_if.unix_sock, &read_socket );
-// 
-// 		res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
-// 
-// 		if( res > 0 )
-// 		{
-// 			if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
-// 			{
-// 				gettimeofday(&end,(struct timezone*)0);
-// 				if( recv_buff_len == rbsize && ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY )
-// 				{
-// 					
-// 					sec = (unsigned long)end.tv_sec - start.tv_sec;
-// 					if(sec>end.tv_sec) {
-// 						sec += 1000000000UL;
-// 						--sec;
-// 					}
-// 				
-// 					usec = (unsigned long)end.tv_usec - start.tv_usec;
-// 					if(usec>end.tv_usec) {
-// 						usec += 1000000000UL;
-// 						--usec;
-// 					}
-// 
-// 					if ( sec > 0 )
-// 						usec = 1000000 * sec + usec;
-// 			
-// 					time_delta = (double)usec/1000;
-// 					printf("%d bytes from %s icmp_seq=%d ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ((struct icmp_packet *)rec_buff)->seqno,((struct icmp_packet *)rec_buff)->ttl, time_delta );
-// 
-// 					if( time_delta < min || min == -1.0 ) min = time_delta;
-// 					if( time_delta > max ) max = time_delta;
-// 					avg += time_delta;
-// 					avg_count++;
-// 					recv++;
-// 				} else {
-// 		
-// 					if( ( (struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE )
-// 						printf("Host %s is unreachable\n", mac_string );
-// 					else
-// 						printf("%d\n", ( (struct icmp_packet *)rec_buff)->msg_type );
-// 				}
-// 			}
-// 
-// 		} else if ( res == 0 ) {
-// 			printf("Host %s timeout\n",mac_string );
-// 		}
-// 		if( timeout.tv_sec > 0 ) sleep( loop_interval?loop_interval:1 );
-// 
-// 	}
+	time_delta[0] = time_delta[1] = time_delta[2] = 0.0;
 
+	for( ; !stop && count <= 50; count++ ) {
+		icmp_packet.ttl++;
+		icmp_packet.seqno++;
 
+		for(i=0;i<3;i++)
+		{
+
+			if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
+				printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
+				close( unix_if.unix_sock );
+				free( send_buff);
+				exit(EXIT_FAILURE);
+			}
+
+			gettimeofday(&start,(struct timezone*)0);
+	 
+			timeout.tv_sec = 1;
+			timeout.tv_usec = 0;
+
+			FD_ZERO(&read_socket);
+			FD_SET( unix_if.unix_sock, &read_socket );
+	 
+			res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
+	 
+			if( res > 0 )
+			{
+				if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
+				{
+					gettimeofday(&end,(struct timezone*)0);
+					
+					if( recv_buff_len == rbsize && ( ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY || ((struct icmp_packet *)rec_buff)->msg_type == TTL_EXCEEDED ) )
+						time_delta[i] = time_diff( &start, &end );
+					else if( ((struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE ) {
+						printf("Host unreachable\n");
+						stop=1;
+					}
+				}
+			}
+		}
+		
+		if( ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY )
+			stop = 1;
+
+		convert_mac_i( ((struct icmp_packet *)rec_buff)->orig, return_mac );	
+		printf("%d: %s (%.3f) (%.3f) (%.3f)\n", ((struct icmp_packet *)rec_buff)->seqno, return_mac, time_delta[0], time_delta[1], time_delta[2] );
+	}
 	exit(EXIT_SUCCESS);
 }

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int convert_mac( char mac_string[], uint8_t mac[] ) {
 	int i, j=0;
@@ -56,4 +57,8 @@ double time_diff( struct timeval *start, struct timeval *end ) {
 		usec = 1000000 * sec + usec;
 
 	return (double)usec/1000;
+}
+
+void convert_mac_i( uint8_t  mac[], char string[] ) {
+	snprintf( string, 17, "%x:%x:%x:%x:%x:%x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
 }

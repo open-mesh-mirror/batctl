@@ -46,14 +46,14 @@ void traceroute_usage() {
 
 int traceroute_main( int argc, char **argv ) {
 
-	char *send_buff,								/* buffer to send */
-			*rec_buff,									/* receive buffer */
-			*mac_string,								/* string of mac address */
-			begin[] = "p:";							/* send buffer need two chars at begin for batman-advance socket*/
+	char *send_buff,	/* buffer to send */
+			*rec_buff,	/* receive buffer */
+			*mac_string,	/* string of mac address */
+			begin[] = "p:";	/* send buffer need two chars at begin for batman-advance socket*/
 
-	int sbsize,											/* size of send buffer */
-		rbsize,											/* size of receive buffer */
-		optchar;										/* ascii code of programm option */
+	int sbsize,	/* size of send buffer */
+		rbsize,	/* size of receive buffer */
+		optchar;	/* ascii code of programm option */
 	
 	uint8_t res,
 				stop = 0,

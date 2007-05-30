@@ -32,7 +32,7 @@
 
 void usage() {
 	printf("Usage: battool modus [options] destination\n");
-	printf("modus: ping|p traceroute|r\n");
+	printf("modus: ping|p traceroute|t\n");
 	printf("Use \"battool modus -h\" for available options\n");
 	exit(EXIT_FAILURE);
 }

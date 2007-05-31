@@ -30,6 +30,10 @@
 #include <getopt.h>
 #include <signal.h>
 
+#include <sys/types.h>
+#include <sys/select.h>
+#include <features.h>
+
 #include "battool.h"
 #include "functions.h"
 

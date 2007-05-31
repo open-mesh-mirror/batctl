@@ -22,6 +22,8 @@
 
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
+#define SOURCE_VERSION "0.1-alpha"
+
 struct unix_if {
 	int32_t unix_sock;
 	struct sockaddr_un addr;

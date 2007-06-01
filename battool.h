@@ -23,13 +23,26 @@
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
 #define SOURCE_VERSION "0.1-alpha"
+#define HOSTS_FILE "bat-hosts"
+
+#define find_mac_address(list, tmp , search, target, search_type, target_type ) \
+	for( tmp = list; tmp != NULL; tmp = tmp->next ) { \
+		if( strcmp( tmp->search_type, search ) == 0 ) { \
+			target = tmp->target_type; \
+			break; \
+		} \
+	 }
 
 struct unix_if {
 	int32_t unix_sock;
 	struct sockaddr_un addr;
 };
 
-int ping_main( int argc, char **argv );
-int traceroute_main( int argc, char **argv );
+struct hosts {
+	char name[50];
+	char mac[18];
+	struct hosts *next;
+};
 
-extern uint8_t Stop;
+int ping_main( int argc, char **argv, struct hosts *hosts );
+int traceroute_main( int argc, char **argv, struct hosts *hosts );

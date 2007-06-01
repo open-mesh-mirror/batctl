@@ -29,7 +29,6 @@
 
 #include "battool.h"
 
-
 void usage() {
 	printf("Usage: battool modus [options] destination\n");
 	printf("modus: ping|p traceroute|t\n");
@@ -37,20 +36,51 @@ void usage() {
 	exit(EXIT_FAILURE);
 }
 
+void parse_hosts_file( struct hosts **tmp, char path[] ) {
+
+	FILE *fd;
+	char name[50], mac[18];
+
+	name[0] = mac[0] = '\0';
+
+	if( ( fd = fopen(path, "r") ) == NULL )
+		return;
+
+	while( fscanf(fd,"%[^ \t]%s\n", name, mac ) != EOF ) {
+
+		if( (*tmp) == NULL ) {
+			(*tmp) = malloc( sizeof( struct hosts) );
+		}
+
+		if( (*tmp) != NULL ) {
+			strncpy( (*tmp)->name, name, 49 );
+			strncpy( (*tmp)->mac, mac, 17 );
+			(*tmp)->next = NULL;
+			tmp = &(*tmp)->next;
+		}
+
+	}
+
+	return;
+
+}
+
 int main( int argc, char **argv ) {
 
 	if( argc < 3 ) {
 		usage();
 	}
-	
+
+	struct hosts *hosts = NULL;
+	parse_hosts_file( &hosts,HOSTS_FILE );
 
 	if( strcmp(argv[1], "ping") == 0 || strcmp(argv[1], "p") == 0 ) {
 		/* call ping main function */
-		return ( ping_main( argc-1, argv+1 ) );
+		return ( ping_main( argc-1, argv+1, hosts ) );
 
 	} else if( strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "t") == 0  ) {
 		/* call trace main function */
-		return ( traceroute_main( argc-1, argv+1 ) );
+		return ( traceroute_main( argc-1, argv+1, hosts ) );
 
 	} else {
 

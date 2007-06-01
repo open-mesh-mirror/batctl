@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "functions.h"
+
 int convert_mac( char mac_string[], uint8_t mac[] ) {
 	int i, j=0;
 	char tmp[2];

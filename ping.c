@@ -64,7 +64,7 @@ void handler( int32_t sig ) {
 	}
 }
 
-int ping_main( int argc, char **argv ) {
+int ping_main( int argc, char **argv, struct hosts *hosts ) {
 
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";

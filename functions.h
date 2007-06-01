@@ -6,4 +6,3 @@ double time_diff( struct timeval *start, struct timeval *end );
 
 /* write in string the mac address from int */
 void convert_mac_i( uint8_t  mac[], char string[] );
-

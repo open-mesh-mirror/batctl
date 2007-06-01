@@ -142,7 +142,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 	icmp_packet.seqno = 0;
 	memcpy( send_buff, begin, 2 );
 
-	for( ; !stop && count < 5; count++ ) {
+	for( ; !stop && count < 50; count++ ) {
 		icmp_packet.ttl++;
 		icmp_packet.seqno++;
 		memcpy( send_buff+2, &icmp_packet, rbsize );
@@ -160,7 +160,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 			gettimeofday(&start,(struct timezone*)0);
 
-			timeout.tv_sec = 1;
+			timeout.tv_sec = 2;
 			timeout.tv_usec = 0;
 
 			FD_ZERO(&read_socket);

@@ -73,8 +73,8 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	int32_t recv_buff_len;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
-	struct timeval start,end;
-	struct timespec timeout;
+	struct timeval start,end,timeout;
+
 	sigset_t sigmask_old, sigmask_new;
 	double time_delta;
 
@@ -89,6 +89,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	int loop_interval = 0;
 	int time_out = 1;
 	char *mac_string;
+	struct hosts *tmp_hosts;
 
 	while ( ( optchar = getopt ( argc, argv, "hvc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
@@ -123,10 +124,12 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 		ping_usage();
 		exit(EXIT_FAILURE);
 	}
-	
-	mac_string = argv[found_args];
 
-	
+	find_mac_address( hosts , tmp_hosts, argv[found_args], mac_string, name, mac );
+
+	if( mac_string  == NULL )
+		mac_string = argv[found_args];
+
 	if( convert_mac( mac_string, mac ) < 1 ) {
 		printf("The mac address was not correct.\n");
 		exit(EXIT_FAILURE);
@@ -193,13 +196,18 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	 	trans++;
 
 		timeout.tv_sec = time_out;
-		timeout.tv_nsec = 0;
+		timeout.tv_usec = 0;
 
 		FD_ZERO(&read_socket);
 		FD_SET( unix_if.unix_sock, &read_socket );
 
-		/* wait for datas at socket to read, with sigmask_new pselect doesn't abort when strg-c pressed */
-		res = pselect( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout, &sigmask_new );
+
+		res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
+
+		if( Stop ) {
+			trans--;
+			break;
+		}
 
 		if( res > 0 )
 		{

@@ -20,6 +20,8 @@
 #include <sys/un.h>
 #include "packet.h"
 
+#define VERSION "0.1 alpha"
+
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
 #define SOURCE_VERSION "0.1-alpha"

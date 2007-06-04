@@ -41,8 +41,7 @@ void traceroute_usage() {
 	printf("Battool module traceroute\n");
 	printf("Usage: battool traceroute|t [options] destination\n");
 	printf("\t-h help\n");
-	printf("\t-v version\n");
-	printf("destination: 00:0a:00:93:d0:cf can write :a::93:d0:cf\n");
+	printf("destination:\n\t00:0a:00:93:d0:cf can write :a::93:d0:cf\n\tor use bat-hosts file\n");
 	return;
 }
 
@@ -80,14 +79,10 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 	fd_set read_socket;
 
-	while ( ( optchar = getopt ( argc, argv, "hv" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "h" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
 				traceroute_usage();
-				exit(EXIT_SUCCESS);
-				break;
-			case 'v':
-				printf("Battool module traceroute %s\n", VERSION);
 				exit(EXIT_SUCCESS);
 				break;
 			default:

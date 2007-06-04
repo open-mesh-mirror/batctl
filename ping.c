@@ -37,8 +37,6 @@
 #include "battool.h"
 #include "functions.h"
 
-#define VERSION "0.1 alpha"
-
 uint8_t Stop = 0;
 
 void ping_usage() {
@@ -48,8 +46,7 @@ void ping_usage() {
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
 	printf("\t-t timeout in seconds\n");
-	printf("\t-v version\n");
-	printf("destination: 00:0a:00:93:d0:cf can write :a::93:d0:cf\n");
+	printf("destination:\n\t00:0a:00:93:d0:cf can write :a::93:d0:cf\n\tor use bat-hosts file\n");
 	return;
 }
 
@@ -91,14 +88,10 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	char *mac_string;
 	struct hosts *tmp_hosts;
 
-	while ( ( optchar = getopt ( argc, argv, "hvc:i:t:" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "hc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
 				ping_usage();
-				exit(EXIT_SUCCESS);
-				break;
-			case 'v':
-				printf("Battool module ping %s\n", VERSION);
 				exit(EXIT_SUCCESS);
 				break;
 			case 'c':

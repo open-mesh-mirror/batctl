@@ -30,9 +30,9 @@
 #include "battool.h"
 
 void usage() {
-	printf("Usage: battool modus [options] destination\n");
-	printf("modus: ping|p traceroute|t\n");
-	printf("Use \"battool modus -h\" for available options\n");
+	printf("Usage:\n\tbattool -v\n\tbattool module [options] destination\n");
+	printf("module: ping|p traceroute|t\n");
+	printf("Use \"battool module -h\" for available options\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -66,6 +66,11 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 }
 
 int main( int argc, char **argv ) {
+
+	if( strcmp( argv[1], "-v" ) == 0 ) {
+		printf("Battool %s\n", VERSION);
+		exit(EXIT_SUCCESS);
+	}
 
 	if( argc < 3 ) {
 		usage();

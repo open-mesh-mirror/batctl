@@ -18,11 +18,11 @@
 
 
 CC =			gcc
-CFLAGS =		-Wall -O0 -g3
+CFLAGS =		-Wall -O1 -g3
 STRIP=			strip
 LDFLAGS =		-lpthread
 
-CFLAGS_MIPS =	-Wall -O0 -g3
+CFLAGS_MIPS =	-Wall -O1 -g3
 LDFLAGS_MIPS =	-lpthread
 
 UNAME=		$(shell uname)
@@ -105,9 +105,9 @@ traceroute.o: traceroute.c
 
 
 
-long:	sources i386  arm-oe #mipsel-kk-bc mips-kk-at mipsel-wr
+long:	sources i386  arm-oe mipsel-kk-bc mips-kk-at mipsel-wr
 
-axel:	sources i386  arm-oe #mipsel-kk-bc mips-kk-at mipsel-wr
+axel:	sources i386  arm-oe mipsel-kk-bc mips-kk-at mipsel-wr
 
 sources:
 	mkdir -p $(FILE_NAME)
@@ -259,3 +259,6 @@ armv5te-oe-elf-32-lsb-dynamic:	$(LINUX_SRC_C) $(LINUX_SRC_H) Makefile
 
 clean:
 	rm -f battool *.o *~
+
+clean-long:
+	rm -fr battool_*

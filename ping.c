@@ -85,7 +85,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	int loop_count = -1;
 	int loop_interval = 0;
 	int time_out = 1;
-	char *mac_string;
+	char *mac_string = NULL;
 	struct hosts *tmp_hosts;
 
 	while ( ( optchar = getopt ( argc, argv, "hc:i:t:" ) ) != -1 ) {

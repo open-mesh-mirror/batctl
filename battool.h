@@ -24,7 +24,7 @@
 
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
-#define SOURCE_VERSION "0.1-alpha"
+#define SOURCE_VERSION "0.1pre-alpha"
 #define HOSTS_FILE "bat-hosts"
 
 #define find_mac_address(list, tmp , search, target, search_type, target_type ) \

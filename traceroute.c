@@ -65,6 +65,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 			stop = 0,
 			found_args = 1;
 
+	uint16_t seq_counter = 0;
 	int32_t recv_buff_len;
 
 	double time_delta = 0.0;
@@ -138,7 +139,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 	for( ; !stop && count < 50; count++ ) {
 		icmp_packet.ttl++;
-		icmp_packet.seqno++;
+		icmp_packet.seqno = htons( ++seq_counter );
 		memcpy( send_buff+2, &icmp_packet, rbsize );
 
 
@@ -183,9 +184,9 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 							find_mac_address( hosts, tmp_hosts, return_mac, host_name, mac, name );
 
 							if(host_name == NULL )
-								printf("%d: %s %.3f ms", ((struct icmp_packet *)rec_buff)->seqno, return_mac, time_delta );
+								printf("%u: %s %.3f ms", ntohs( ( ( struct icmp_packet * )  rec_buff )->seqno ), return_mac, time_delta );
 							else
-								printf("%d: %s (%s) %.3f ms", ((struct icmp_packet *)rec_buff)->seqno, return_mac,host_name, time_delta );
+								printf("%u: %s (%s) %.3f ms", ntohs( ( ( struct icmp_packet * ) rec_buff )->seqno ), return_mac,host_name, time_delta );
 						} else {
 							printf("  %.3f ms", time_delta );
 						}

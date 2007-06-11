@@ -69,6 +69,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	int sbsize,rbsize;
 	uint8_t res;
 	int32_t recv_buff_len;
+	uint16_t seq_counter = 0;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval start,end,timeout;
@@ -177,7 +178,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 		if( loop_count > 0 )
 			loop_count--;
 
-		icmp_packet.seqno++;
+		icmp_packet.seqno = htons( ++seq_counter );
 		memcpy( send_buff+2, &icmp_packet, rbsize );
 		
 		if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
@@ -213,7 +214,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 				{
 
 					time_delta = time_diff( &start, &end );
-					printf("%d bytes from %s icmp_seq=%d ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ((struct icmp_packet *)rec_buff)->seqno,((struct icmp_packet *)rec_buff)->ttl, time_delta );
+					printf("%d bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",recv_buff_len, mac_string, ntohs( ( ( struct icmp_packet * )rec_buff )->seqno ),((struct icmp_packet *)rec_buff)->ttl, time_delta );
 
 					if( time_delta < min || min == -1.0 ) min = time_delta;
 					if( time_delta > max ) max = time_delta;

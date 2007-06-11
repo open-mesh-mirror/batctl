@@ -31,7 +31,7 @@
 
 void usage() {
 	printf("Usage:\n\tbattool -v\n\tbattool module [options] destination\n");
-	printf("module: ping|p traceroute|t\n");
+	printf("module: ping|p traceroute|tr tcpdump|td\n");
 	printf("Use \"battool module -h\" for available options\n");
 	exit(EXIT_FAILURE);
 }
@@ -66,7 +66,7 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 }
 
 int main( int argc, char **argv ) {
-
+	int uid;
 	if( strcmp( argv[1], "-v" ) == 0 ) {
 		printf("Battool %s\n", VERSION);
 		exit(EXIT_SUCCESS);
@@ -76,6 +76,9 @@ int main( int argc, char **argv ) {
 		usage();
 	}
 
+	uid = getuid();
+	if(uid != 0) { printf("You must have UID 0 instead of %d.\n",uid); exit(EXIT_FAILURE); }
+
 	struct hosts *hosts = NULL;
 	parse_hosts_file( &hosts,HOSTS_FILE );
 
@@ -83,9 +86,13 @@ int main( int argc, char **argv ) {
 		/* call ping main function */
 		return ( ping_main( argc-1, argv+1, hosts ) );
 
-	} else if( strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "t") == 0  ) {
+	} else if( strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "tr") == 0  ) {
 		/* call trace main function */
 		return ( traceroute_main( argc-1, argv+1, hosts ) );
+
+	} else if( strcmp(argv[1], "tcpdump") == 0 || strcmp(argv[1], "td") == 0  ) {
+		/* call trace main function */
+		return ( tcpdump_main( argc-1, argv+1 ) );
 
 	} else {
 

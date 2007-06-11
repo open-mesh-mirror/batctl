@@ -39,7 +39,7 @@
 
 void traceroute_usage() {
 	printf("Battool module traceroute\n");
-	printf("Usage: battool traceroute|t [options] destination\n");
+	printf("Usage: battool traceroute|tr [options] destination\n");
 	printf("\t-h help\n");
 	printf("destination:\n\t00:0a:00:93:d0:cf can write :a::93:d0:cf\n\tor use bat-hosts file\n");
 	return;

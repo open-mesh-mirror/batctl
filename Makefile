@@ -92,7 +92,7 @@ all:		$(BINARY_NAME)
 
 
 
-battool: battool.o ping.o functions.o traceroute.o
+battool: battool.o ping.o functions.o traceroute.o tcpdump.o
 
 battool.o: battool.c battool.h
 
@@ -102,6 +102,7 @@ ping.o: ping.c
 
 traceroute.o: traceroute.c
 
+tcpdump.o: tcpdump.c
 
 
 

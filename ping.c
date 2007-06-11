@@ -17,6 +17,7 @@
  *
  */
 
+#include <netinet/ether.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -66,11 +67,12 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
 	int sbsize,rbsize;
-	uint8_t res, mac[6];
+	uint8_t res;
 	int32_t recv_buff_len;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval start,end,timeout;
+	struct ether_addr *mac;
 
 	sigset_t sigmask_old, sigmask_new;
 	double time_delta;
@@ -123,7 +125,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	if( mac_string  == NULL )
 		mac_string = argv[found_args];
 
-	if( convert_mac( mac_string, mac ) < 0 ) {
+	if( ( mac = ether_aton( mac_string ) ) == NULL ) {
 		printf("The mac address was not correct.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -155,7 +157,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	memset(rec_buff, '\0', rbsize );
 
 
-	memcpy( &icmp_packet.dst,mac,6 );
+	memcpy( &icmp_packet.dst,mac, ETH_ALEN );
 	icmp_packet.packet_type = 1;
 	icmp_packet.msg_type = ECHO_REQUEST;
 	icmp_packet.ttl = 50;

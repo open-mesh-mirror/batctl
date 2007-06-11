@@ -17,6 +17,7 @@
  *
  */
 
+#include <netinet/ether.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -51,7 +52,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 			*rec_buff,								/* receive buffer */
 			*mac_string = NULL,				/* string of mac address */
 			*host_name = NULL,				/* name of host */
-			return_mac[18],
+			*return_mac,
 			begin[] = "p:";						/* send buffer need two chars at begin for batman-advance socket*/
 
 	int sbsize,										/* size of send buffer */
@@ -62,8 +63,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 	uint8_t res,
 			stop = 0,
-			found_args = 1,
-			mac[6];
+			found_args = 1;
 
 	int32_t recv_buff_len;
 
@@ -76,6 +76,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 	struct timeval timeout;
 	struct hosts *tmp_hosts;
+	struct ether_addr *mac;
 
 	fd_set read_socket;
 
@@ -101,7 +102,7 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 	if( mac_string  == NULL )
 		mac_string = argv[found_args];
 
-	if( convert_mac( mac_string, mac ) < 0 ) {
+	if( ( mac = ether_aton( mac_string ) ) == NULL ) {
 		printf("The mac address was not correct.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -127,10 +128,8 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 	memset(send_buff, '\0', sbsize );
 	rec_buff = malloc( rbsize );
 	memset(rec_buff, '\0', rbsize );
-	
-	return_mac[0] = '\0';
 
-	memcpy( &icmp_packet.dst,mac,6 );
+	memcpy( &icmp_packet.dst,mac, ETH_ALEN );
 	icmp_packet.packet_type = 1;
 	icmp_packet.msg_type = ECHO_REQUEST;
 	icmp_packet.ttl = 0;
@@ -174,7 +173,13 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 						time_delta = time_diff( &start, &end );
 
 						if( i == 0) {
-							convert_mac_i( ((struct icmp_packet *)rec_buff)->orig, return_mac );
+
+							return_mac = ether_ntoa( ( struct ether_addr* ) ( ( struct icmp_packet * )rec_buff )->orig );
+							if( return_mac == NULL ) {
+								printf("returned mac address was not correct\n");
+								exit( EXIT_FAILURE );
+							}
+
 							find_mac_address( hosts, tmp_hosts, return_mac, host_name, mac, name );
 
 							if(host_name == NULL )

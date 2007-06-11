@@ -123,7 +123,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	if( mac_string  == NULL )
 		mac_string = argv[found_args];
 
-	if( convert_mac( mac_string, mac ) < 1 ) {
+	if( convert_mac( mac_string, mac ) < 0 ) {
 		printf("The mac address was not correct.\n");
 		exit(EXIT_FAILURE);
 	}

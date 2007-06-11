@@ -19,7 +19,8 @@
 
 void tcpdump_usage() {
 	printf("Battool module tcpdump\n");
-	printf("Usage: battool tcpdump|td interface\n");
+	printf("Usage: battool tcpdump|td [option] interface\n");
+	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n");
 	printf("\t-h help\n");
 	return;
 }
@@ -28,7 +29,17 @@ void print_batman_packet( unsigned char *buf)
 {
 	struct batman_packet *bp = (struct batman_packet *)buf;
 	printf("batman header:\n");
-	printf(" ptype=%d flags=%x ttl=%u orig=%s seq=%u gwflags=%x version=%u\n", bp->packet_type,bp->flags, bp->ttl, ether_ntoa((struct ether_addr*) bp->orig), ntohs(bp->seqno), bp->gwflags, bp->version );
+	printf(" ptype=%u flags=%x ttl=%u orig=%s seq=%u gwflags=%x version=%u\n", bp->packet_type,bp->flags, bp->ttl, ether_ntoa((struct ether_addr*) bp->orig), ntohs(bp->seqno), bp->gwflags, bp->version );
+	return;
+}
+
+void print_icmp_packet( unsigned char *buf)
+{
+	struct icmp_packet *ip = (struct icmp_packet *)buf;
+	printf("icmp header:\n");
+	printf(" ptype=%u mtype=%u ttl=%u dst=%s", ip->packet_type, ip->msg_type, ip->ttl, ether_ntoa((struct ether_addr*) ip->dst ) );
+	printf(" orig=%s seq=%u uid=%u\n", ether_ntoa((struct ether_addr*) ip->orig), ntohs(ip->seqno), ip->uid );
+	return;
 }
 
 void print_packet( int length, unsigned char *buf )
@@ -47,12 +58,15 @@ void print_packet( int length, unsigned char *buf )
 		printf("%02x ", buf[i] );
 	}
 	printf("\n");
+	return;
 }
 
 int tcpdump_main( int argc, char **argv )
 {
 	int  optchar,
-		packetsize = 2000;
+		packetsize = 2000,
+		ptype=0,
+		tmp;
 
 	unsigned char packet[packetsize];
 	uint8_t found_args = 1;
@@ -65,8 +79,14 @@ int tcpdump_main( int argc, char **argv )
 
 	char *devicename;
 
-	while ( ( optchar = getopt ( argc, argv, "h" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "p:h" ) ) != -1 ) {
 		switch( optchar ) {
+			case 'p':
+				tmp = strtol(optarg, NULL , 10);
+				if( tmp > 0 && tmp < 4 )
+					ptype = tmp;
+				found_args+=2;
+				break;
 			case 'h':
 				tcpdump_usage();
 				exit(EXIT_SUCCESS);
@@ -108,17 +128,22 @@ int tcpdump_main( int argc, char **argv )
 
 	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
 
-		printf("\n---------------------------------------------------------------------------------------\n\n");
-		printf("ethernet header:\n");
-		printf(" %d bytes dest=%s ", rec_length, ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-		printf("src=%s type=%04x\n", ether_ntoa( (struct ether_addr *) eth->ether_shost ),  ntohs( eth->ether_type ) );
+		if( !ptype || packet[sizeof( struct ether_header)] + 1 == ptype ) {
 
-		if( packet[sizeof( struct ether_header)] == 0 )
+			printf("\n---------------------------------------------------------------------------------------\n\n");
+			printf("ethernet header:\n");
+			printf(" %d bytes dest=%s ", rec_length, ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
+			printf("src=%s type=%04x\n", ether_ntoa( (struct ether_addr *) eth->ether_shost ),  ntohs( eth->ether_type ) );
+
+		}
+
+		if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) ) {
 			print_batman_packet( packet + sizeof( struct ether_header ) );
-		else
-			printf("message typ %d currently not supported\n", packet[sizeof( struct ether_header)] );
-
-		print_packet( rec_length, packet );
+			print_packet( rec_length, packet );
+		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) ) {
+			print_icmp_packet( packet + sizeof( struct ether_header ) );
+			print_packet( rec_length, packet );
+		}
 
 	}
 

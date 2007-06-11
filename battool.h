@@ -48,3 +48,4 @@ struct hosts {
 
 int ping_main( int argc, char **argv, struct hosts *hosts );
 int traceroute_main( int argc, char **argv, struct hosts *hosts );
+int tcpdump_main( int argc, char **argv );

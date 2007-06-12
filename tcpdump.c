@@ -143,6 +143,10 @@ int tcpdump_main( int argc, char **argv )
 		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) ) {
 			print_icmp_packet( packet + sizeof( struct ether_header ) );
 			print_packet( rec_length, packet );
+		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 2 ) || ( packet[sizeof( struct ether_header)] == 2 && ptype - 1 == 2 ) ) {
+			printf("2 kam\n");
+		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) ) {
+			printf("3 kam\n");
 		}
 
 	}

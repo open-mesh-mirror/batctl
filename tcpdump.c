@@ -70,20 +70,50 @@ void tcpdump_usage() {
 	return;
 }
 
-void print_batman_packet( unsigned char *buf)
-{
-	struct batman_packet *bp = (struct batman_packet *)buf;
-	printf("batman header:\n");
-	printf(" ptype=%u flags=%x ttl=%u orig=%s seq=%u gwflags=%x version=%u\n", bp->packet_type,bp->flags, bp->ttl, ether_ntoa((struct ether_addr*) bp->orig), ntohs(bp->seqno), bp->gwflags, bp->version );
+void print_ether( unsigned char *buff ) {
+	struct ether_header *eth = (struct ether_header*)buff;
+	struct tm *tm;
+	time_t tnow;
+
+	/* get localtime */
+	time( &tnow );
+	tm = localtime(&tnow);
+
+	printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
+	printf("%s -> ",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
+	printf("%s ", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
 	return;
 }
 
-void print_icmp_packet( unsigned char *buf)
-{
-	struct icmp_packet *ip = (struct icmp_packet *)buf;
-	printf("icmp header:\n");
-	printf(" ptype=%u mtype=%u ttl=%u dst=%s", ip->packet_type, ip->msg_type, ip->ttl, ether_ntoa((struct ether_addr*) ip->dst ) );
-	printf(" orig=%s seq=%u uid=%u\n", ether_ntoa((struct ether_addr*) ip->orig), ntohs(ip->seqno), ip->uid );
+void print_batman_packet( unsigned char *buff) {
+	print_ether(buff);
+	struct batman_packet *bp = (struct batman_packet *)(buff+sizeof(struct ether_header));
+	printf("BAT %s %02x %02x %u\n", ether_ntoa((struct ether_addr*) bp->orig), bp->flags, bp->gwflags, bp->version );
+	return;
+}
+
+void print_icmp_packet( unsigned char *buff) {
+	print_ether(buff);
+	struct icmp_packet *ip = (struct icmp_packet *) (buff+sizeof(struct ether_header));
+
+	printf("BAT_ICMP %s", ether_ntoa((struct ether_addr*) ip->orig) );
+	switch( ip->msg_type ) {
+		case ECHO_REPLY:
+			printf(" ERE");
+			break;
+		case DESTINATION_UNREACHABLE:
+			printf(" DUN");
+			break;
+		case ECHO_REQUEST:
+			printf(" ERQ");
+			break;
+		case TTL_EXCEEDED:
+			printf(" TTL");
+			break;
+		default:
+			printf("unknown");
+	}
+	printf(" %s\n",ether_ntoa((struct ether_addr*) ip->dst ) );
 	return;
 }
 
@@ -107,19 +137,21 @@ void print_packet( int length, unsigned char *buf )
 }
 
 void print_arp( unsigned char *buff ) {
-	struct my_arphdr *arp = (struct my_arphdr*)buff;
-	printf(" ARP %03u.%03u.%03u.%03u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
+	print_ether(buff);
+	struct my_arphdr *arp = (struct my_arphdr*)(buff+sizeof(struct ether_header));
+	printf("ARP %03u.%03u.%03u.%03u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
 	switch( ntohs( arp->ar_op ) ) {
 		case ARPOP_REQUEST:
 			printf(" ARP_REQUEST");
 			break;
 		case ARPOP_REPLY:
 			printf(" ARP_REPLY");
+			break;
 		default:
 			printf("unknown");
 	}
-	printf("(%u) %03u.%03u.%03u.%03u",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
-
+	printf("(%u) %03u.%03u.%03u.%03u\n",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+	return;
 }
 
 int tcpdump_main( int argc, char **argv )
@@ -135,13 +167,9 @@ int tcpdump_main( int argc, char **argv )
 
 	int32_t rawsock;
 	ssize_t rec_length;
-	uint16_t proto = 0x0842; /* default batman packets */
+	uint16_t proto = 0x0842,  /* default batman packets */
+		etype;
 
-	struct tm *tm;
-	time_t tnow;
-
-
-	struct ether_header *eth = (struct ether_header *) packet;
 	struct ifreq req;
 	struct sockaddr_ll addr;
 
@@ -154,7 +182,7 @@ int tcpdump_main( int argc, char **argv )
 				found_args+=1;
 				break;
 			case 'd':
-    print_dump = 1;
+    			print_dump = 1;
 				found_args+=1;
 				break;
 			case 'p':
@@ -203,52 +231,30 @@ int tcpdump_main( int argc, char **argv )
 	}
 
 	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
-		/* get localtime */
-		time( &tnow );
-		tm = localtime(&tnow);
 		/* only batman packets */
+		etype = ntohs(((struct ether_header*)packet)->ether_type);
+		if( proto == ETH_P_ALL || ( proto == 0x0842 && etype == 0x0842 ) ) {
 
-		if( proto == ETH_P_ALL || ( proto == 0x0842 && ntohs(eth->ether_type) == 0x0842 ) ) {
-			/* print ether header */
-			printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
-			printf("%s -> ",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
-			printf("%s ", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-
-			if( ntohs( eth->ether_type ) == ETH_P_ARP )
-				print_arp( packet + sizeof(struct ether_header));
-			else if( ntohs( eth->ether_type ) == ETH_P_IP )
+			if( etype == ETH_P_ARP )
+				print_arp( packet);
+			else if( etype == ETH_P_IP )
 				printf(" ip ");
-			else if( ntohs( eth->ether_type ) == ETH_P_BAT )
-				printf(" bat ");
-			else
-				printf(" %04x ",ntohs( eth->ether_type ) );
+			else if( etype == ETH_P_BAT ) {
 
-			printf(" %d bytes\n", rec_length);
+				if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) )
+					print_batman_packet(packet);
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) )
+					print_icmp_packet(packet);
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == 2 ) || ( packet[sizeof( struct ether_header)] == 2 && ptype - 1 == 2 ) )
+					printf("2 kam\n");
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) )
+					printf("3 kam\n");
+
+			} else
+				printf(" %04x ",etype );
+			if(print_dump)
+				print_packet( rec_length, packet );
 		}
-
-// 		if( !ptype || packet[sizeof( struct ether_header)] + 1 == ptype ) {
-
-
-// 			printf(" %d bytes dest=%s ", rec_length, ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-// 			printf("src=%s type=%04x\n", ether_ntoa( (struct ether_addr *) eth->ether_shost ),  ntohs( eth->ether_type ) );
-
-// 		}
-/*
-		if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) ) {
-			print_batman_packet( packet + sizeof( struct ether_header ) );
-			print_packet( rec_length, packet );
-		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) ) {
-			print_icmp_packet( packet + sizeof( struct ether_header ) );
-			print_packet( rec_length, packet );
-		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 2 ) || ( packet[sizeof( struct ether_header)] == 2 && ptype - 1 == 2 ) ) {
-			printf("2 kam\n");
-		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) ) {
-			printf("3 kam\n");
-		}
-*/
-
-		if(print_dump)
-			print_packet( rec_length, packet );
 	}
 
 	exit( EXIT_SUCCESS );

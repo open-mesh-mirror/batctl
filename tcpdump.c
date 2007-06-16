@@ -46,6 +46,8 @@
 #define	ARPOP_InREPLY	9			/* InARP reply.  */
 #define	ARPOP_NAK	10				/* (ATM)ARP NAK.  */
 
+uint8_t verbose = 0;
+
 struct my_arphdr
 {
 	uint16_t ar_hrd; /* format of hardware address */
@@ -66,6 +68,7 @@ void tcpdump_usage() {
 	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n");
 	printf("\t-a all packet types\n");
 	printf("\t-d packet dump in hex\n");
+	printf("\t-v verbose\n");
 	printf("\t-h help\n");
 	return;
 }
@@ -154,6 +157,34 @@ void print_arp( unsigned char *buff ) {
 	return;
 }
 
+void print_broadcast_packet( unsigned char *buff ) {
+	struct bcast_packet *bc = (struct bcast_packet*)(buff+sizeof(struct ether_header));
+	struct ether_header *eth = (struct ether_header*)( buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet ) );
+	print_ether( buff );
+	printf("BAT_BCAST %s",ether_ntoa((struct ether_addr*) bc->orig) );
+
+
+	if( ntohs(((struct ether_header*)(buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP ) {
+		struct my_arphdr *arp = (struct my_arphdr*)(buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet ) + sizeof( struct ether_header ));
+		switch( ntohs( arp->ar_op ) ) {
+				case ARPOP_REQUEST:
+					printf(" ARP_REQUEST");
+					break;
+				case ARPOP_REPLY:
+					printf(" ARP_REPLY");
+					break;
+				default:
+					printf("unknown");
+		}
+		if( verbose ) {
+			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
+			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
+			printf("\n\tsender = %s %03u.%03u.%03u.%03u\n\ttarget = %s %03u.%03u.%03u.%03u\n", ether_ntoa((struct ether_addr*) arp->ar_sha ),arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3],
+			 ether_ntoa((struct ether_addr*) arp->ar_tha ),arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+		}
+	}
+}
+
 int tcpdump_main( int argc, char **argv )
 {
 	int  optchar,
@@ -173,9 +204,11 @@ int tcpdump_main( int argc, char **argv )
 	struct ifreq req;
 	struct sockaddr_ll addr;
 
+	void (*p)(unsigned char*);
+
 	char *devicename;
 
-	while ( ( optchar = getopt ( argc, argv, "adp:h" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "advp:h" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'a':
 				proto = ETH_P_ALL;
@@ -185,9 +218,13 @@ int tcpdump_main( int argc, char **argv )
     			print_dump = 1;
 				found_args+=1;
 				break;
+			case 'v':
+    			verbose = 1;
+				found_args+=1;
+				break;
 			case 'p':
 				tmp = strtol(optarg, NULL , 10);
-				if( tmp > 0 && tmp < 4 )
+				if( tmp > 0 && tmp < 5 )
 					ptype = tmp;
 				found_args+=2;
 				break;
@@ -233,27 +270,33 @@ int tcpdump_main( int argc, char **argv )
 	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
 		/* only batman packets */
 		etype = ntohs(((struct ether_header*)packet)->ether_type);
+		p = NULL;
 		if( proto == ETH_P_ALL || ( proto == 0x0842 && etype == 0x0842 ) ) {
 
 			if( etype == ETH_P_ARP )
-				print_arp( packet);
+				p = print_arp;
+
 // 			else if( etype == ETH_P_IP )
 // 				printf("ip comming soon\n");
 			else if( etype == ETH_P_BAT ) {
 
 				if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) )
-					print_batman_packet(packet);
+					p = print_batman_packet;
 				else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) )
-					print_icmp_packet(packet);
+					p = print_icmp_packet;
 				else if( ( !ptype && packet[sizeof( struct ether_header)] == 2 ) || ( packet[sizeof( struct ether_header)] == 2 && ptype - 1 == 2 ) )
 					printf("2 kam\n");
 				else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) )
-					printf("3 kam\n");
+					p = print_broadcast_packet;
 
 			} /*else
 				printf(" %04x ",etype );*/
-			if(print_dump)
-				print_packet( rec_length, packet );
+			if( p != NULL ) {
+				printf("%d ", rec_length);
+				(*p)(packet);
+				if(print_dump)
+					print_packet( rec_length, packet );
+			}
 		}
 	}
 

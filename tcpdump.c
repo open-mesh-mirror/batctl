@@ -204,7 +204,7 @@ int tcpdump_main( int argc, char **argv )
 	struct ifreq req;
 	struct sockaddr_ll addr;
 
-	void (*p)(unsigned char*);
+	void (*p)(unsigned char*); /* pointer for packet output functions */
 
 	char *devicename;
 
@@ -268,9 +268,9 @@ int tcpdump_main( int argc, char **argv )
 	}
 
 	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
-		/* only batman packets */
 		etype = ntohs(((struct ether_header*)packet)->ether_type);
 		p = NULL;
+		/* only batman packets */
 		if( proto == ETH_P_ALL || ( proto == 0x0842 && etype == 0x0842 ) ) {
 
 			if( etype == ETH_P_ARP )
@@ -289,8 +289,8 @@ int tcpdump_main( int argc, char **argv )
 				else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) )
 					p = print_broadcast_packet;
 
-			} /*else
-				printf(" %04x ",etype );*/
+			}
+
 			if( p != NULL ) {
 				printf("%d ", rec_length);
 				(*p)(packet);

@@ -237,8 +237,8 @@ int tcpdump_main( int argc, char **argv )
 
 			if( etype == ETH_P_ARP )
 				print_arp( packet);
-			else if( etype == ETH_P_IP )
-				printf(" ip ");
+// 			else if( etype == ETH_P_IP )
+// 				printf("ip comming soon\n");
 			else if( etype == ETH_P_BAT ) {
 
 				if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) )
@@ -250,8 +250,8 @@ int tcpdump_main( int argc, char **argv )
 				else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) )
 					printf("3 kam\n");
 
-			} else
-				printf(" %04x ",etype );
+			} /*else
+				printf(" %04x ",etype );*/
 			if(print_dump)
 				print_packet( rec_length, packet );
 		}

@@ -29,17 +29,43 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <net/if.h>
+// #include <net/if_arp.h>
 #include <netpacket/packet.h>
 #include <sys/ioctl.h>
 #include <netinet/ether.h>
-
+#include <time.h>
 #include "battool.h"
 
+#define ETH_P_BAT 0x0842
+
+#define	ARPOP_REQUEST	1		/* ARP request.  */
+#define	ARPOP_REPLY	2			/* ARP reply.  */
+#define	ARPOP_RREQUEST	3		/* RARP request.  */
+#define	ARPOP_RREPLY	4			/* RARP reply.  */
+#define	ARPOP_InREQUEST	8	/* InARP request.  */
+#define	ARPOP_InREPLY	9			/* InARP reply.  */
+#define	ARPOP_NAK	10				/* (ATM)ARP NAK.  */
+
+struct my_arphdr
+{
+	uint16_t ar_hrd; /* format of hardware address */
+	uint16_t ar_pro; /* format of protocol address */
+	uint8_t ar_hln; /* length of hardware address */
+	uint8_t ar_pln; /* length of protocol address */
+	uint16_t ar_op; /* ARP opcode (command) */
+
+	uint8_t ar_sha[ETH_ALEN]; /* sender hardware address */
+	uint8_t ar_sip[4]; /* sender IP address */
+	uint8_t ar_tha[ETH_ALEN]; /* target hardware address */
+	uint8_t ar_tip[4]; /* target IP address */
+};
 
 void tcpdump_usage() {
 	printf("Battool module tcpdump\n");
 	printf("Usage: battool tcpdump|td [option] interface\n");
 	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n");
+	printf("\t-a all packet types\n");
+	printf("\t-d packet dump in hex\n");
 	printf("\t-h help\n");
 	return;
 }
@@ -76,8 +102,24 @@ void print_packet( int length, unsigned char *buf )
 
 		printf("%02x ", buf[i] );
 	}
-	printf("\n");
+	printf("\n\n");
 	return;
+}
+
+void print_arp( unsigned char *buff ) {
+	struct my_arphdr *arp = (struct my_arphdr*)buff;
+	printf(" ARP %03u.%03u.%03u.%03u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
+	switch( ntohs( arp->ar_op ) ) {
+		case ARPOP_REQUEST:
+			printf(" ARP_REQUEST");
+			break;
+		case ARPOP_REPLY:
+			printf(" ARP_REPLY");
+		default:
+			printf("unknown");
+	}
+	printf("(%u) %03u.%03u.%03u.%03u",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+
 }
 
 int tcpdump_main( int argc, char **argv )
@@ -88,9 +130,16 @@ int tcpdump_main( int argc, char **argv )
 		tmp;
 
 	unsigned char packet[packetsize];
-	uint8_t found_args = 1;
+	uint8_t found_args = 1,
+			print_dump = 0;
+
 	int32_t rawsock;
 	ssize_t rec_length;
+	uint16_t proto = 0x0842; /* default batman packets */
+
+	struct tm *tm;
+	time_t tnow;
+
 
 	struct ether_header *eth = (struct ether_header *) packet;
 	struct ifreq req;
@@ -98,8 +147,16 @@ int tcpdump_main( int argc, char **argv )
 
 	char *devicename;
 
-	while ( ( optchar = getopt ( argc, argv, "p:h" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "adp:h" ) ) != -1 ) {
 		switch( optchar ) {
+			case 'a':
+				proto = ETH_P_ALL;
+				found_args+=1;
+				break;
+			case 'd':
+    print_dump = 1;
+				found_args+=1;
+				break;
 			case 'p':
 				tmp = strtol(optarg, NULL , 10);
 				if( tmp > 0 && tmp < 4 )
@@ -123,7 +180,7 @@ int tcpdump_main( int argc, char **argv )
 
 	devicename = argv[found_args];
 
-	if ( ( rawsock = socket(PF_PACKET,SOCK_RAW,htons( 0x0842 ) ) ) < 0 ) {
+	if ( ( rawsock = socket(PF_PACKET,SOCK_RAW, htons(proto) ) ) < 0 ) {
 		printf("Error - can't create raw socket: %s\n", strerror(errno) );
 		exit( EXIT_FAILURE );
 	}
@@ -136,7 +193,7 @@ int tcpdump_main( int argc, char **argv )
 	}
 
 	addr.sll_family   = AF_PACKET;
-	addr.sll_protocol = htons( 0x0842 );
+	addr.sll_protocol = htons( proto );
 	addr.sll_ifindex  = req.ifr_ifindex;
 
 	if ( bind(rawsock, (struct sockaddr *)&addr, sizeof(addr)) < 0 ) {
@@ -146,16 +203,37 @@ int tcpdump_main( int argc, char **argv )
 	}
 
 	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
+		/* get localtime */
+		time( &tnow );
+		tm = localtime(&tnow);
+		/* only batman packets */
 
-		if( !ptype || packet[sizeof( struct ether_header)] + 1 == ptype ) {
+		if( proto == ETH_P_ALL || ( proto == 0x0842 && ntohs(eth->ether_type) == 0x0842 ) ) {
+			/* print ether header */
+			printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
+			printf("%s -> ",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
+			printf("%s ", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
 
-			printf("\n---------------------------------------------------------------------------------------\n\n");
-			printf("ethernet header:\n");
-			printf(" %d bytes dest=%s ", rec_length, ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-			printf("src=%s type=%04x\n", ether_ntoa( (struct ether_addr *) eth->ether_shost ),  ntohs( eth->ether_type ) );
+			if( ntohs( eth->ether_type ) == ETH_P_ARP )
+				print_arp( packet + sizeof(struct ether_header));
+			else if( ntohs( eth->ether_type ) == ETH_P_IP )
+				printf(" ip ");
+			else if( ntohs( eth->ether_type ) == ETH_P_BAT )
+				printf(" bat ");
+			else
+				printf(" %04x ",ntohs( eth->ether_type ) );
 
+			printf(" %d bytes\n", rec_length);
 		}
 
+// 		if( !ptype || packet[sizeof( struct ether_header)] + 1 == ptype ) {
+
+
+// 			printf(" %d bytes dest=%s ", rec_length, ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
+// 			printf("src=%s type=%04x\n", ether_ntoa( (struct ether_addr *) eth->ether_shost ),  ntohs( eth->ether_type ) );
+
+// 		}
+/*
 		if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) ) {
 			print_batman_packet( packet + sizeof( struct ether_header ) );
 			print_packet( rec_length, packet );
@@ -167,7 +245,10 @@ int tcpdump_main( int argc, char **argv )
 		} else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) ) {
 			printf("3 kam\n");
 		}
+*/
 
+		if(print_dump)
+			print_packet( rec_length, packet );
 	}
 
 	exit( EXIT_SUCCESS );

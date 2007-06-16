@@ -99,10 +99,10 @@ void print_icmp_packet( unsigned char *buff) {
 	printf("BAT_ICMP %s", ether_ntoa((struct ether_addr*) ip->orig) );
 	switch( ip->msg_type ) {
 		case ECHO_REPLY:
-			printf(" ERE");
+			printf(" ERP");
 			break;
 		case DESTINATION_UNREACHABLE:
-			printf(" DUN");
+			printf(" DUR");
 			break;
 		case ECHO_REQUEST:
 			printf(" ERQ");

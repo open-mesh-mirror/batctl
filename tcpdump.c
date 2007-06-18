@@ -29,14 +29,12 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <net/if.h>
-// #include <net/if_arp.h>
 #include <netpacket/packet.h>
 #include <sys/ioctl.h>
 #include <netinet/ether.h>
 #include <time.h>
-#include "battool.h"
 
-#define ETH_P_BAT 0x0842
+#include "battool.h"
 
 #define	ARPOP_REQUEST	1		/* ARP request.  */
 #define	ARPOP_REPLY	2			/* ARP reply.  */
@@ -65,7 +63,7 @@ struct my_arphdr
 void tcpdump_usage() {
 	printf("Battool module tcpdump\n");
 	printf("Usage: battool tcpdump|td [option] interface\n");
-	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n");
+	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n\t\t4=broadcast packets\n");
 	printf("\t-a all packet types\n");
 	printf("\t-d packet dump in hex\n");
 	printf("\t-v verbose\n");
@@ -199,7 +197,7 @@ int tcpdump_main( int argc, char **argv )
 
 	int32_t rawsock;
 	ssize_t rec_length;
-	uint16_t proto = 0x0842,  /* default batman packets */
+	uint16_t proto = ETH_P_BATMAN,  /* default batman packets */
 		etype;
 
 	struct ifreq req;
@@ -272,22 +270,22 @@ int tcpdump_main( int argc, char **argv )
 		etype = ntohs(((struct ether_header*)packet)->ether_type);
 		p = NULL;
 		/* only batman packets */
-		if( proto == ETH_P_ALL || ( proto == 0x0842 && etype == 0x0842 ) ) {
+		if( proto == ETH_P_ALL || ( proto == ETH_P_BATMAN && etype == ETH_P_BATMAN ) ) {
 
 			if( etype == ETH_P_ARP )
 				p = print_arp;
 
 // 			else if( etype == ETH_P_IP )
 // 				printf("ip comming soon\n");
-			else if( etype == ETH_P_BAT ) {
+			else if( etype == ETH_P_BATMAN ) {
 
-				if( ( !ptype && packet[sizeof( struct ether_header)] == 0 ) || ( packet[sizeof( struct ether_header)] == 0 && ptype - 1 == 0  ) )
+				if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_batman_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == 1 ) || ( packet[sizeof( struct ether_header)] == 1 && ptype - 1 == 1 ) )
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_icmp_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == 2 ) || ( packet[sizeof( struct ether_header)] == 2 && ptype - 1 == 2 ) )
-					printf("2 kam\n");
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == 3 ) || ( packet[sizeof( struct ether_header)] == 3 && ptype - 1 == 3 ) )
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == ptype ) )
+					printf("unicast kam\n");
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_broadcast_packet;
 
 			}

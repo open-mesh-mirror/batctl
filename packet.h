@@ -19,6 +19,15 @@
 
 
 
+#define ETH_P_BATMAN  0x0842
+
+#define BAT_PACKET    0x10
+#define BAT_ICMP      0x20
+#define BAT_UNICAST   0x30
+#define BAT_BCAST     0x40
+
+
+
 #define ECHO_REPLY 0
 #define DESTINATION_UNREACHABLE 3
 #define ECHO_REQUEST 8

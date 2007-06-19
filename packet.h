@@ -21,10 +21,10 @@
 
 #define ETH_P_BATMAN  0x0842
 
-#define BAT_PACKET    0x10
-#define BAT_ICMP      0x20
-#define BAT_UNICAST   0x30
-#define BAT_BCAST     0x40
+#define BAT_PACKET    0x01
+#define BAT_ICMP      0x02
+#define BAT_UNICAST   0x03
+#define BAT_BCAST     0x04
 
 
 

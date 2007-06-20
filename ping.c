@@ -42,12 +42,11 @@ uint8_t Stop = 0;
 
 void ping_usage() {
 	printf("Battool module ping\n");
-	printf("Usage: battool ping|p [options] destination\n");
+	printf("Usage: battool ping|p [options] mac|name\n");
 	printf("\t-c count\n");
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
 	printf("\t-t timeout in seconds\n");
-	printf("destination:\n\t00:0a:00:93:d0:cf can write :a::93:d0:cf\n\tor use bat-hosts file\n");
 	return;
 }
 

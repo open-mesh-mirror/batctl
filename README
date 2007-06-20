@@ -1,0 +1,36 @@
+#################################
+# B.A.T.M.A.N. toolchain README #
+#################################
+
+
+
+Introduction
+============
+
+Why do I need the battool ? B.A.T.M.A.N. Advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems the B.A.T.M.A.N. toolchain (battool for short) was created. At the moment the battool contains ping, traceroute and tcpdump.
+
+
+How does it work ?
+==================
+
+The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute works almost like their IP based counterparts. Tcpdump was designed because B.A.T.M.A.N. Advanced encapsulates all traffic wihtin batman packets, so that the normal tcpdump would not recognize the packets.
+
+
+ The bat-hosts file
+==================
+
+This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. The battool will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remeber than MAC addresses.  ;)
+
+
+battool ping
+============
+
+battool ping [mac address|host name]
+
+The following options are supported:
+
+- c (count) - stop after n pings (default is infinite)
+
+- i (interval)
+
+- t (timeout interval) - timeout interval in seconds (default is 1 second)

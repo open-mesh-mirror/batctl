@@ -13,24 +13,75 @@ Why do I need the battool ? B.A.T.M.A.N. Advanced operates on layer 2 and thus a
 How does it work ?
 ==================
 
-The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute works almost like their IP based counterparts. Tcpdump was designed because B.A.T.M.A.N. Advanced encapsulates all traffic wihtin batman packets, so that the normal tcpdump would not recognize the packets.
+The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute work almost like their IP based counterparts. Tcpdump was designed because B.A.T.M.A.N. Advanced encapsulates all traffic within batman packets, so that the normal tcpdump would not recognize the packets.
 
 
  The bat-hosts file
 ==================
 
-This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. The battool will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remeber than MAC addresses.  ;)
+This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. The battool will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remember than MAC addresses.  ;)
 
 
 battool ping
 ============
 
-battool ping [mac address|host name]
+battool ping [options] [mac address|host name]
 
 The following options are supported:
 
 - c (count) - stop after n pings (default is infinite)
 
-- i (interval)
+- i (interval) - interval to wait between 2 pings (default is 1 second)
 
 - t (timeout interval) - timeout interval in seconds (default is 1 second)
+
+
+battool traceroute
+==================
+
+battool traceroute [mac address|host name]
+
+Traceroute sends 3 packets to each hop, awaits the answers and prints out the response times.
+
+
+battool tcpdump
+===============
+
+battool tcpdump [options] [interface]
+
+The following options are supported:
+
+-a (all packets) - switch tcpdump behaviour to work as the "normal" tcpdump and filter for non-batman advanced packets
+
+-d (dump packets) - print packet data in hex
+
+-p (packet type) - specify to filter for certain batman packets (1 = batman packets, 2 = icmp packets, 3 = unicast packets, 4 = broadcast packets)
+
+-v (verbose) - prints more information about each packet
+
+
+B.A.T.M.A.N. Advanced encapsulates all traffic within batman packets. In total it uses 4 different packet types:
+
+batman packets - these transport the B.A.T.M.A.N. originator messages to build the mesh network
+
+batman icmp packets - lightweight implementation of the ICMP protocol (needed for ping and traceroute)
+
+batman unicast packets - unicast data is bound as payload in these packets
+
+batman broadcast packets - broadcast data is bound as payload in these packets
+
+
+The tcpdump output looks like:
+
+60 17:56:57 0:d0:59:cf:93:ea -> ff:ff:ff:ff:ff:ff BAT 0:d0:59:cf:93:ea 00 00 1
+
+60                -> packet size in bytes
+17:56:57          -> time when this packet was seen
+0:d0:59:cf:93:ea  -> sender mac address
+ff:ff:ff:ff:ff:ff -> recipient mac address
+BAT               -> packet type (batman packet)
+0:d0:59:cf:93:ea  -> batman packet originator
+00                -> batman packet flags
+00                -> batman packet gateway flags
+1                 -> batman packet version
+

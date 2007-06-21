@@ -20,11 +20,11 @@
 #include <sys/un.h>
 #include "packet.h"
 
-#define VERSION "0.1 alpha"
+#define VERSION "0.1-alpha"  //put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3"
+#define SOURCE_VERSION "0.1-alpha"
 
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
-#define SOURCE_VERSION "0.1pre-alpha"
 #define HOSTS_FILE "bat-hosts"
 
 #define find_mac_address(list, tmp , search, target, search_type, target_type ) \

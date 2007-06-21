@@ -34,7 +34,6 @@
 #include "battool.h"
 #include "functions.h"
 
-#define VERSION "0.1 alpha"
 
 
 

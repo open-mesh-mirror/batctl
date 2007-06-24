@@ -279,13 +279,13 @@ int tcpdump_main( int argc, char **argv )
 // 				printf("ip comming soon\n");
 			else if( etype == ETH_P_BATMAN ) {
 
-				if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == ptype ) )
+				if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_batman_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == ptype ) )
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_icmp_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == ptype ) )
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
 					printf("unicast kam\n");
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == ptype ) )
+				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
 					p = print_broadcast_packet;
 
 			}

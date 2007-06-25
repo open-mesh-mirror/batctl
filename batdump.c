@@ -53,6 +53,23 @@ void batdump_usage() {
 	return;
 }
 
+void print_arp( unsigned char *buff ) {
+	struct my_arphdr *arp = (struct my_arphdr*)buff;
+	printf("ARP %u.%u.%u.%u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
+	switch( ntohs( arp->ar_op ) ) {
+		case ARPOP_REQUEST:
+			printf(" ARP_REQUEST");
+			break;
+		case ARPOP_REPLY:
+			printf(" ARP_REPLY");
+			break;
+		default:
+			printf("unknown");
+	}
+	printf("(%u) %u.%u.%u.%u\n",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+	return;
+}
+
 void print_ether( unsigned char *buff ) {
 	struct ether_header *eth = (struct ether_header*)buff;
 	struct tm *tm;
@@ -69,15 +86,13 @@ void print_ether( unsigned char *buff ) {
 }
 
 void print_batman_packet( unsigned char *buff) {
-	print_ether(buff);
-	struct batman_packet *bp = (struct batman_packet *)(buff+sizeof(struct ether_header));
+	struct batman_packet *bp = (struct batman_packet *) buff;
 	printf("BAT %s %02x %02x %u\n", ether_ntoa((struct ether_addr*) bp->orig), bp->flags, bp->gwflags, bp->version );
 	return;
 }
 
 void print_icmp_packet( unsigned char *buff) {
-	print_ether(buff);
-	struct icmp_packet *ip = (struct icmp_packet *) (buff+sizeof(struct ether_header));
+	struct icmp_packet *ip = ( struct icmp_packet * )buff;
 
 	printf("BAT_ICMP %s", ether_ntoa((struct ether_addr*) ip->orig) );
 	switch( ip->msg_type ) {
@@ -101,11 +116,10 @@ void print_icmp_packet( unsigned char *buff) {
 }
 
 void print_unicast_packet( unsigned char *buff) {
-	print_ether(buff);
-	struct ether_header *eth1 = (struct ether_header*) ( buff + sizeof(struct ether_header) + sizeof( struct unicast_packet) );
+	struct ether_header *eth1 = (struct ether_header*) ( buff + sizeof( struct unicast_packet) );
 
 	if( ntohs( eth1->ether_type ) == ETH_P_IP ) {
-		struct ip *ip = (struct ip*) ( buff + (sizeof(struct ether_header) * 2) + sizeof(struct unicast_packet ) );
+		struct ip *ip = (struct ip*) ( buff + ( sizeof(struct ether_header) ) + sizeof(struct unicast_packet ) );
 		printf("BAT_UNI IP V%u %s -> ", ip->ip_v, inet_ntoa( ip->ip_src) );
 		printf("%s ", inet_ntoa( ip->ip_dst ) );
 		switch( ip->ip_p ) {
@@ -122,19 +136,8 @@ void print_unicast_packet( unsigned char *buff) {
 				printf("unknown IP protocol\n");
 		}
 	} else if( ntohs( eth1->ether_type ) == ETH_P_ARP ) {
-		struct my_arphdr *arp = (struct my_arphdr*)( buff + (sizeof(struct ether_header) * 2) + sizeof(struct unicast_packet ) );
-		printf("BAT_UNI ARP %u.%u.%u.%u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
-		switch( ntohs( arp->ar_op ) ) {
-			case ARPOP_REQUEST:
-				printf(" ARP_REQUEST");
-				break;
-			case ARPOP_REPLY:
-				printf(" ARP_REPLY");
-				break;
-			default:
-				printf("unknown");
-		}
-		printf("(%u) %u.%u.%u.%u\n",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+		printf("BAT_UNI ");
+		print_arp( buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ) );
 	} else {
 		printf("BAT_UNI unknow ether type %x\n", ntohs( eth1->ether_type ) );
 	}
@@ -160,51 +163,21 @@ void print_packet( int length, unsigned char *buf )
 	return;
 }
 
-void print_arp( unsigned char *buff ) {
-	print_ether(buff);
-	struct my_arphdr *arp = (struct my_arphdr*)(buff+sizeof(struct ether_header));
-	printf("ARP %03u.%03u.%03u.%03u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
-	switch( ntohs( arp->ar_op ) ) {
-		case ARPOP_REQUEST:
-			printf(" ARP_REQUEST");
-			break;
-		case ARPOP_REPLY:
-			printf(" ARP_REPLY");
-			break;
-		default:
-			printf("unknown");
-	}
-	printf("(%u) %03u.%03u.%03u.%03u\n",ntohs( arp->ar_op ), arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
-	return;
-}
-
 void print_broadcast_packet( unsigned char *buff ) {
-	struct bcast_packet *bc = (struct bcast_packet*)(buff+sizeof(struct ether_header));
-	struct ether_header *eth = (struct ether_header*)( buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet ) );
-	print_ether( buff );
+	struct bcast_packet *bc = (struct bcast_packet*)buff;
 	printf("BAT_BCAST %s",ether_ntoa((struct ether_addr*) bc->orig) );
 
 
-	if( ntohs(((struct ether_header*)(buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP ) {
-		struct my_arphdr *arp = (struct my_arphdr*)(buff + sizeof( struct ether_header ) + sizeof( struct bcast_packet ) + sizeof( struct ether_header ));
-		switch( ntohs( arp->ar_op ) ) {
-				case ARPOP_REQUEST:
-					printf(" ARP_REQUEST");
-					break;
-				case ARPOP_REPLY:
-					printf(" ARP_REPLY");
-					break;
-				default:
-					printf("unknown");
-		}
-		if( verbose ) {
-			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
-			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-			printf("\n\tsender = %s %03u.%03u.%03u.%03u\n\ttarget = %s %03u.%03u.%03u.%03u\n", ether_ntoa((struct ether_addr*) arp->ar_sha ),arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3],
-			 ether_ntoa((struct ether_addr*) arp->ar_tha ),arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
-		} else
-			printf("\n");
-	}
+	if( ntohs(((struct ether_header*)(buff + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP )
+		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ) );
+// 		if( verbose ) {
+// 			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
+// 			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
+// 			printf("\n\tsender = %s %u.%u.%u.%u\n\ttarget = %s %u.%u.%u.%u\n", ether_ntoa((struct ether_addr*) arp->ar_sha ),arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3],
+// 			 ether_ntoa((struct ether_addr*) arp->ar_tha ),arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
+// 		} else
+// 			printf("\n");
+
 }
 
 int batdump_main( int argc, char **argv )
@@ -350,7 +323,8 @@ int batdump_main( int argc, char **argv )
 
 						if( p != NULL ) {
 							printf("%d ", rec_length);
-							(*p)(packet);
+							print_ether(packet);
+							(*p)( ( packet + sizeof(struct ether_header) ) );
 							if(print_dump)
 								print_packet( rec_length, packet );
 						}

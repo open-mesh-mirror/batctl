@@ -30,8 +30,8 @@ UNAME=		$(shell uname)
 
 LOG_BRANCH= trunk/battool
 
-LINUX_SRC_C= battool.c functions.c ping.c traceroute.c
-LINUX_SRC_H= battool.h functions.h
+LINUX_SRC_C= battool.c functions.c batping.c batroute.c batdump.h
+LINUX_SRC_H= battool.h functions.h batdump.h
 
 BINARY_NAME=	battool
 SOURCE_VERSION_HEADER= battool.h
@@ -92,19 +92,7 @@ all:		$(BINARY_NAME)
 
 
 
-battool: battool.o ping.o functions.o traceroute.o batdump.o
-
-battool.o: battool.c battool.h
-
-functions.o: functions.c functions.h
-
-ping.o: ping.c
-
-traceroute.o: traceroute.c
-
-batdump.o: batdump.c list-batman.c
-
-
+battool: battool.o batping.o functions.o batroute.o batdump.o list-batman.o
 
 long:	sources i386  arm-oe mipsel-kk-bc mips-kk-at mipsel-wr
 

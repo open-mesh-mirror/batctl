@@ -31,7 +31,7 @@
 
 void usage() {
 	printf("Usage:\n\tbattool -v\n\tbattool module [options] destination\n");
-	printf("module: ping|p traceroute|tr tcpdump|td\n");
+	printf("module: batping|bp batroute|br batdump|bd\n");
 	printf("Use \"battool module -h\" for available options\n");
 	exit(EXIT_FAILURE);
 }
@@ -82,13 +82,13 @@ int main( int argc, char **argv ) {
 	struct hosts *hosts = NULL;
 	parse_hosts_file( &hosts,HOSTS_FILE );
 
-	if( strcmp(argv[1], "ping") == 0 || strcmp(argv[1], "p") == 0 ) {
+	if( strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
 		/* call ping main function */
-		return ( ping_main( argc-1, argv+1, hosts ) );
+		return ( batping_main( argc-1, argv+1, hosts ) );
 
-	} else if( strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "tr") == 0  ) {
+	} else if( strcmp(argv[1], "batroute") == 0 || strcmp(argv[1], "br") == 0  ) {
 		/* call trace main function */
-		return ( traceroute_main( argc-1, argv+1, hosts ) );
+		return ( batroute_main( argc-1, argv+1, hosts ) );
 
 	} else if( strcmp(argv[1], "batdump") == 0 || strcmp(argv[1], "bd") == 0  ) {
 		/* call trace main function */

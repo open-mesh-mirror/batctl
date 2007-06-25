@@ -37,14 +37,14 @@
 
 
 
-void traceroute_usage() {
-	printf("Battool module traceroute\n");
-	printf("Usage: battool traceroute|tr mac|name\n");
+void batroute_usage() {
+	printf("Battool module batroute\n");
+	printf("Usage: battool batroute|br mac|name\n");
 	printf("\t-h help\n");
 	return;
 }
 
-int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
+int batroute_main( int argc, char **argv, struct hosts *hosts ) {
 
 	char *send_buff,							/* buffer to send */
 			*rec_buff,								/* receive buffer */
@@ -82,17 +82,17 @@ int traceroute_main( int argc, char **argv, struct hosts *hosts ) {
 	while ( ( optchar = getopt ( argc, argv, "h" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
-				traceroute_usage();
+				batroute_usage();
 				exit(EXIT_SUCCESS);
 				break;
 			default:
-				traceroute_usage();
+				batroute_usage();
 				exit(EXIT_FAILURE);
 		}
 	}
 
 	if ( argc <= found_args ) {
-		traceroute_usage();
+		batroute_usage();
 		exit(EXIT_FAILURE);
 	}
 

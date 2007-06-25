@@ -46,6 +46,6 @@ struct hosts {
 	struct hosts *next;
 };
 
-int ping_main( int argc, char **argv, struct hosts *hosts );
-int traceroute_main( int argc, char **argv, struct hosts *hosts );
-int tcpdump_main( int argc, char **argv );
+int batping_main( int argc, char **argv, struct hosts *hosts );
+int batroute_main( int argc, char **argv, struct hosts *hosts );
+int batdump_main( int argc, char **argv );

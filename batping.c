@@ -40,9 +40,9 @@
 
 uint8_t Stop = 0;
 
-void ping_usage() {
-	printf("Battool module ping\n");
-	printf("Usage: battool ping|p [options] mac|name\n");
+void batping_usage() {
+	printf("Battool module batping\n");
+	printf("Usage: battool batping|bp [options] mac|name\n");
 	printf("\t-c count\n");
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
@@ -61,7 +61,7 @@ void handler( int32_t sig ) {
 	}
 }
 
-int ping_main( int argc, char **argv, struct hosts *hosts ) {
+int batping_main( int argc, char **argv, struct hosts *hosts ) {
 
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
@@ -93,7 +93,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	while ( ( optchar = getopt ( argc, argv, "hc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
-				ping_usage();
+				batping_usage();
 				exit(EXIT_SUCCESS);
 				break;
 			case 'c':
@@ -110,13 +110,13 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 				found_args+=2;
 				break;
 			default:
-				ping_usage();
+				batping_usage();
 				exit(EXIT_FAILURE);
 		}
 	}
 
 	if ( argc <= found_args ) {
-		ping_usage();
+		batping_usage();
 		exit(EXIT_FAILURE);
 	}
 
@@ -172,7 +172,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 	/* remove new procmask from current procmask */
 	sigprocmask( SIG_UNBLOCK,&sigmask_new, &sigmask_old );
 
-	printf("PING %s\n", mac_string );
+	printf("batping %s\n", mac_string );
 	while( !Stop && loop_count != 0 ) {
 		if( loop_count > 0 )
 			loop_count--;
@@ -234,7 +234,7 @@ int ping_main( int argc, char **argv, struct hosts *hosts ) {
 		}
 		if( timeout.tv_sec > 0 ) sleep( loop_interval?loop_interval:1 );
 	}
-	printf("--- %s ping statistic ---\n",mac_string );
+	printf("--- %s batping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min < 0.0 ? 0.000 : min, avg_count?(avg / avg_count):0.000 ,max, max - ( min < 0.0 ? 0.0:min) );
 	return(EXIT_SUCCESS);

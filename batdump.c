@@ -36,39 +36,15 @@
 #include <time.h>
 
 #include "battool.h"
+#include "batdump.h"
 
-#define	ARPOP_REQUEST	1		/* ARP request.  */
-#define	ARPOP_REPLY	2			/* ARP reply.  */
-#define	ARPOP_RREQUEST	3		/* RARP request.  */
-#define	ARPOP_RREPLY	4			/* RARP reply.  */
-#define	ARPOP_InREQUEST	8	/* InARP request.  */
-#define	ARPOP_InREPLY	9			/* InARP reply.  */
-#define	ARPOP_NAK	10				/* (ATM)ARP NAK.  */
-
-/* protocol numbers */
-#define ICMP 0x01
-#define TCP 0x06
-#define UDP 0x11
 
 uint8_t verbose = 0;
+struct list_head_first dump_if_list;
 
-struct my_arphdr
-{
-	uint16_t ar_hrd; /* format of hardware address */
-	uint16_t ar_pro; /* format of protocol address */
-	uint8_t ar_hln; /* length of hardware address */
-	uint8_t ar_pln; /* length of protocol address */
-	uint16_t ar_op; /* ARP opcode (command) */
-
-	uint8_t ar_sha[ETH_ALEN]; /* sender hardware address */
-	uint8_t ar_sip[4]; /* sender IP address */
-	uint8_t ar_tha[ETH_ALEN]; /* target hardware address */
-	uint8_t ar_tip[4]; /* target IP address */
-};
-
-void tcpdump_usage() {
-	printf("Battool module tcpdump\n");
-	printf("Usage: battool tcpdump|td [option] interface\n");
+void batdump_usage() {
+	printf("Battool module batdump\n");
+	printf("Usage: battool batdump|bd [option] interface\n");
 	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n\t\t4=broadcast packets\n");
 	printf("\t-a all packet types\n");
 	printf("\t-d packet dump in hex\n");
@@ -231,28 +207,31 @@ void print_broadcast_packet( unsigned char *buff ) {
 	}
 }
 
-int tcpdump_main( int argc, char **argv )
+int batdump_main( int argc, char **argv )
 {
 	int  optchar,
 		packetsize = 2000,
 		ptype=0,
-		tmp;
+		tmp,
+		max_sock=0;
 
 	unsigned char packet[packetsize];
 	uint8_t found_args = 1,
 			print_dump = 0;
 
-	int32_t rawsock;
-	ssize_t rec_length;
-	uint16_t proto = ETH_P_BATMAN,  /* default batman packets */
-		etype;
+	ssize_t rec_length; /* packet length */
 
+	uint16_t proto = ETH_P_BATMAN,  /* default batman packets */
+		etype; /* ethernet type */
+
+	struct timeval tv;
 	struct ifreq req;
-	struct sockaddr_ll addr;
+	struct dump_if *dump_if; /* list of interfaces */
+	struct list_head *list_pos;
+	fd_set wait_sockets, tmp_wait_sockets;
 
 	void (*p)(unsigned char*); /* pointer for packet output functions */
 
-	char *devicename;
 
 	while ( ( optchar = getopt ( argc, argv, "advp:h" ) ) != -1 ) {
 		switch( optchar ) {
@@ -275,75 +254,111 @@ int tcpdump_main( int argc, char **argv )
 				found_args+=2;
 				break;
 			case 'h':
-				tcpdump_usage();
+				batdump_usage();
 				exit(EXIT_SUCCESS);
 				break;
 			default:
-				tcpdump_usage();
+				batdump_usage();
 				exit(EXIT_FAILURE);
 		}
 	}
 
 	if ( argc <= found_args ) {
-		tcpdump_usage();
+		batdump_usage();
 		exit(EXIT_FAILURE);
 	}
 
-	devicename = argv[found_args];
+	INIT_LIST_HEAD_FIRST( dump_if_list ); /* init interfaces list */
+	FD_ZERO(&wait_sockets);
 
-	if ( ( rawsock = socket(PF_PACKET,SOCK_RAW, htons(proto) ) ) < 0 ) {
-		printf("Error - can't create raw socket: %s\n", strerror(errno) );
-		exit( EXIT_FAILURE );
+	while ( argc > found_args ) {
+
+		dump_if = malloc( sizeof(struct dump_if) );
+		memset( dump_if, 0, sizeof(struct dump_if) );
+		INIT_LIST_HEAD( &dump_if->list );
+
+		dump_if->dev = argv[found_args];
+
+		if ( strlen( dump_if->dev ) > IFNAMSIZ - 1 ) {
+			printf( "Error - interface name too long: %s\n", dump_if->dev );
+			exit( EXIT_FAILURE );
+		}
+
+		if ( ( dump_if->raw_sock = socket(PF_PACKET,SOCK_RAW, htons( proto ) ) ) < 0 ) {
+			printf("Error - can't create raw socket: %s\n", strerror(errno) );
+			exit( EXIT_FAILURE );
+		}
+		memset( &req, 0, sizeof ( struct ifreq ) );
+		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+
+		if ( ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req) < 0 ) {
+			printf("Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno) );
+			exit( EXIT_FAILURE );
+		}
+		dump_if->addr.sll_family   = AF_PACKET;
+		dump_if->addr.sll_protocol = htons( proto );
+		dump_if->addr.sll_ifindex  = req.ifr_ifindex;
+
+		if ( bind( dump_if->raw_sock, ( struct sockaddr *)&dump_if->addr, sizeof( struct sockaddr_ll ) ) < 0 ) {
+			printf( "Error - can't bind raw socket: %s\n", strerror(errno) );
+			close( dump_if->raw_sock );
+			exit( EXIT_FAILURE );
+		}
+
+		if ( dump_if->raw_sock > max_sock )
+			max_sock = dump_if->raw_sock;
+
+		FD_SET(dump_if->raw_sock, &wait_sockets);
+		list_add_tail( &dump_if->list, &dump_if_list );
+		found_args++;
+
 	}
 
-	strncpy(req.ifr_name, devicename, IFNAMSIZ);
+	while(1) {
 
-	if ( ioctl(rawsock, SIOCGIFINDEX, &req) < 0 ) {
-		printf("Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno) );
-		exit( EXIT_FAILURE );
-	}
+		memcpy( &tmp_wait_sockets, &wait_sockets, sizeof( fd_set ) );
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+		if ( select( max_sock + 1, &tmp_wait_sockets, NULL, NULL, &tv ) > 0 ) {
 
-	addr.sll_family   = AF_PACKET;
-	addr.sll_protocol = htons( proto );
-	addr.sll_ifindex  = req.ifr_ifindex;
+			list_for_each( list_pos, &dump_if_list ) {
+				dump_if = list_entry( list_pos, struct dump_if, list );
+				if ( FD_ISSET( dump_if->raw_sock, &tmp_wait_sockets ) ) {
+					rec_length = read( dump_if->raw_sock, packet, packetsize );
+					etype = ntohs(((struct ether_header*)packet)->ether_type);
+					p = NULL;
+					/* only batman packets */
+					if( proto == ETH_P_ALL || ( proto == ETH_P_BATMAN && etype == ETH_P_BATMAN ) ) {
 
-	if ( bind(rawsock, (struct sockaddr *)&addr, sizeof(addr)) < 0 ) {
-		printf( "Error - can't bind raw socket: %s\n", strerror(errno) );
-		close(rawsock);
-		exit( EXIT_FAILURE );
-	}
+						if( etype == ETH_P_ARP )
+							p = print_arp;
 
-	while( ( rec_length = read(rawsock,packet,packetsize) ) > 0 ) {
-		etype = ntohs(((struct ether_header*)packet)->ether_type);
-		p = NULL;
-		/* only batman packets */
-		if( proto == ETH_P_ALL || ( proto == ETH_P_BATMAN && etype == ETH_P_BATMAN ) ) {
+			// 			else if( etype == ETH_P_IP )
+			// 				printf("ip comming soon\n");
+						else if( etype == ETH_P_BATMAN ) {
 
-			if( etype == ETH_P_ARP )
-				p = print_arp;
+							if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
+								p = print_batman_packet;
+							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
+								p = print_icmp_packet;
+							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
+								p = print_unicast_packet;
+							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
+								p = print_broadcast_packet;
 
-// 			else if( etype == ETH_P_IP )
-// 				printf("ip comming soon\n");
-			else if( etype == ETH_P_BATMAN ) {
+						}
 
-				if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
-					p = print_batman_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
-					p = print_icmp_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
-					p = print_unicast_packet;
-				else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
-					p = print_broadcast_packet;
-
-			}
-
-			if( p != NULL ) {
-				printf("%d ", rec_length);
-				(*p)(packet);
-				if(print_dump)
-					print_packet( rec_length, packet );
+						if( p != NULL ) {
+							printf("%d ", rec_length);
+							(*p)(packet);
+							if(print_dump)
+								print_packet( rec_length, packet );
+						}
+					}
+				}
 			}
 		}
+
 	}
 
 	exit( EXIT_SUCCESS );

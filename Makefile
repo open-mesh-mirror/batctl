@@ -18,7 +18,7 @@
 
 
 CC =			gcc
-CFLAGS =		-Wall -O1 -g3
+CFLAGS =		-Wall -O0 -g
 STRIP=			strip
 LDFLAGS =		-lpthread
 
@@ -92,7 +92,7 @@ all:		$(BINARY_NAME)
 
 
 
-battool: battool.o ping.o functions.o traceroute.o tcpdump.o
+battool: battool.o ping.o functions.o traceroute.o batdump.o
 
 battool.o: battool.c battool.h
 
@@ -102,7 +102,7 @@ ping.o: ping.c
 
 traceroute.o: traceroute.c
 
-tcpdump.o: tcpdump.c
+batdump.o: batdump.c list-batman.c
 
 
 

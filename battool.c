@@ -90,9 +90,9 @@ int main( int argc, char **argv ) {
 		/* call trace main function */
 		return ( traceroute_main( argc-1, argv+1, hosts ) );
 
-	} else if( strcmp(argv[1], "tcpdump") == 0 || strcmp(argv[1], "td") == 0  ) {
+	} else if( strcmp(argv[1], "batdump") == 0 || strcmp(argv[1], "bd") == 0  ) {
 		/* call trace main function */
-		return ( tcpdump_main( argc-1, argv+1 ) );
+		return ( batdump_main( argc-1, argv+1 ) );
 
 	} else {
 

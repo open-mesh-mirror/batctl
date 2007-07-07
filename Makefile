@@ -22,7 +22,7 @@ CFLAGS =		-Wall -O0 -g
 STRIP=			strip
 LDFLAGS =		-lpthread
 
-CFLAGS_MIPS =	-Wall -O1 -g3
+CFLAGS_MIPS =	-Wall -O0 -g
 LDFLAGS_MIPS =	-lpthread
 
 UNAME=		$(shell uname)
@@ -30,8 +30,8 @@ UNAME=		$(shell uname)
 
 LOG_BRANCH= trunk/battool
 
-LINUX_SRC_C= battool.c functions.c batping.c batroute.c batdump.h
-LINUX_SRC_H= battool.h functions.h batdump.h
+LINUX_SRC_C= battool.c functions.c batping.c batroute.c batdump.c list-batman.c
+LINUX_SRC_H= battool.h functions.h  list-batman.h batdump.h
 
 BINARY_NAME=	battool
 SOURCE_VERSION_HEADER= battool.h

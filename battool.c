@@ -67,14 +67,16 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 
 int main( int argc, char **argv ) {
 	int uid;
+	
+	if( argc < 2 ) {
+		usage();
+	}
+
 	if( strcmp( argv[1], "-v" ) == 0 ) {
 		printf("Battool %s\n", VERSION);
 		exit(EXIT_SUCCESS);
 	}
 
-	if( argc < 3 ) {
-		usage();
-	}
 
 	uid = getuid();
 	if(uid != 0) { printf("You must have UID 0 instead of %d.\n",uid); exit(EXIT_FAILURE); }

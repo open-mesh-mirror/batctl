@@ -31,7 +31,7 @@
 
 void usage() {
 	printf("Usage:\n\tbattool -v\n\tbattool module [options] destination\n");
-	printf("module: batping|bp batroute|br batdump|bd\n");
+	printf("module: ping|batping|bp traceroute|batroute|br batdump|bd\n");
 	printf("Use \"battool module -h\" for available options\n");
 	exit(EXIT_FAILURE);
 }
@@ -67,14 +67,16 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 
 int main( int argc, char **argv ) {
 	int uid;
+	
+	if( argc < 2 ) {
+		usage();
+	}
+
 	if( strcmp( argv[1], "-v" ) == 0 ) {
 		printf("Battool %s\n", VERSION);
 		exit(EXIT_SUCCESS);
 	}
 
-	if( argc < 3 ) {
-		usage();
-	}
 
 	uid = getuid();
 	if(uid != 0) { printf("You must have UID 0 instead of %d.\n",uid); exit(EXIT_FAILURE); }
@@ -82,11 +84,11 @@ int main( int argc, char **argv ) {
 	struct hosts *hosts = NULL;
 	parse_hosts_file( &hosts,HOSTS_FILE );
 
-	if( strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
+	if (strcmp(argv[1], "ping") == 0 ||strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
 		/* call ping main function */
 		return ( batping_main( argc-1, argv+1, hosts ) );
 
-	} else if( strcmp(argv[1], "batroute") == 0 || strcmp(argv[1], "br") == 0  ) {
+	} else if(strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "batroute") == 0 || strcmp(argv[1], "br") == 0  ) {
 		/* call trace main function */
 		return ( batroute_main( argc-1, argv+1, hosts ) );
 

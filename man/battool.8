@@ -1,0 +1,113 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH BATTOOL SECTION "Sep 17, 2007"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+
+.\" --------------------------------------------------------------------------
+.\" Macro definitions
+.\" --------------------------------------------------------------------------
+.
+.\" default indentation is 7, don't change!
+.nr IN 5
+.\" define indentation for suboptions
+.nr SS 3
+.\" add new suboption
+.de IPs
+.IP "\\$1" \n(SS 
+..
+.\" begin of first level suboptions, end with .RE
+.de RSs
+.RS \n(IN+3
+..
+.\" begin of 2nd level suboptions
+.de RSss
+.PD 0
+.RS \n(SS+3
+..
+.\" end of 2nd level suboptions
+.de REss
+.RE 
+.PD 1
+..
+.
+
+.\" --------------------------------------------------------------------------
+
+.TH "battool" 8
+.SH NAME
+battool - B.A.T.M.A.N. toolchain for B.A.T.M.A.N. Advanced
+.SH SYNOPSIS
+.B battool
+.RI \fImodule\fP\ [\fIoptions\fP]\ {\fIdestination\ or\ interface\fP}
+.br
+.SH DESCRIPTION
+B.A.T.M.A.N. Advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems the \fBB.A.T.M.A.N. toolchain (battool for short)\fP was created. At the moment the battool contains \fBping\fP, \fBtraceroute\fP and \fBbatdump\fP which can be used as module.
+.PP
+The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute work almost like their IP based counterparts. Batdump analyzes the Traffic and packet types used B.A.T.M.A.N. Advanced.
+.PP
+.SH OPTIONS
+.TP 
+.RI \fBbattool\ ping\fP\ [\fIoptions\fP]\ [\fImac\ address|host\ name\fP]
+The following options are supported:
+.RSs
+.IPs "-c (count)"
+stop after n pings (default is infinite)
+.IPs "-i (interval)"
+interval to wait between 2 pings (default is 1 second)
+.IPs "-t (timeout interval)"
+timeout interval in seconds (default is 1 second)
+.RE
+
+
+.TP
+.RI \fBbattool\ traceroute\fP\ [\fImac\ address|host name\fP]
+Traceroute sends 3 packets to each hop, awaits the answers and prints out the response times.
+
+.TP
+.RI \fBbattool\ batdump\fP\ [\fIoptions\fP]\ [\fIinterface\fP]
+The following options are supported:
+.RSs
+.IPs "-a (all packets)"
+switch tcpdump behaviour to work as the "normal" tcpdump and filter for non-batman advanced packets
+.IPs "-d (dump packets)"
+print packet data in hex
+.IPs "-p (packet type)"
+specify to filter for certain batman packets:
+
+.RSss 
+.IPs "1" 
+batman packets - these transport the B.A.T.M.A.N. originator messages to build the mesh network
+.IPs "2"
+batman icmp packets - lightweight implementation of the ICMP protocol (needed for ping and traceroute)
+.IPs "3"
+batman unicast packets - unicast data is bound as payload in these packets
+.IPs "4"
+batman broadcast packets - broadcast data is bound as payload in these packets
+.RE
+
+.IPs "-v (verbose)"
+prints more information about each packet
+.RE
+.br
+.SH FILES
+.IPs bat-hosts
+This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. The battool will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remember than MAC addresses.  ;)
+.SH SEE ALSO
+\fIbatmand-adv\fP (8)
+.SH AUTHOR
+battool was written by Andreas Langer <a.langer@q-dsl.de>.
+.PP
+This manual page was written by Simon Wunderlich <siwu@hrz.tu-chemnitz.de>.

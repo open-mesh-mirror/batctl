@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -37,6 +37,9 @@
 
 #include "battool.h"
 #include "batdump.h"
+
+#define UNIDIRECTIONAL 0x80
+#define DIRECTLINK 0x40
 
 
 uint8_t verbose = 0;
@@ -87,7 +90,7 @@ void print_ether( unsigned char *buff ) {
 
 void print_batman_packet( unsigned char *buff) {
 	struct batman_packet *bp = (struct batman_packet *) buff;
-	printf("BAT %s %02x %02x %u\n", ether_ntoa((struct ether_addr*) bp->orig), bp->flags, bp->gwflags, bp->version );
+	printf("BAT %s (seqno %d, tq %d, TTL %d, V %d, UDF %d, IDF %d)\n", ether_ntoa((struct ether_addr*) bp->orig), ntohs(bp->seqno), bp->tq, bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
 	return;
 }
 

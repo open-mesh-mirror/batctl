@@ -44,18 +44,16 @@ void batroute_usage() {
 	return;
 }
 
-int batroute_main( int argc, char **argv, struct hosts *hosts ) {
+int batroute_main( int argc, char **argv, struct hashtable_t *hash ) {
 
-	char *send_buff,							/* buffer to send */
-			*rec_buff,								/* receive buffer */
-			*mac_string = NULL,				/* string of mac address */
-			*host_name = NULL,				/* name of host */
-			*return_mac,
-			begin[] = "p:";						/* send buffer need two chars at begin for batman-advance socket*/
+	char *send_buff,				/* buffer to send */
+		*rec_buff,				/* receive buffer */
+		*return_mac,
+		begin[] = "p:";				/* send buffer need two chars at begin for batman-advance socket*/
 
-	int sbsize,										/* size of send buffer */
-		rbsize,										/* size of receive buffer */
-		optchar,										/* ascii code of programm option */
+	int sbsize,					/* size of send buffer */
+		rbsize,					/* size of receive buffer */
+		optchar,				/* ascii code of programm option */
 		i,
 		count=0;
 
@@ -70,12 +68,12 @@ int batroute_main( int argc, char **argv, struct hosts *hosts ) {
 	
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
-	struct timeval start,
-					end;
+	struct timeval start, end;
 
 	struct timeval timeout;
 	struct hosts *tmp_hosts;
 	struct ether_addr *mac;
+	struct hash_it_t *hashit = NULL;
 
 	fd_set read_socket;
 
@@ -96,15 +94,24 @@ int batroute_main( int argc, char **argv, struct hosts *hosts ) {
 		exit(EXIT_FAILURE);
 	}
 
-	find_mac_address( hosts , tmp_hosts, argv[found_args], mac_string, name, mac );
+	while ( NULL != ( hashit = hash_iterate( hash, hashit ) ) ) {
 
-	if( mac_string  == NULL )
-		mac_string = argv[found_args];
-
-	if( ( mac = ether_aton( mac_string ) ) == NULL ) {
-		printf("The mac address was not correct.\n");
-		exit(EXIT_FAILURE);
+		tmp_hosts = (struct hosts *)hashit->bucket->data;
+		if(strcmp(tmp_hosts->name, argv[found_args]) == 0)
+			break;
+		else
+			tmp_hosts = NULL;
 	}
+
+	if( tmp_hosts == NULL ) {
+
+		if( ( mac = ether_aton( argv[found_args] ) ) == NULL ) {
+			DBG("the mac address was not correct");
+			return(EXIT_FAILURE);
+		}
+
+	} else
+		mac = &tmp_hosts->mac;
 
 	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	memset( &unix_if.addr, 0, sizeof(struct sockaddr_un) );
@@ -179,12 +186,13 @@ int batroute_main( int argc, char **argv, struct hosts *hosts ) {
 								exit( EXIT_FAILURE );
 							}
 
-							find_mac_address( hosts, tmp_hosts, return_mac, host_name, mac, name );
+							tmp_hosts = NULL;
+							tmp_hosts = ((struct hosts *)hash_find(hash, return_mac));
 
-							if(host_name == NULL )
+							if(tmp_hosts == NULL )
 								printf("%u: %s %.3f ms", ntohs( ( ( struct icmp_packet * )  rec_buff )->seqno ), return_mac, time_delta );
 							else
-								printf("%u: %s (%s) %.3f ms", ntohs( ( ( struct icmp_packet * ) rec_buff )->seqno ), return_mac,host_name, time_delta );
+								printf("%u: %s (%s) %.3f ms", ntohs( ( ( struct icmp_packet * ) rec_buff )->seqno ), return_mac,tmp_hosts->name, time_delta );
 						} else {
 							printf("  %.3f ms", time_delta );
 						}

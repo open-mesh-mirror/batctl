@@ -31,8 +31,8 @@ LOG_BRANCH= trunk/battool
 
 SRC_FILES= "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README\)\|\(THANKS\)\|\(TRASH\)\|\(Doxyfile\)\|\(./posix\)\|\(./linux\)\|\(./bsd\)\|\(./man\)\|\(./doc\)"
 
-SRC_C= battool.c functions.c batping.c batroute.c batdump.c list-batman.c
-SRC_H= battool.h functions.h  list-batman.h batdump.h
+SRC_C= battool.c functions.c batping.c batroute.c batdump.c list-batman.c hash.c
+SRC_H= battool.h functions.h  list-batman.h batdump.h hash.h
 
 PACKAGE_NAME=	battool
 

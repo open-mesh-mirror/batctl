@@ -17,7 +17,10 @@
  *
  */
 
+
+#include <netinet/ether.h>
 #include <sys/un.h>
+#include "hash.h"
 #include "packet.h"
 
 #define VERSION "0.1-alpha"  //put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3"
@@ -26,14 +29,7 @@
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 
 #define HOSTS_FILE "bat-hosts"
-
-#define find_mac_address(list, tmp , search, target, search_type, target_type ) \
-	for( tmp = list; tmp != NULL; tmp = tmp->next ) { \
-		if( strcmp( tmp->search_type, search ) == 0 ) { \
-			target = tmp->target_type; \
-			break; \
-		} \
-	 }
+#define DBG(msg,args...) do { printf("batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)
 
 struct unix_if {
 	int32_t unix_sock;
@@ -41,11 +37,10 @@ struct unix_if {
 };
 
 struct hosts {
+	struct ether_addr mac;
 	char name[50];
-	char mac[18];
-	struct hosts *next;
 };
 
-int batping_main( int argc, char **argv, struct hosts *hosts );
-int batroute_main( int argc, char **argv, struct hosts *hosts );
+int batping_main( int argc, char **argv, struct hashtable_t *hash );
+int batroute_main( int argc, char **argv, struct hashtable_t *hash );
 int batdump_main( int argc, char **argv );

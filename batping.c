@@ -61,7 +61,7 @@ void handler( int32_t sig ) {
 	}
 }
 
-int batping_main( int argc, char **argv, struct hosts *hosts ) {
+int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
@@ -87,14 +87,16 @@ int batping_main( int argc, char **argv, struct hosts *hosts ) {
 	int loop_count = -1;
 	int loop_interval = 0;
 	int time_out = 1;
+
 	char *mac_string = NULL;
 	struct hosts *tmp_hosts;
+	struct hash_it_t *hashit = NULL;
 
 	while ( ( optchar = getopt ( argc, argv, "hc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'h':
 				batping_usage();
-				exit(EXIT_SUCCESS);
+				return(EXIT_SUCCESS);
 				break;
 			case 'c':
 				loop_count = strtol(optarg, NULL , 10);
@@ -111,25 +113,36 @@ int batping_main( int argc, char **argv, struct hosts *hosts ) {
 				break;
 			default:
 				batping_usage();
-				exit(EXIT_FAILURE);
+				return(EXIT_FAILURE);
 		}
 	}
 
 	if ( argc <= found_args ) {
 		batping_usage();
-		exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
 	}
 
-	find_mac_address( hosts , tmp_hosts, argv[found_args], mac_string, name, mac );
 
-	if( mac_string  == NULL )
-		mac_string = argv[found_args];
+	while ( NULL != ( hashit = hash_iterate( hash, hashit ) ) ) {
 
-	if( ( mac = ether_aton( mac_string ) ) == NULL ) {
-		printf("The mac address was not correct.\n");
-		exit(EXIT_FAILURE);
+		tmp_hosts = (struct hosts *)hashit->bucket->data;
+		if(strcmp(tmp_hosts->name, argv[found_args]) == 0)
+			break;
+		else
+			tmp_hosts = NULL;
 	}
 
+	if( tmp_hosts == NULL ) {
+
+		if( ( mac = ether_aton( argv[found_args] ) ) == NULL ) {
+			DBG("the mac address was not correct");
+			return(EXIT_FAILURE);
+		}
+
+	} else
+		mac = &tmp_hosts->mac;
+
+	mac_string = ether_ntoa(mac);
 	signal( SIGINT, handler );
 	signal( SIGTERM, handler );
 	
@@ -145,9 +158,9 @@ int batping_main( int argc, char **argv, struct hosts *hosts ) {
 	
 	if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
 
-		printf( "Error - can't connect to unix socket '%s': %s ! Is batmand running on this host ?\n", UNIX_PATH, strerror(errno) );
+		DBG( "can't connect to unix socket '%s': %s ! Is batmand running on this host ?", UNIX_PATH, strerror(errno) );
 		close( unix_if.unix_sock );
-		exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
 
 	}
 
@@ -184,7 +197,7 @@ int batping_main( int argc, char **argv, struct hosts *hosts ) {
 			printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
 			close( unix_if.unix_sock );
 			free( send_buff);
-			exit(EXIT_FAILURE);
+			return(EXIT_FAILURE);
 		}
 
 		gettimeofday(&start,(struct timezone*)0);

@@ -36,10 +36,38 @@ void usage() {
 	exit(EXIT_FAILURE);
 }
 
-void parse_hosts_file( struct hosts **tmp, char path[] ) {
+int compare_mac(void *data1, void *data2)
+{
+	return ( memcmp( data1, data2, sizeof(struct ether_addr) ) );
+}
+
+int choose_mac(void *data, int32_t size)
+{
+	unsigned char *key= data;
+	uint32_t hash = 0, m_size = sizeof(struct ether_addr);
+	size_t i;
+
+	for (i = 0; i < m_size; i++) {
+		hash += key[i];
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
+
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+
+	return (hash%size);
+
+}
+
+void parse_hosts_file( struct hashtable_t *hash, char path[] ) {
 
 	FILE *fd;
 	char name[50], mac[18];
+	struct ether_addr *tmp_mac;
+	struct hosts *tmp_hosts;
+	struct hashtable_t *swaphash;
 
 	name[0] = mac[0] = '\0';
 
@@ -48,15 +76,34 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 
 	while( fscanf(fd,"%[^ \t]%s\n", name, mac ) != EOF ) {
 
-		if( (*tmp) == NULL ) {
-			(*tmp) = malloc( sizeof( struct hosts) );
+		if( ( tmp_mac = ether_aton( mac ) ) == NULL ) {
+			DBG("the mac address was not correct");
+			exit(EXIT_FAILURE);
 		}
 
-		if( (*tmp) != NULL ) {
-			strncpy( (*tmp)->name, name, 49 );
-			strncpy( (*tmp)->mac, mac, 17 );
-			(*tmp)->next = NULL;
-			tmp = &(*tmp)->next;
+		if( ( tmp_hosts = malloc(sizeof(struct hosts) ) ) == NULL ) {
+			DBG("not enough memory for malloc");
+			exit(EXIT_FAILURE);
+		}
+
+
+		memcpy(&tmp_hosts->mac, tmp_mac, sizeof(struct ether_addr));
+		strncpy( tmp_hosts->name, name, 49 );
+
+		hash_add(hash, tmp_hosts);
+
+		if (hash->elements * 4 > hash->size) {
+
+			swaphash = hash_resize(hash, hash->size * 2);
+
+			if (swaphash == NULL) {
+
+				printf("Couldn't resize hash table\n");
+
+			}
+
+			hash = swaphash;
+
 		}
 
 	}
@@ -66,7 +113,9 @@ void parse_hosts_file( struct hosts **tmp, char path[] ) {
 }
 
 int main( int argc, char **argv ) {
-	int uid;
+	int uid, ret=0;
+
+	struct hashtable_t *host_hash;
 	
 	if( argc < 2 ) {
 		usage();
@@ -81,20 +130,22 @@ int main( int argc, char **argv ) {
 	uid = getuid();
 	if(uid != 0) { printf("You must have UID 0 instead of %d.\n",uid); exit(EXIT_FAILURE); }
 
-	struct hosts *hosts = NULL;
-	parse_hosts_file( &hosts,HOSTS_FILE );
+	host_hash = hash_new( 64, compare_mac, choose_mac );
 
+	
+	parse_hosts_file( host_hash,HOSTS_FILE );
+	
 	if (strcmp(argv[1], "ping") == 0 ||strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
 		/* call ping main function */
-		return ( batping_main( argc-1, argv+1, hosts ) );
+		ret = batping_main( argc-1, argv+1, host_hash );
 
 	} else if(strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "batroute") == 0 || strcmp(argv[1], "br") == 0  ) {
 		/* call trace main function */
-		return ( batroute_main( argc-1, argv+1, hosts ) );
+		ret = batroute_main( argc-1, argv+1, host_hash );
 
 	} else if( strcmp(argv[1], "batdump") == 0 || strcmp(argv[1], "bd") == 0  ) {
 		/* call trace main function */
-		return ( batdump_main( argc-1, argv+1 ) );
+		ret = batdump_main( argc-1, argv+1 );
 
 	} else {
 
@@ -102,6 +153,6 @@ int main( int argc, char **argv ) {
 
 	}
 
-
-	exit(EXIT_SUCCESS);
+	hash_destroy(host_hash);
+	return(ret);
 }

@@ -73,15 +73,19 @@ batman broadcast packets - broadcast data is bound as payload in these packets
 
 The tcpdump output looks like:
 
-60 17:56:57 0:d0:59:cf:93:ea -> ff:ff:ff:ff:ff:ff BAT 0:d0:59:cf:93:ea 00 00 1
+34 05:47:22 6e:2b:79:45:c8:1a -> ff:ff:ff:ff:ff:ff BAT 6e:2b:79:45:c8:1a 6e:2b:79:45:c8:1a (seqno 401, tq 255, TTL 50, V 1, UD 0, DL 0)
 
 60                -> packet size in bytes
 17:56:57          -> time when this packet was seen
-0:d0:59:cf:93:ea  -> sender mac address
+6e:2b:79:45:c8:1a -> sender mac address
 ff:ff:ff:ff:ff:ff -> recipient mac address
 BAT               -> packet type (batman packet)
-0:d0:59:cf:93:ea  -> batman packet originator
-00                -> batman packet flags
-00                -> batman packet gateway flags
-1                 -> batman packet version
+6e:2b:79:45:c8:1a -> batman packet originator
+6e:2b:79:45:c8:1a -> batman old originator
+seqno 401
+tq 255
+ttl 50
+V 1               -> batman version
+UD 0              -> [1|0] unidirectional
+DL 0              -> [1|0] directlink
 

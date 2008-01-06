@@ -121,7 +121,7 @@ void print_ether( unsigned char *buff, struct hashtable_t *hash ) {
 void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
 	struct batman_packet *bp = (struct batman_packet *) buff;
 	struct hosts *tmp_host;
-	char *name_orig = NULL;
+	char *name_orig = NULL, *name_old_orig=NULL;
 
 	if(print_names) {
 
@@ -129,12 +129,21 @@ void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
 		if(tmp_host != NULL)
 			name_orig = tmp_host->name;
 
+		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bp->old_orig));
+		if(tmp_host != NULL)
+			name_old_orig = tmp_host->name;
+
 	}
 
 	if(!name_orig)
 		name_orig = ether_ntoa((struct ether_addr*) bp->orig);
 	
-	printf("BAT %s (seqno %d, tq %d, TTL %d, V %d, UDF %d, IDF %d)\n", name_orig, ntohs(bp->seqno), bp->tq,
+	printf("BAT %s ", name_orig);
+
+	if(!name_old_orig)
+		name_old_orig = ether_ntoa((struct ether_addr*) bp->old_orig);
+	
+	printf("%s (seqno %d, tq %d, TTL %d, V %d, UD %d, DL %d)\n", name_old_orig, ntohs(bp->seqno), bp->tq,
 	       bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
 
 	return;

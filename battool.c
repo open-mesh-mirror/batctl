@@ -61,7 +61,7 @@ int choose_mac(void *data, int32_t size)
 
 }
 
-int parse_hosts_file( struct hashtable_t *hash, char path[] ) {
+void parse_hosts_file( struct hashtable_t *hash, char path[] ) {
 
 	FILE *fd;
 	char name[50], mac[18];
@@ -72,18 +72,18 @@ int parse_hosts_file( struct hashtable_t *hash, char path[] ) {
 	name[0] = mac[0] = '\0';
 
 	if( ( fd = fopen(path, "r") ) == NULL )
-		return EXIT_SUCCESS;
+		return;
 
 	while( fscanf(fd,"%[^ \t]%s\n", name, mac ) != EOF ) {
 
 		if( ( tmp_mac = ether_aton( mac ) ) == NULL ) {
 			DBG("the mac address was not correct");
-			return EXIT_FAILURE;
+			return;
 		}
 
 		if( ( tmp_hosts = malloc(sizeof(struct hosts) ) ) == NULL ) {
 			DBG("not enough memory for malloc");
-			return EXIT_FAILURE;
+			return;
 		}
 
 
@@ -108,7 +108,7 @@ int parse_hosts_file( struct hashtable_t *hash, char path[] ) {
 
 	}
 
-	return EXIT_SUCCESS;
+	return;
 
 }
 
@@ -132,9 +132,7 @@ int main( int argc, char **argv ) {
 
 	host_hash = hash_new( 64, compare_mac, choose_mac );
 
-	
-	if( ( ret = parse_hosts_file( host_hash,HOSTS_FILE ) ) == EXIT_FAILURE )
-		goto end;
+	parse_hosts_file( host_hash,HOSTS_FILE );
 	
 	if (strcmp(argv[1], "ping") == 0 ||strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
 		/* call ping main function */
@@ -153,7 +151,7 @@ int main( int argc, char **argv ) {
 		usage();
 
 	}
-end:
+
 	hash_destroy(host_hash);
 	return(ret);
 }

@@ -262,7 +262,7 @@ void print_broadcast_packet( unsigned char *buff, struct hashtable_t *hash ) {
 // 			printf("\n\tsender = %s %u.%u.%u.%u\n\ttarget = %s %u.%u.%u.%u\n", ether_ntoa((struct ether_addr*) arp->ar_sha ),arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3],
 // 			 ether_ntoa((struct ether_addr*) arp->ar_tha ),arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
 // 		} else
-// 			printf("\n");
+			printf("\n");
 
 }
 

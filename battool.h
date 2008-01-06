@@ -43,4 +43,4 @@ struct hosts {
 
 int batping_main( int argc, char **argv, struct hashtable_t *hash );
 int batroute_main( int argc, char **argv, struct hashtable_t *hash );
-int batdump_main( int argc, char **argv );
+int batdump_main( int argc, char **argv, struct hashtable_t *hash );

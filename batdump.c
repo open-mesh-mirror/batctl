@@ -43,6 +43,8 @@
 
 
 uint8_t verbose = 0;
+uint8_t print_names = 1;
+
 struct list_head_first dump_if_list;
 
 void batdump_usage() {
@@ -52,11 +54,12 @@ void batdump_usage() {
 	printf("\t-a all packet types\n");
 	printf("\t-d packet dump in hex\n");
 	printf("\t-v verbose\n");
+	printf("\t-n don't convert addesses to names\n");
 	printf("\t-h help\n");
 	return;
 }
 
-void print_arp( unsigned char *buff ) {
+void print_arp( unsigned char *buff, struct hashtable_t *hash ) {
 	struct my_arphdr *arp = (struct my_arphdr*)buff;
 	printf("ARP %u.%u.%u.%u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
 	switch( ntohs( arp->ar_op ) ) {
@@ -73,31 +76,94 @@ void print_arp( unsigned char *buff ) {
 	return;
 }
 
-void print_ether( unsigned char *buff ) {
+void print_ether( unsigned char *buff, struct hashtable_t *hash ) {
+
 	struct ether_header *eth = (struct ether_header*)buff;
+	struct hosts *tmp_host;
 	struct tm *tm;
 	time_t tnow;
+
+	char *name_shost = NULL, *name_dhost = NULL;
 
 	/* get localtime */
 	time( &tnow );
 	tm = localtime(&tnow);
 
+	if(print_names) {
+
+		tmp_host = ((struct hosts *)hash_find(hash, eth->ether_shost ));
+
+		if(tmp_host != NULL)
+			name_shost = tmp_host->name;
+
+		tmp_host = ((struct hosts *)hash_find(hash, eth->ether_dhost ));
+
+		if(tmp_host != NULL)
+			name_dhost = tmp_host->name;
+
+	}
+
 	printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
-	printf("%s -> ",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
-	printf("%s ", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
+
+	if(!name_shost)
+		name_shost = ether_ntoa( (struct ether_addr *) eth->ether_shost );
+	
+	printf("%s -> ", name_shost );
+
+	if(!name_dhost)
+		name_dhost = ether_ntoa( (struct ether_addr *)eth->ether_dhost );
+
+	printf("%s ", name_dhost );
+	
 	return;
 }
 
-void print_batman_packet( unsigned char *buff) {
+void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
 	struct batman_packet *bp = (struct batman_packet *) buff;
-	printf("BAT %s (seqno %d, tq %d, TTL %d, V %d, UDF %d, IDF %d)\n", ether_ntoa((struct ether_addr*) bp->orig), ntohs(bp->seqno), bp->tq, bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
+	struct hosts *tmp_host;
+	char *name_orig = NULL;
+
+	if(print_names) {
+
+		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bp->orig));
+		if(tmp_host != NULL)
+			name_orig = tmp_host->name;
+
+	}
+
+	if(!name_orig)
+		name_orig = ether_ntoa((struct ether_addr*) bp->orig);
+	
+	printf("BAT %s (seqno %d, tq %d, TTL %d, V %d, UDF %d, IDF %d)\n", name_orig, ntohs(bp->seqno), bp->tq,
+	       bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
+
 	return;
 }
 
-void print_icmp_packet( unsigned char *buff) {
+void print_icmp_packet( unsigned char *buff, struct hashtable_t *hash ) {
 	struct icmp_packet *ip = ( struct icmp_packet * )buff;
+	struct hosts *tmp_host;
+	char *name_orig = NULL, *name_dst=NULL;
 
-	printf("BAT_ICMP %s", ether_ntoa((struct ether_addr*) ip->orig) );
+	if(print_names) {
+
+		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) ip->orig));
+
+		if(tmp_host != NULL)
+			name_orig = tmp_host->name;
+
+		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) ip->dst));
+
+		if(tmp_host != NULL)
+			name_dst = tmp_host->name;
+
+	}
+
+	if(!name_orig)
+		name_orig = ether_ntoa((struct ether_addr*) ip->orig);
+
+	printf("BAT_ICMP %s", name_orig );
+
 	switch( ip->msg_type ) {
 		case ECHO_REPLY:
 			printf(" ERP");
@@ -114,11 +180,15 @@ void print_icmp_packet( unsigned char *buff) {
 		default:
 			printf("unknown");
 	}
-	printf(" %s\n",ether_ntoa((struct ether_addr*) ip->dst ) );
+
+	if(!name_dst)
+		name_dst = ether_ntoa((struct ether_addr*) ip->dst );
+	
+	printf(" %s\n", name_dst );
 	return;
 }
 
-void print_unicast_packet( unsigned char *buff) {
+void print_unicast_packet( unsigned char *buff, struct hashtable_t *hash ) {
 	struct ether_header *eth1 = (struct ether_header*) ( buff + sizeof( struct unicast_packet) );
 
 	if( ntohs( eth1->ether_type ) == ETH_P_IP ) {
@@ -140,7 +210,7 @@ void print_unicast_packet( unsigned char *buff) {
 		}
 	} else if( ntohs( eth1->ether_type ) == ETH_P_ARP ) {
 		printf("BAT_UNI ");
-		print_arp( buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ) );
+		print_arp( buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ), hash );
 	} else {
 		printf("BAT_UNI unknow ether type %x\n", ntohs( eth1->ether_type ) );
 	}
@@ -166,13 +236,26 @@ void print_packet( int length, unsigned char *buf )
 	return;
 }
 
-void print_broadcast_packet( unsigned char *buff ) {
+void print_broadcast_packet( unsigned char *buff, struct hashtable_t *hash ) {
+
 	struct bcast_packet *bc = (struct bcast_packet*)buff;
-	printf("BAT_BCAST %s",ether_ntoa((struct ether_addr*) bc->orig) );
+	struct hosts *tmp_host;
+	char *name_orig = NULL;
+
+	if(print_names) {
+		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bc->orig));
+		if(tmp_host != NULL)
+			name_orig = tmp_host->name;
+	}
+
+	if(!name_orig)
+		name_orig = ether_ntoa((struct ether_addr*) bc->orig);
+
+	printf("BAT_BCAST %s", name_orig );
 
 
 	if( ntohs(((struct ether_header*)(buff + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP )
-		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ) );
+		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ), hash );
 // 		if( verbose ) {
 // 			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
 // 			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
@@ -183,7 +266,7 @@ void print_broadcast_packet( unsigned char *buff ) {
 
 }
 
-int batdump_main( int argc, char **argv )
+int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 {
 	int  optchar,
 		packetsize = 2000,
@@ -206,21 +289,25 @@ int batdump_main( int argc, char **argv )
 	struct list_head *list_pos;
 	fd_set wait_sockets, tmp_wait_sockets;
 
-	void (*p)(unsigned char*); /* pointer for packet output functions */
+	void (*p)(unsigned char*, struct hashtable_t *hash); /* pointer for packet output functions */
 
 
-	while ( ( optchar = getopt ( argc, argv, "advp:h" ) ) != -1 ) {
+	while ( ( optchar = getopt ( argc, argv, "advnp:h" ) ) != -1 ) {
 		switch( optchar ) {
 			case 'a':
 				proto = ETH_P_ALL;
 				found_args+=1;
 				break;
 			case 'd':
-    			print_dump = 1;
+    				print_dump = 1;
 				found_args+=1;
 				break;
 			case 'v':
-    			verbose = 1;
+    				verbose = 1;
+				found_args+=1;
+				break;
+			case 'n':
+				print_names = 0;
 				found_args+=1;
 				break;
 			case 'p':
@@ -260,7 +347,7 @@ int batdump_main( int argc, char **argv )
 			exit( EXIT_FAILURE );
 		}
 
-		if ( ( dump_if->raw_sock = socket(PF_PACKET,SOCK_RAW, htons( proto ) ) ) < 0 ) {
+		if ( ( dump_if->raw_sock = socket(PF_PACKET,SOCK_RAW, htons( ETH_P_ALL ) ) ) < 0 ) {
 			printf("Error - can't create raw socket: %s\n", strerror(errno) );
 			exit( EXIT_FAILURE );
 		}
@@ -272,7 +359,7 @@ int batdump_main( int argc, char **argv )
 			exit( EXIT_FAILURE );
 		}
 		dump_if->addr.sll_family   = AF_PACKET;
-		dump_if->addr.sll_protocol = htons( proto );
+		dump_if->addr.sll_protocol = htons( ETH_P_ALL );
 		dump_if->addr.sll_ifindex  = req.ifr_ifindex;
 
 		if ( bind( dump_if->raw_sock, ( struct sockaddr *)&dump_if->addr, sizeof( struct sockaddr_ll ) ) < 0 ) {
@@ -298,40 +385,53 @@ int batdump_main( int argc, char **argv )
 		if ( select( max_sock + 1, &tmp_wait_sockets, NULL, NULL, &tv ) > 0 ) {
 
 			list_for_each( list_pos, &dump_if_list ) {
+
 				dump_if = list_entry( list_pos, struct dump_if, list );
+
 				if ( FD_ISSET( dump_if->raw_sock, &tmp_wait_sockets ) ) {
+
 					rec_length = read( dump_if->raw_sock, packet, packetsize );
 					etype = ntohs(((struct ether_header*)packet)->ether_type);
 					p = NULL;
-					/* only batman packets */
-					if( proto == ETH_P_ALL || ( proto == ETH_P_BATMAN && etype == ETH_P_BATMAN ) ) {
 
-						if( etype == ETH_P_ARP )
-							p = print_arp;
+					if( proto == ETH_P_ALL && etype == ETH_P_ARP )
+						p = print_arp;
 
-			// 			else if( etype == ETH_P_IP )
-			// 				printf("ip comming soon\n");
-						else if( etype == ETH_P_BATMAN ) {
+// 					else if( etype == ETH_P_IP )
+// 						printf("ip comming soon\n");
 
-							if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) || ( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
-								p = print_batman_packet;
-							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) || ( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
-								p = print_icmp_packet;
-							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) || ( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
-								p = print_unicast_packet;
-							else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) || ( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
-								p = print_broadcast_packet;
+					else if( etype == ETH_P_BATMAN ) {
 
-						}
+						if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) ||
+								( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
 
-						if( p != NULL ) {
-							printf("%d ", rec_length);
-							print_ether(packet);
-							(*p)( ( packet + sizeof(struct ether_header) ) );
-							if(print_dump)
-								print_packet( rec_length, packet );
-						}
+							p = print_batman_packet;
+
+						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) ||
+								( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
+
+							p = print_icmp_packet;
+
+						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) ||
+								( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
+
+							p = print_unicast_packet;
+
+						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) ||
+								( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
+
+							p = print_broadcast_packet;
+
 					}
+
+					if( p != NULL ) {
+						printf("%d ", rec_length);
+						print_ether(packet, hash);
+						(*p)( ( packet + sizeof(struct ether_header) ), hash );
+						if(print_dump)
+							print_packet( rec_length, packet );
+					}
+
 				}
 			}
 		}

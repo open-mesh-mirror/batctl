@@ -154,7 +154,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 
 	if( ( unix_if.unix_sock = open( BAT_DEVICE, O_RDWR | O_NONBLOCK ) ) < 0 ) {
 
-		DBG( "can't find '%s': %s search for unix socket...\n", BAT_DEVICE, strerror(errno) );
+		DBG( "can't find character device '%s': %s search for unix socket...\n", BAT_DEVICE, strerror(errno) );
 
 		if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
 

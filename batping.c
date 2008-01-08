@@ -200,11 +200,15 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 			loop_count--;
 
 		icmp_packet.seqno = htons( ++seq_counter );
-		memcpy( send_buff+2, &icmp_packet, rbsize );
+
+		if(sbsize != sizeof(struct icmp_packet))
+			memcpy( send_buff+2, &icmp_packet, rbsize );
+		else
+			memcpy( send_buff, &icmp_packet, rbsize );
 
 
 		if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
-			printf( "Error - can't write to unix socket: %s %d\n", strerror(errno), errno );
+			printf( "Error - can't write to socket: %s %d\n", strerror(errno), errno );
 			close( unix_if.unix_sock );
 			free( send_buff);
 			return(EXIT_FAILURE);

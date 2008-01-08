@@ -145,9 +145,6 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	signal( SIGINT, handler );
 	signal( SIGTERM, handler );
 	
-	sbsize = sizeof( struct icmp_packet ) + 2;
-	rbsize = sizeof( struct icmp_packet );
-
 	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	memset( &unix_if.addr, 0, sizeof(struct sockaddr_un) );
 
@@ -157,15 +154,23 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 
 	if( ( unix_if.unix_sock = open( BAT_DEVICE, O_RDWR | O_NONBLOCK ) ) < 0 ) {
 
+		DBG( "can't find '%s': %s search for unix socket...\n", BAT_DEVICE, strerror(errno) );
+
 		if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
 
 			DBG( "can't connect to unix socket '%s': %s ! Is batmand running on this host ?", UNIX_PATH, strerror(errno) );
 			close( unix_if.unix_sock );
 			return(EXIT_FAILURE);
 
+		} else {
+			sbsize = sizeof( struct icmp_packet ) + 2;
 		}
 
-	}
+	} else
+		sbsize = sizeof( struct icmp_packet );
+
+	
+	rbsize = sizeof( struct icmp_packet );
 	
 	send_buff = malloc( sbsize );
 	memset(send_buff, '\0', sbsize );
@@ -179,7 +184,8 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	icmp_packet.ttl = 50;
 	icmp_packet.seqno = 0;
 
-	memcpy( send_buff, begin, 2 );
+	if(sbsize != sizeof(struct icmp_packet))
+		memcpy( send_buff, begin, 2 );
 
 	/* create new procmask */
 	sigemptyset( &sigmask_new );

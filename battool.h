@@ -27,6 +27,7 @@
 #define SOURCE_VERSION "0.1-alpha"
 
 #define UNIX_PATH "/var/run/batmand-adv.socket"
+#define BAT_DEVICE "/dev/batman-adv"
 
 #define HOSTS_FILE "bat-hosts"
 #define DBG(msg,args...) do { printf("batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)

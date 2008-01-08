@@ -252,7 +252,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 					if( ( (struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE )
 						printf("Host %s is unreachable\n", mac_string );
 					else
-						printf("%d\n", ( (struct icmp_packet *)rec_buff)->msg_type );
+						printf("message type %d len %d\n", ( (struct icmp_packet *)rec_buff)->msg_type, recv_buff_len );
 				}
 			}
 

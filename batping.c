@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -33,7 +33,7 @@
 #include <getopt.h>
 #include <signal.h>
 #include <features.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include "battool.h"
 #include "functions.h"
 
@@ -144,7 +144,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	mac_string = ether_ntoa(mac);
 	signal( SIGINT, handler );
 	signal( SIGTERM, handler );
-	
+
 	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	memset( &unix_if.addr, 0, sizeof(struct sockaddr_un) );
 
@@ -169,9 +169,9 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	} else
 		sbsize = sizeof( struct icmp_packet );
 
-	
+
 	rbsize = sizeof( struct icmp_packet );
-	
+
 	send_buff = malloc( sbsize );
 	memset(send_buff, '\0', sbsize );
 	rec_buff = malloc( rbsize );
@@ -205,7 +205,6 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 			memcpy( send_buff+2, &icmp_packet, rbsize );
 		else
 			memcpy( send_buff, &icmp_packet, rbsize );
-
 
 		if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
 			printf( "Error - can't write to socket: %s %d\n", strerror(errno), errno );
@@ -248,7 +247,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 					avg_count++;
 					recv++;
 				} else {
-		
+
 					if( ( (struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE )
 						printf("Host %s is unreachable\n", mac_string );
 					else

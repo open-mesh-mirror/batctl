@@ -297,6 +297,7 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 	struct dump_if *dump_if; /* list of interfaces */
 	struct list_head *list_pos;
 	fd_set wait_sockets, tmp_wait_sockets;
+	struct batman_packet *batman_packet;
 
 	void (*p)(unsigned char*, struct hashtable_t *hash); /* pointer for packet output functions */
 
@@ -410,24 +411,24 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 // 						printf("ip comming soon\n");
 
 					else if( etype == ETH_P_BATMAN ) {
+						batman_packet = (struct batman_packet *)(packet + sizeof(struct ether_header));
 
-						if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_PACKET ) ||
-								( packet[sizeof( struct ether_header)] == BAT_PACKET && packet[sizeof( struct ether_header)] == ptype ) )
+						if (batman_packet->version != COMPAT_VERSION)
+							continue;
+
+						if ((batman_packet->packet_type == BAT_PACKET) && (ptype == 0 || ptype == BAT_PACKET))
 
 							p = print_batman_packet;
 
-						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_ICMP ) ||
-								( packet[sizeof( struct ether_header)] == BAT_ICMP && packet[sizeof( struct ether_header)] == ptype ) )
+						else if ((batman_packet->packet_type == BAT_ICMP) && (ptype == 0 || ptype == BAT_ICMP))
 
 							p = print_icmp_packet;
 
-						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_UNICAST ) ||
-								( packet[sizeof( struct ether_header)] == BAT_UNICAST && packet[sizeof( struct ether_header)] == ptype ) )
+						else if ((batman_packet->packet_type == BAT_UNICAST) && (ptype == 0 || ptype == BAT_UNICAST))
 
 							p = print_unicast_packet;
 
-						else if( ( !ptype && packet[sizeof( struct ether_header)] == BAT_BCAST ) ||
-								( packet[sizeof( struct ether_header)] == BAT_BCAST && packet[sizeof( struct ether_header)] == ptype ) )
+						else if ((batman_packet->packet_type == BAT_BCAST) && (ptype == 0 || ptype == BAT_BCAST))
 
 							p = print_broadcast_packet;
 

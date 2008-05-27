@@ -38,7 +38,22 @@ PACKAGE_NAME=	battool
 BINARY_NAME=	battool
 SOURCE_VERSION_HEADER= battool.h
 
-REVISION=	$(shell if [ -d .svn ]; then svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; else if [ -d ~/.svk ]; then echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); fi; fi)
+REVISION=	$(shell if [ -d .svn ]; then \
+						if [ -x $$(which svn) ]; then \
+							svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+						else \
+							echo "[unknown]"; \
+						fi ; \
+					else \
+						if [ -d ~/.svk ]; then \
+							if [ -x $$(which svn) ]; then \
+								echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
+							else \
+								echo "[unknown]"; \
+							fi; \
+						fi; \
+					fi)
+
 REVISION_VERSION=\"\ rv$(REVISION)\"
 
 BAT_VERSION=	$(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')

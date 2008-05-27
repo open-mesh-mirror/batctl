@@ -136,6 +136,7 @@ int batroute_main( int argc, char **argv, struct hashtable_t *hash ) {
 	memset(rec_buff, '\0', rbsize );
 
 	memcpy( &icmp_packet.dst,mac, ETH_ALEN );
+	icmp_packet.version = COMPAT_VERSION;
 	icmp_packet.packet_type = BAT_ICMP;
 	icmp_packet.msg_type = ECHO_REQUEST;
 	icmp_packet.ttl = 0;

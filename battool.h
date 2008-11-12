@@ -23,7 +23,7 @@
 #include "hash.h"
 #include "packet.h"
 
-#define VERSION "0.1-alpha"  //put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3"
+#define VERSION "0.1-alpha"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 #define SOURCE_VERSION "0.1-alpha"
 
 #define UNIX_PATH "/var/run/batmand-adv.socket"

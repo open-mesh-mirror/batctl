@@ -435,7 +435,7 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 					}
 
 					if( p != NULL ) {
-						printf("%d ", rec_length);
+						printf("%zd ", rec_length);
 						print_ether(packet, hash);
 						(*p)( ( packet + sizeof(struct ether_header) ), hash );
 						if(print_dump)

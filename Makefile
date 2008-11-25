@@ -16,6 +16,14 @@
 # 02110-1301, USA
 #
 
+ifneq ($(findstring $(MAKEFLAGS),s),s)
+ifndef V
+	Q_CC = @echo '   ' CC $@;
+	Q_LD = @echo '   ' LD $@;
+	export Q_CC
+	export Q_LD
+endif
+endif
 
 CC =		gcc
 CFLAGS =	-W -Wall -O1 -g
@@ -63,10 +71,10 @@ FILE_NAME=	$(PACKAGE_NAME)_$(BAT_VERSION)-rv$(REVISION)_$@
 all:		$(BINARY_NAME)
 
 $(BINARY_NAME):	$(SRC_O) $(SRC_H) Makefile
-	$(CC) -o $@ $(SRC_O) $(LDFLAGS)
+	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
 
 sources:
 	mkdir -p $(FILE_NAME)

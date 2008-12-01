@@ -29,7 +29,7 @@
  * This is only for internal list manipulation where we know
  * the next entries already!
  */
-void __list_add( struct list_head *new, struct list_head *prev, struct list_head *next ) {
+static void __list_add( struct list_head *new, struct list_head *prev, struct list_head *next ) {
 
 	new->next = next;
 	prev->next = new;
@@ -85,7 +85,7 @@ void list_add_before( struct list_head *prev_node, struct list_head *next_node, 
  * This is only for internal list manipulation where we know
  * the next entries already!
  */
-void __list_del( struct list_head *prev, struct list_head *next ) {
+static void __list_del( struct list_head *prev, struct list_head *next ) {
 
 	prev->next = next;
 

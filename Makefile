@@ -81,7 +81,7 @@ sources:
 
 	for i in $$( find . | grep $(SRC_FILES) | grep -v "\.svn" ); do [ -d $$i ] && mkdir -p $(FILE_NAME)/$$i ; [ -f $$i ] && cp -Lvp $$i $(FILE_NAME)/$$i ;done
 
-	$(BUILD_PATH)/wget --no-check-certificate -O changelog.html  https://dev.open-mesh.net/batman/log/$(LOG_BRANCH)/
+	$(BUILD_PATH)/wget -O changelog.html  http://www.open-mesh.net/log/$(LOG_BRANCH)/
 	html2text -o changelog.txt -nobs -ascii changelog.html
 	awk '/View revision/,/10\/01\/06 20:23:03/' changelog.txt > $(FILE_NAME)/CHANGELOG
 

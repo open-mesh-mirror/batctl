@@ -26,9 +26,9 @@ endif
 endif
 
 CC =		gcc
-CFLAGS =	-W -Wall -O1 -g
+CFLAGS +=	-W -Wall -O1 -g
 EXTRA_CFLAGS =	-DREVISION_VERSION=$(REVISION_VERSION)
-LDFLAGS =	
+LDFLAGS +=	
 
 SBINDIR =	$(INSTALL_PREFIX)/usr/sbin
 

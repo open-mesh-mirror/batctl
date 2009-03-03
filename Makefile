@@ -73,8 +73,9 @@ all:		$(BINARY_NAME)
 $(BINARY_NAME):	$(SRC_O) $(SRC_H) Makefile
 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
 
-%.o: %.c
-	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
+.c.o:
+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
+-include $(SRC_C:.c=.d)
 
 sources:
 	mkdir -p $(FILE_NAME)
@@ -91,7 +92,7 @@ sources:
 	tar czvf $(FILE_NAME).tgz $(FILE_NAME)
 
 clean:
-	rm -f $(BINARY_NAME) *.o
+	rm -f $(BINARY_NAME) *.o *.d
 
 
 clean-long:

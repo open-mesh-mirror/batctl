@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -29,7 +29,7 @@
 #define UNIX_PATH "/var/run/batmand-adv.socket"
 #define BAT_DEVICE "/dev/batman-adv"
 
-#define HOSTS_FILE "bat-hosts"
+#define HOSTS_FILE "/etc/bat-hosts"
 #define DBG(msg,args...) do { printf("batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)
 
 struct unix_if {

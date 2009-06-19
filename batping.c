@@ -49,8 +49,8 @@ void batping_usage() {
 	return;
 }
 
-void handler( int32_t sig ) {
-	switch( sig ) {
+void handler(int32_t sig) {
+	switch(sig) {
 		case SIGINT:
 		case SIGTERM:
 			Stop = 1;
@@ -116,11 +116,11 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 		}
 	}
 
-	if ( argc <= found_args ) {
+	if (argc <= found_args) {
+		printf("Error - target mac address or host name not specified\n");
 		batping_usage();
 		return(EXIT_FAILURE);
 	}
-
 
 	while ( NULL != ( hashit = hash_iterate( hash, hashit ) ) ) {
 

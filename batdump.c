@@ -35,7 +35,7 @@
 #include <netinet/ether.h>
 #include <time.h>
 
-#include "battool.h"
+#include "main.h"
 #include "batdump.h"
 
 #define UNIDIRECTIONAL 0x80
@@ -107,14 +107,14 @@ void print_ether( unsigned char *buff, struct hashtable_t *hash ) {
 
 	if(!name_shost)
 		name_shost = ether_ntoa( (struct ether_addr *) eth->ether_shost );
-	
+
 	printf("%s -> ", name_shost );
 
 	if(!name_dhost)
 		name_dhost = ether_ntoa( (struct ether_addr *)eth->ether_dhost );
 
 	printf("%s ", name_dhost );
-	
+
 	return;
 }
 
@@ -137,12 +137,12 @@ void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
 
 	if(!name_orig)
 		name_orig = ether_ntoa((struct ether_addr*) bp->orig);
-	
+
 	printf("BAT %s ", name_orig);
 
 	if(!name_old_orig)
 		name_old_orig = ether_ntoa((struct ether_addr*) bp->old_orig);
-	
+
 	printf("%s (seqno %d, tq %d, TTL %d, V %d, UD %d, DL %d)\n", name_old_orig, ntohs(bp->seqno), bp->tq,
 	       bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
 
@@ -192,7 +192,7 @@ void print_icmp_packet( unsigned char *buff, struct hashtable_t *hash ) {
 
 	if(!name_dst)
 		name_dst = ether_ntoa((struct ether_addr*) ip->dst );
-	
+
 	printf(" %s\n", name_dst );
 	return;
 }

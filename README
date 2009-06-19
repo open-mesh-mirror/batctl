@@ -1,31 +1,32 @@
-#################################
-# B.A.T.M.A.N. toolchain README #
-#################################
+
+############################################################
+# batctl - B.A.T.M.A.N. advanced control and managing tool #
+############################################################
 
 
 
 Introduction
 ============
 
-Why do I need the battool ? B.A.T.M.A.N. Advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems the B.A.T.M.A.N. toolchain (battool for short) was created. At the moment the battool contains ping, traceroute and tcpdump.
+Why do I need batctl ? B.A.T.M.A.N. advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems batctl was created. At the moment batctl contains ping, traceroute, tcpdump and interfaces to the kernel module settings.
 
 
 How does it work ?
 ==================
 
-The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute work almost like their IP based counterparts. Tcpdump was designed because B.A.T.M.A.N. Advanced encapsulates all traffic within batman packets, so that the normal tcpdump would not recognize the packets.
+batctl uses the /dev/batman-adv device provided by the B.A.T.M.A.N. advanced kernel module to inject custom icmp packets into the data flow. That's why ping and traceroute work almost like their IP based counterparts. Tcpdump was designed because B.A.T.M.A.N. advanced encapsulates all traffic within batman packets, so that the normal tcpdump would not recognize the packets.
 
 
  The bat-hosts file
 ==================
 
-This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. The battool will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remember than MAC addresses.  ;)
+This file is simliar to the /etc/hosts file. You can write one MAC address and one host name per line. batctl will analyze the file to find the matching MAC address to your provided host name. Host names are much easier to remember than MAC addresses.  ;)
 
 
-battool ping
+batctl ping
 ============
 
-battool ping [options] [mac address|host name]
+batctl ping [options] [mac address|host name]
 
 The following options are supported:
 
@@ -36,18 +37,18 @@ The following options are supported:
 - t (timeout interval) - timeout interval in seconds (default is 1 second)
 
 
-battool traceroute
+batctl traceroute
 ==================
 
-battool traceroute [mac address|host name]
+batctl traceroute [mac address|host name]
 
 Traceroute sends 3 packets to each hop, awaits the answers and prints out the response times.
 
 
-battool tcpdump
+batctl tcpdump
 ===============
 
-battool tcpdump [options] [interface]
+batctl tcpdump [options] [interface]
 
 The following options are supported:
 
@@ -60,7 +61,7 @@ The following options are supported:
 -v (verbose) - prints more information about each packet
 
 
-B.A.T.M.A.N. Advanced encapsulates all traffic within batman packets. In total it uses 4 different packet types:
+B.A.T.M.A.N. advanced encapsulates all traffic within batman packets. In total it uses 4 different packet types:
 
 batman packets - these transport the B.A.T.M.A.N. originator messages to build the mesh network
 

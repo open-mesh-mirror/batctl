@@ -26,7 +26,7 @@
 .nr SS 3
 .\" add new suboption
 .de IPs
-.IP "\\$1" \n(SS 
+.IP "\\$1" \n(SS
 ..
 .\" begin of first level suboptions, end with .RE
 .de RSs
@@ -39,28 +39,28 @@
 ..
 .\" end of 2nd level suboptions
 .de REss
-.RE 
+.RE
 .PD 1
 ..
 .
 
 .\" --------------------------------------------------------------------------
 
-.TH "battool" 8
+.TH "batctl" 8
 .SH NAME
-battool - B.A.T.M.A.N. toolchain for B.A.T.M.A.N. Advanced
+batctl - B.A.T.M.A.N. advanced control and managing tool
 .SH SYNOPSIS
-.B battool
+.B batctl
 .RI \fImodule\fP\ [\fIoptions\fP]\ {\fIdestination\ or\ interface\fP}
 .br
 .SH DESCRIPTION
-B.A.T.M.A.N. Advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems the \fBB.A.T.M.A.N. toolchain (battool for short)\fP was created. At the moment the battool contains \fBping\fP, \fBtraceroute\fP and \fBbatdump\fP which can be used as module.
+B.A.T.M.A.N. advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems \fBbatctl\fP was created. At the moment the batctl contains \fBping\fP, \fBtraceroute\fP, \fBtcpdump\fP interfaces to the kernel module settings.
 .PP
-The battool uses the unix socket provided by B.A.T.M.A.N. Advanced to inject custom icmp packets into the data flow. Thats why ping and traceroute work almost like their IP based counterparts. Batdump analyzes the Traffic and packet types used B.A.T.M.A.N. Advanced.
+batctl uses the /dev/batman-adv device provided by the B.A.T.M.A.N. advanced kernel module to inject custom icmp packets into the data flow. Thats why ping and traceroute work almost like their IP based counterparts. Tcpdump analyzes the traffic and packet types used B.A.T.M.A.N. advanced.
 .PP
 .SH OPTIONS
-.TP 
-.RI \fBbattool\ ping\fP\ [\fIoptions\fP]\ [\fImac\ address|host\ name\fP]
+.TP
+.RI \fBbatctl\ ping\fP\ [\fIoptions\fP]\ [\fImac\ address|host\ name\fP]
 The following options are supported:
 .RSs
 .IPs "-c (count)"
@@ -73,11 +73,11 @@ timeout interval in seconds (default is 1 second)
 
 
 .TP
-.RI \fBbattool\ traceroute\fP\ [\fImac\ address|host name\fP]
+.RI \fBbatctl\ traceroute\fP\ [\fImac\ address|host name\fP]
 Traceroute sends 3 packets to each hop, awaits the answers and prints out the response times.
 
 .TP
-.RI \fBbattool\ batdump\fP\ [\fIoptions\fP]\ [\fIinterface\fP]
+.RI \fBbatctl\ batdump\fP\ [\fIoptions\fP]\ [\fIinterface\fP]
 The following options are supported:
 .RSs
 .IPs "-a (all packets)"
@@ -87,8 +87,8 @@ print packet data in hex
 .IPs "-p (packet type)"
 specify to filter for certain batman packets:
 
-.RSss 
-.IPs "1" 
+.RSss
+.IPs "1"
 batman packets - these transport the B.A.T.M.A.N. originator messages to build the mesh network
 .IPs "2"
 batman icmp packets - lightweight implementation of the ICMP protocol (needed for ping and traceroute)
@@ -108,6 +108,6 @@ This file is simliar to the /etc/hosts file. You can write one MAC address and o
 .SH SEE ALSO
 \fIbatmand-adv\fP (8)
 .SH AUTHOR
-battool was written by Andreas Langer <a.langer@q-dsl.de>.
+batctl was written by Andreas Langer <a.langer@q-dsl.de> and Marek Lindner <lindner_marek@yahoo.de>.
 .PP
-This manual page was written by Simon Wunderlich <siwu@hrz.tu-chemnitz.de>.
+This manual page was written by Simon Wunderlich <siwu@hrz.tu-chemnitz.de> and Marek Lindner <lindner_marek@yahoo.de>.

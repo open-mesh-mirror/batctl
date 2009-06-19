@@ -30,7 +30,10 @@
 #define BAT_DEVICE "/dev/batman-adv"
 
 #define HOSTS_FILE "/etc/bat-hosts"
-#define DBG(msg,args...) do { printf("batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); } while(0)
+#define DBG(msg,args...) \
+	do { \
+		printf("batgat: [%s:%u] " msg "\n", __func__ ,__LINE__, ##args); \
+	} while(0)
 
 struct unix_if {
 	int32_t unix_sock;

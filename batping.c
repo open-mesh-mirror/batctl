@@ -34,7 +34,7 @@
 #include <signal.h>
 #include <features.h>
 #include <fcntl.h>
-#include "battool.h"
+#include "main.h"
 #include "functions.h"
 
 uint8_t Stop = 0;

@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "battool.h"
+#include "main.h"
 
 void usage() {
 	printf("Usage:\n\tbattool -v\n\tbattool module [options] destination\n");
@@ -116,7 +116,7 @@ int main( int argc, char **argv ) {
 	int uid, ret=0;
 
 	struct hashtable_t *host_hash;
-	
+
 	if( argc < 2 ) {
 		usage();
 	}
@@ -133,7 +133,7 @@ int main( int argc, char **argv ) {
 	host_hash = hash_new( 64, compare_mac, choose_mac );
 
 	parse_hosts_file( host_hash,HOSTS_FILE );
-	
+
 	if (strcmp(argv[1], "ping") == 0 ||strcmp(argv[1], "batping") == 0 || strcmp(argv[1], "bp") == 0 ) {
 		/* call ping main function */
 		ret = batping_main( argc-1, argv+1, host_hash );

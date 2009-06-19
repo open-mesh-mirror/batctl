@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -31,7 +31,7 @@
 #include <getopt.h>
 #include <signal.h>
 
-#include "battool.h"
+#include "main.h"
 #include "functions.h"
 
 
@@ -65,7 +65,7 @@ int batroute_main( int argc, char **argv, struct hashtable_t *hash ) {
 	int32_t recv_buff_len;
 
 	double time_delta = 0.0;
-	
+
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval start, end;
@@ -119,7 +119,7 @@ int batroute_main( int argc, char **argv, struct hashtable_t *hash ) {
 	unix_if.addr.sun_family = AF_LOCAL;
 	strcpy( unix_if.addr.sun_path, UNIX_PATH );
 
-	
+
 	if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
 
 		printf( "Error - can't connect to unix socket '%s': %s ! Is batmand running on this host ?\n", UNIX_PATH, strerror(errno) );
@@ -166,7 +166,7 @@ int batroute_main( int argc, char **argv, struct hashtable_t *hash ) {
 
 			FD_ZERO(&read_socket);
 			FD_SET( unix_if.unix_sock, &read_socket );
-	 
+
 			res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
 
 			if( res > 0 )

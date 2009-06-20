@@ -32,7 +32,7 @@ struct bat_host {
 	char name[HOST_NAME_MAX_LEN];
 } __attribute__((packed));
 
-int bat_hosts_init(void);
+void bat_hosts_init(void);
 struct bat_host *bat_hosts_find_by_name(char *name);
 struct bat_host *bat_hosts_find_by_mac(char *mac);
 void bat_hosts_free(void);

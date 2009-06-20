@@ -104,22 +104,25 @@ static void parse_hosts_file(struct hashtable_t *hash, char path[])
 	return;
 }
 
-int bat_hosts_init(void)
+void bat_hosts_init(void)
 {
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
-	if (!host_hash)
-		return 0;
+	if (!host_hash) {
+		printf("Warning - couldn't not create bat hosts hash table\n");
+		return;
+	}
 
 	parse_hosts_file(host_hash, HOSTS_FILE);
-
-	return 1;
 }
 
 struct bat_host *bat_hosts_find_by_name(char *name)
 {
 	struct hash_it_t *hashit = NULL;
 	struct bat_host *bat_host = NULL, *tmp_bat_host;
+
+	if (!host_hash)
+		return NULL;
 
 	while (NULL != (hashit = hash_iterate(host_hash, hashit))) {
 		tmp_bat_host = (struct bat_host *)hashit->bucket->data;
@@ -134,6 +137,9 @@ struct bat_host *bat_hosts_find_by_name(char *name)
 
 struct bat_host *bat_hosts_find_by_mac(char *mac)
 {
+	if (!host_hash)
+		return NULL;
+
 	return (struct bat_host *)hash_find(host_hash, mac);
 }
 

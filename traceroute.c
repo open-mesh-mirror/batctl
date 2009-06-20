@@ -40,8 +40,8 @@
 
 
 void batroute_usage() {
-	printf("Battool module batroute\n");
-	printf("Usage: battool batroute|br mac|name\n");
+	printf("batctl module traceroute\n");
+	printf("Usage: batctl traceroute|br mac|name\n");
 	printf("\t-h help\n");
 	return;
 }

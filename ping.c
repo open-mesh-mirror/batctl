@@ -46,8 +46,8 @@
 uint8_t Stop = 0;
 
 void batping_usage() {
-	printf("Battool module batping\n");
-	printf("Usage: battool batping|bp [options] mac|name\n");
+	printf("batctl module ping\n");
+	printf("Usage: batctl ping|bp [options] mac|name\n");
 	printf("\t-c count\n");
 	printf("\t-h help\n");
 	printf("\t-i interval in seconds\n");
@@ -197,7 +197,7 @@ int ping(int argc, char **argv)
 	/* remove new procmask from current procmask */
 	sigprocmask( SIG_UNBLOCK,&sigmask_new, &sigmask_old );
 
-	printf("batping %s\n", mac_string );
+	printf("ping %s\n", mac_string );
 	while( !Stop && loop_count != 0 ) {
 		if( loop_count > 0 )
 			loop_count--;
@@ -263,7 +263,7 @@ int ping(int argc, char **argv)
 		}
 		if( timeout.tv_sec > 0 ) sleep( loop_interval?loop_interval:1 );
 	}
-	printf("--- %s batping statistic ---\n",mac_string );
+	printf("--- %s ping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min < 0.0 ? 0.000 : min, avg_count?(avg / avg_count):0.000 ,max, max - ( min < 0.0 ? 0.0:min) );
 	ret = EXIT_SUCCESS;

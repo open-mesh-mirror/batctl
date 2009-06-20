@@ -50,8 +50,8 @@ uint8_t print_names = 1;
 struct list_head_first dump_if_list;
 
 void batdump_usage() {
-	printf("Battool module batdump\n");
-	printf("Usage: battool batdump|bd [option] interface\n");
+	printf("batctl module tcpdump\n");
+	printf("Usage: batctl tcpdump|bd [option] interface\n");
 	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n\t\t4=broadcast packets\n");
 	printf("\t-a all packet types\n");
 	printf("\t-d packet dump in hex\n");

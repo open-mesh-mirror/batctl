@@ -63,16 +63,16 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (strcmp(argv[1], "ping") == 0 || strcmp(argv[1], "p") == 0 ) {
-		/* call ping main function */
+	if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
+
 		ret = ping(argc - 1, argv + 1);
 
-	} else if(strcmp(argv[1], "traceroute") == 0 || strcmp(argv[1], "tr") == 0  ) {
-		/* call trace main function */
+	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
+
 		ret = traceroute(argc - 1, argv + 1);
 
-	} else if( strcmp(argv[1], "tcpdump") == 0 || strcmp(argv[1], "td") == 0  ) {
-		/* call trace main function */
+	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
+
 		ret = tcpdump(argc - 1, argv + 1);
 
 	} else {

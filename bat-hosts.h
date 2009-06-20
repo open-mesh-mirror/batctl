@@ -19,16 +19,16 @@
 
 
 
+#ifndef _BAT_HOSTS_H
+#define _BAT_HOSTS_H 1
+
 #include <netinet/ether.h>
-
-
-#define HOSTS_FILE "/etc/bat-hosts"
 
 #define HOST_NAME_MAX_LEN 50
 
 
 struct bat_host {
-	struct ether_addr mac;
+	struct ether_addr mac_addr;
 	char name[HOST_NAME_MAX_LEN];
 } __attribute__((packed));
 
@@ -36,3 +36,5 @@ void bat_hosts_init(void);
 struct bat_host *bat_hosts_find_by_name(char *name);
 struct bat_host *bat_hosts_find_by_mac(char *mac);
 void bat_hosts_free(void);
+
+#endif

@@ -140,7 +140,7 @@ int ping(int argc, char **argv)
 		}
 
 	} else {
-		dst_mac = &bat_host->mac;
+		dst_mac = &bat_host->mac_addr;
 	}
 
 	mac_string = ether_ntoa(dst_mac);

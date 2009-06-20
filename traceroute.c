@@ -110,7 +110,7 @@ int traceroute(int argc, char **argv)
 		}
 
 	} else {
-		dst_mac = &bat_host->mac;
+		dst_mac = &bat_host->mac_addr;
 	}
 
 	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);

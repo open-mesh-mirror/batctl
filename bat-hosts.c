@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <errno.h>
 
 #include "main.h"
@@ -30,6 +31,7 @@
 
 
 struct hashtable_t *host_hash = NULL;
+const char *bat_hosts_path[3] = {"/etc/bat-hosts", "~/bat-hosts", "bat-hosts"};
 
 
 static int compare_mac(void *data1, void *data2)
@@ -56,26 +58,46 @@ static int choose_mac(void *data, int32_t size)
 	return (hash % size);
 }
 
-static void parse_hosts_file(struct hashtable_t *hash, char path[])
+static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 {
 	FILE *fd;
-	char name[HOST_NAME_MAX_LEN], mac[18];
-	struct ether_addr *tmp_mac;
+	char name[HOST_NAME_MAX_LEN], mac_str[18];
+	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
 	struct hashtable_t *swaphash;
 
-	name[0] = mac[0] = '\0';
+	name[0] = mac_str[0] = '\0';
 
 	fd = fopen(path, "r");
 	if (fd == NULL)
 		return;
 
-	while (fscanf(fd,"%[^ \t]%s\n", name, mac) != EOF) {
+	while (fscanf(fd,"%[^ \t]%s\n", name, mac_str) != EOF) {
 
-		tmp_mac = ether_aton(mac);
-		if (!tmp_mac) {
-			printf("Warning - invalid mac address in '%s' detected: %s\n", path, mac);
-			return;
+		mac_addr = ether_aton(mac_str);
+		if (!mac_addr) {
+			printf("Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
+			continue;
+		}
+
+		bat_host = bat_hosts_find_by_mac((char *)mac_addr);
+
+		/* mac entry already exists - we found a new name for it */
+		if (bat_host) {
+			printf("Warning - mac already known (changing name from '%s' to '%s'): %s\n",
+					bat_host->name, name, mac_str);
+			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
+			continue;
+		}
+
+		bat_host = bat_hosts_find_by_name(name);
+
+		/* name entry already exists - we found a new mac address for it */
+		if (bat_host) {
+			printf("Warning - name already known (changing mac from '%s' to '%s'): %s\n",
+					ether_ntoa(&bat_host->mac_addr), mac_str, name);
+			hash_remove(hash, bat_host);
+			free(bat_host);
 		}
 
 		bat_host = malloc(sizeof(struct bat_host));
@@ -85,7 +107,7 @@ static void parse_hosts_file(struct hashtable_t *hash, char path[])
 			return;
 		}
 
-		memcpy(&bat_host->mac, tmp_mac, sizeof(struct ether_addr));
+		memcpy(&bat_host->mac_addr, mac_addr, sizeof(struct ether_addr));
 		strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
 
 		hash_add(hash, bat_host);
@@ -106,6 +128,8 @@ static void parse_hosts_file(struct hashtable_t *hash, char path[])
 
 void bat_hosts_init(void)
 {
+	unsigned int i;
+
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
 	if (!host_hash) {
@@ -113,7 +137,8 @@ void bat_hosts_init(void)
 		return;
 	}
 
-	parse_hosts_file(host_hash, HOSTS_FILE);
+	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++)
+		parse_hosts_file(host_hash, bat_hosts_path[i]);
 }
 
 struct bat_host *bat_hosts_find_by_name(char *name)
@@ -127,7 +152,7 @@ struct bat_host *bat_hosts_find_by_name(char *name)
 	while (NULL != (hashit = hash_iterate(host_hash, hashit))) {
 		tmp_bat_host = (struct bat_host *)hashit->bucket->data;
 
-		if (strcmp(tmp_bat_host->name, name) == 0)
+		if (strncmp(tmp_bat_host->name, name, HOST_NAME_MAX_LEN - 1) == 0)
 			bat_host = tmp_bat_host;
 			break;
 	}

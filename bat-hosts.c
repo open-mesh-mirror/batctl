@@ -67,7 +67,6 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 	struct hashtable_t *swaphash;
 
 	name[0] = mac_str[0] = '\0';
-
 	fd = fopen(path, "r");
 	if (fd == NULL)
 		return;
@@ -129,6 +128,9 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 void bat_hosts_init(void)
 {
 	unsigned int i;
+#define CONF_DIR_LEN 256
+	char confdir[CONF_DIR_LEN];
+	char *homedir;
 
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
@@ -137,8 +139,21 @@ void bat_hosts_init(void)
 		return;
 	}
 
-	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++)
-		parse_hosts_file(host_hash, bat_hosts_path[i]);
+	homedir = getenv("HOME");
+
+	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++) {
+		strcpy(confdir, "");
+		if (strlen(bat_hosts_path[i]) >= 2
+		    && bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
+			strncpy(confdir, homedir, CONF_DIR_LEN);
+			confdir[CONF_DIR_LEN - 1] = '\0';
+			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir));
+		} else {
+			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
+			confdir[CONF_DIR_LEN - 1] = '\0';
+		}
+		parse_hosts_file(host_hash, confdir);
+	}
 }
 
 struct bat_host *bat_hosts_find_by_name(char *name)

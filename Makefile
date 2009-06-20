@@ -25,40 +25,40 @@ ifndef V
 endif
 endif
 
-CC =		gcc
-CFLAGS +=	-pedantic -Wall -W -O1 -g3 -std=gnu99
-EXTRA_CFLAGS =	-DREVISION_VERSION=$(REVISION_VERSION)
+CC = gcc
+CFLAGS += -pedantic -Wall -W -O1 -g3 -std=gnu99
+EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
 LDFLAGS +=
 
-SBINDIR =	$(INSTALL_PREFIX)/usr/sbin
+SBINDIR = $(INSTALL_PREFIX)/usr/sbin
 
 LOG_BRANCH = trunk/batctl
 
 SRC_FILES = "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README\)\|\(THANKS\)\|\(TRASH\)\|\(Doxyfile\)\|\(./posix\)\|\(./linux\)\|\(./bsd\)\|\(./man\)\|\(./doc\)"
 
-SRC_C = main.c functions.c batping.c batroute.c batdump.c list-batman.c hash.c
-SRC_H = main.h functions.h list-batman.h batdump.h hash.h
+SRC_C = main.c bat-hosts.c functions.c ping.c traceroute.c tcpdump.c list-batman.c hash.c
+SRC_H = main.h bat-hosts.h functions.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h
 SRC_O = $(SRC_C:.c=.o)
 
-PACKAGE_NAME =	batctl
-BINARY_NAME =	batctl
+PACKAGE_NAME = batctl
+BINARY_NAME = batctl
 SOURCE_VERSION_HEADER = main.h
 
-REVISION =	$(shell if [ -d .svn ]; then \
-						if which svn > /dev/null; then \
-							svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+REVISION = $(shell if [ -d .svn ]; then \
+					if which svn > /dev/null; then \
+						svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
+					else \
+						echo "[unknown]"; \
+					fi ; \
+				else \
+					if [ -d ~/.svk ]; then \
+						if which svk > /dev/null; then \
+							echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
 						else \
 							echo "[unknown]"; \
-						fi ; \
-					else \
-						if [ -d ~/.svk ]; then \
-							if which svk > /dev/null; then \
-								echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
-							else \
-								echo "[unknown]"; \
-							fi; \
 						fi; \
-					fi)
+					fi; \
+				fi)
 
 REVISION_VERSION =\"\ rv$(REVISION)\"
 

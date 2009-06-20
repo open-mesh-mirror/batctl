@@ -1,5 +1,4 @@
-/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
- * Andreas Langer <a.langer@q-dsl.de>
+/* Copyright (C) 2009 B.A.T.M.A.N. contributors:
  * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -19,16 +18,21 @@
  */
 
 
-#include <sys/un.h>
+
+#include <netinet/ether.h>
 
 
-#define SOURCE_VERSION "0.2-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#define HOSTS_FILE "/etc/bat-hosts"
 
-#define UNIX_PATH "/var/run/batmand-adv.socket"
-#define BAT_DEVICE "/dev/batman-adv"
+#define HOST_NAME_MAX_LEN 50
 
 
-struct unix_if {
-	int unix_sock;
-	struct sockaddr_un addr;
-};
+struct bat_host {
+	struct ether_addr mac;
+	char name[HOST_NAME_MAX_LEN];
+} __attribute__((packed));
+
+int bat_hosts_init(void);
+struct bat_host *bat_hosts_find_by_name(char *name);
+struct bat_host *bat_hosts_find_by_mac(char *mac);
+void bat_hosts_free(void);

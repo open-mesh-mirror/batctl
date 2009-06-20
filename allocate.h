@@ -1,5 +1,6 @@
-/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
- * Andreas Langer <a.langer@q-dsl.de>
+/*
+ * Copyright (C) 2009 B.A.T.M.A.N. contributors:
+ *
  * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -19,16 +20,14 @@
  */
 
 
-#include <sys/un.h>
+#ifndef _ALLOCATE_H
+#define _ALLOCATE_H 1
 
+/* debug allocate wrapper to keep hash.c happy */
 
-#define SOURCE_VERSION "0.2-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#include <stdlib.h>
 
-#define UNIX_PATH "/var/run/batmand-adv.socket"
-#define BAT_DEVICE "/dev/batman-adv"
+#define debugMalloc(length, tag) malloc(length)
+#define debugFree(mem, tag) free(mem)
 
-
-struct unix_if {
-	int unix_sock;
-	struct sockaddr_un addr;
-};
+#endif

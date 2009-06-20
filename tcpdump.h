@@ -1,5 +1,6 @@
-/* Copyright (C) 2007 B.A.T.M.A.N. contributors:
+/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
+ * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -17,7 +18,11 @@
  *
  */
 
+
+#include <netinet/ether.h>
+#include <netpacket/packet.h>
 #include "list-batman.h"
+
 
 #define	ARPOP_REQUEST	1		/* ARP request.  */
 #define	ARPOP_REPLY	2		/* ARP reply.  */
@@ -52,3 +57,5 @@ struct dump_if {
 	int32_t raw_sock;
 	struct sockaddr_ll addr;
 };
+
+int tcpdump(int argc, char **argv);

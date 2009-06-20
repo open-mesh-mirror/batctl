@@ -1,4 +1,4 @@
-/* Copyright (C) 2007 B.A.T.M.A.N. contributors:
+/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -36,7 +36,9 @@
 #include <time.h>
 
 #include "main.h"
-#include "batdump.h"
+#include "tcpdump.h"
+#include "packet.h"
+#include "bat-hosts.h"
 
 #define UNIDIRECTIONAL 0x80
 #define DIRECTLINK 0x40
@@ -59,7 +61,7 @@ void batdump_usage() {
 	return;
 }
 
-void print_arp( unsigned char *buff, struct hashtable_t *hash ) {
+void print_arp(unsigned char *buff) {
 	struct my_arphdr *arp = (struct my_arphdr*)buff;
 	printf("ARP %u.%u.%u.%u", arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3] );
 	switch( ntohs( arp->ar_op ) ) {
@@ -76,10 +78,10 @@ void print_arp( unsigned char *buff, struct hashtable_t *hash ) {
 	return;
 }
 
-void print_ether( unsigned char *buff, struct hashtable_t *hash ) {
+void print_ether(unsigned char *buff) {
 
 	struct ether_header *eth = (struct ether_header*)buff;
-	struct hosts *tmp_host;
+	struct bat_host *bat_host;
 	struct tm *tm;
 	time_t tnow;
 
@@ -89,58 +91,59 @@ void print_ether( unsigned char *buff, struct hashtable_t *hash ) {
 	time( &tnow );
 	tm = localtime(&tnow);
 
-	if(print_names) {
+	if (print_names) {
 
-		tmp_host = ((struct hosts *)hash_find(hash, eth->ether_shost ));
+		bat_host = bat_hosts_find_by_mac((char *)eth->ether_shost);
 
-		if(tmp_host != NULL)
-			name_shost = tmp_host->name;
+		if (bat_host)
+			name_shost = bat_host->name;
 
-		tmp_host = ((struct hosts *)hash_find(hash, eth->ether_dhost ));
+		bat_host = bat_hosts_find_by_mac((char *)eth->ether_dhost);
 
-		if(tmp_host != NULL)
-			name_dhost = tmp_host->name;
+		if (bat_host)
+			name_dhost = bat_host->name;
 
 	}
 
 	printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
 
-	if(!name_shost)
-		name_shost = ether_ntoa( (struct ether_addr *) eth->ether_shost );
+	if (!name_shost)
+		name_shost = ether_ntoa((struct ether_addr *)eth->ether_shost);
 
 	printf("%s -> ", name_shost );
 
-	if(!name_dhost)
-		name_dhost = ether_ntoa( (struct ether_addr *)eth->ether_dhost );
+	if (!name_dhost)
+		name_dhost = ether_ntoa((struct ether_addr *)eth->ether_dhost);
 
 	printf("%s ", name_dhost );
 
 	return;
 }
 
-void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
-	struct batman_packet *bp = (struct batman_packet *) buff;
-	struct hosts *tmp_host;
+void print_batman_packet(unsigned char *buff)
+{
+	struct batman_packet *bp = (struct batman_packet *)buff;
+	struct bat_host *bat_host;
 	char *name_orig = NULL, *name_old_orig=NULL;
 
-	if(print_names) {
+	if (print_names) {
 
-		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bp->orig));
-		if(tmp_host != NULL)
-			name_orig = tmp_host->name;
+		bat_host = bat_hosts_find_by_mac((char *)bp->orig);
+		if (bat_host)
+			name_orig = bat_host->name;
 
-		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bp->old_orig));
-		if(tmp_host != NULL)
-			name_old_orig = tmp_host->name;
+		bat_host = bat_hosts_find_by_mac((char *)bp->old_orig);
+		if (bat_host)
+			name_old_orig = bat_host->name;
 
 	}
 
-	if(!name_orig)
+	if (!name_orig)
 		name_orig = ether_ntoa((struct ether_addr*) bp->orig);
 
 	printf("BAT %s ", name_orig);
 
-	if(!name_old_orig)
+	if (!name_old_orig)
 		name_old_orig = ether_ntoa((struct ether_addr*) bp->old_orig);
 
 	printf("%s (seqno %d, tq %d, TTL %d, V %d, UD %d, DL %d)\n", name_old_orig, ntohs(bp->seqno), bp->tq,
@@ -149,55 +152,56 @@ void print_batman_packet( unsigned char *buff, struct hashtable_t *hash ) {
 	return;
 }
 
-void print_icmp_packet( unsigned char *buff, struct hashtable_t *hash ) {
-	struct icmp_packet *ip = ( struct icmp_packet * )buff;
-	struct hosts *tmp_host;
+void print_icmp_packet(unsigned char *buff)
+{
+	struct icmp_packet *ip = (struct icmp_packet *)buff;
+	struct bat_host *bat_host;
 	char *name_orig = NULL, *name_dst=NULL;
 
-	if(print_names) {
+	if (print_names) {
 
-		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) ip->orig));
+		bat_host = bat_hosts_find_by_mac((char *)ip->orig);
 
-		if(tmp_host != NULL)
-			name_orig = tmp_host->name;
+		if (bat_host)
+			name_orig = bat_host->name;
 
-		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) ip->dst));
+		bat_host = bat_hosts_find_by_mac((char *)ip->dst);
 
-		if(tmp_host != NULL)
-			name_dst = tmp_host->name;
+		if (bat_host)
+			name_dst = bat_host->name;
 
 	}
 
-	if(!name_orig)
+	if (!name_orig)
 		name_orig = ether_ntoa((struct ether_addr*) ip->orig);
 
 	printf("BAT_ICMP %s", name_orig );
 
 	switch( ip->msg_type ) {
 		case ECHO_REPLY:
-			printf(" ERP");
+			printf(" ECHO_REP");
 			break;
 		case DESTINATION_UNREACHABLE:
-			printf(" DUR");
+			printf(" UNREACH");
 			break;
 		case ECHO_REQUEST:
-			printf(" ERQ");
+			printf(" ECHO_REQ");
 			break;
 		case TTL_EXCEEDED:
-			printf(" TTL");
+			printf(" TTL_EXC");
 			break;
 		default:
 			printf("unknown");
 	}
 
-	if(!name_dst)
-		name_dst = ether_ntoa((struct ether_addr*) ip->dst );
+	if (!name_dst)
+		name_dst = ether_ntoa((struct ether_addr*) ip->dst);
 
 	printf(" %s\n", name_dst );
 	return;
 }
 
-void print_unicast_packet( unsigned char *buff, struct hashtable_t *hash ) {
+void print_unicast_packet(unsigned char *buff) {
 	struct ether_header *eth1 = (struct ether_header*) ( buff + sizeof( struct unicast_packet) );
 
 	if( ntohs( eth1->ether_type ) == ETH_P_IP ) {
@@ -219,14 +223,14 @@ void print_unicast_packet( unsigned char *buff, struct hashtable_t *hash ) {
 		}
 	} else if( ntohs( eth1->ether_type ) == ETH_P_ARP ) {
 		printf("BAT_UNI ");
-		print_arp( buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ), hash );
+		print_arp(buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ));
 	} else {
 		printf("BAT_UNI unknow ether type %x\n", ntohs( eth1->ether_type ) );
 	}
 
 }
 
-void print_packet( int length, unsigned char *buf )
+void print_packet(int length, unsigned char *buf)
 {
 	int i = 0;
 	printf("\n");
@@ -245,16 +249,16 @@ void print_packet( int length, unsigned char *buf )
 	return;
 }
 
-void print_broadcast_packet( unsigned char *buff, struct hashtable_t *hash ) {
+void print_broadcast_packet(unsigned char *buff) {
 
 	struct bcast_packet *bc = (struct bcast_packet*)buff;
-	struct hosts *tmp_host;
+	struct bat_host *bat_host;
 	char *name_orig = NULL;
 
-	if(print_names) {
-		tmp_host = ((struct hosts *)hash_find(hash, (struct ether_addr*) bc->orig));
-		if(tmp_host != NULL)
-			name_orig = tmp_host->name;
+	if (print_names) {
+		bat_host = bat_hosts_find_by_mac((char *)bc->orig);
+		if (bat_host)
+			name_orig = bat_host->name;
 	}
 
 	if(!name_orig)
@@ -264,7 +268,7 @@ void print_broadcast_packet( unsigned char *buff, struct hashtable_t *hash ) {
 
 
 	if( ntohs(((struct ether_header*)(buff + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP )
-		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ), hash );
+		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ));
 // 		if( verbose ) {
 // 			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
 // 			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
@@ -275,14 +279,10 @@ void print_broadcast_packet( unsigned char *buff, struct hashtable_t *hash ) {
 
 }
 
-int batdump_main( int argc, char **argv, struct hashtable_t *hash )
+int tcpdump(int argc, char **argv)
 {
-	int  optchar,
-		packetsize = 2000,
-		ptype=0,
-		tmp,
-		max_sock=0;
-
+	int optchar, packetsize = 2000, ptype = 0, tmp, max_sock = 0;
+	int ret = EXIT_FAILURE;
 	unsigned char packet[packetsize];
 	uint8_t found_args = 1,
 			print_dump = 0;
@@ -299,7 +299,7 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 	fd_set wait_sockets, tmp_wait_sockets;
 	struct batman_packet *batman_packet;
 
-	void (*p)(unsigned char*, struct hashtable_t *hash); /* pointer for packet output functions */
+	void (*p)(unsigned char*); /* pointer for packet output functions */
 
 
 	while ( ( optchar = getopt ( argc, argv, "advnp:h" ) ) != -1 ) {
@@ -387,6 +387,8 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 
 	}
 
+	bat_hosts_init();
+
 	while(1) {
 
 		memcpy( &tmp_wait_sockets, &wait_sockets, sizeof( fd_set ) );
@@ -436,8 +438,8 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 
 					if( p != NULL ) {
 						printf("%zd ", rec_length);
-						print_ether(packet, hash);
-						(*p)( ( packet + sizeof(struct ether_header) ), hash );
+						print_ether(packet);
+						(*p)( ( packet + sizeof(struct ether_header) ));
 						if(print_dump)
 							print_packet( rec_length, packet );
 					}
@@ -448,5 +450,7 @@ int batdump_main( int argc, char **argv, struct hashtable_t *hash )
 
 	}
 
-	exit( EXIT_SUCCESS );
+	ret = EXIT_SUCCESS;
+	bat_hosts_free();
+	return ret;
 }

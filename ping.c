@@ -1,5 +1,6 @@
-/* Copyright (C) 2007 B.A.T.M.A.N. contributors:
+/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
+ * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -34,8 +35,13 @@
 #include <signal.h>
 #include <features.h>
 #include <fcntl.h>
+
 #include "main.h"
+#include "ping.h"
 #include "functions.h"
+#include "packet.h"
+#include "bat-hosts.h"
+
 
 uint8_t Stop = 0;
 
@@ -60,18 +66,18 @@ void handler(int32_t sig) {
 	}
 }
 
-int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
-
+int ping(int argc, char **argv)
+{
 	char *send_buff, *rec_buff;
 	char begin[] = "p:";
-	int sbsize,rbsize;
+	int sbsize, rbsize, ret = EXIT_FAILURE;
 	uint8_t res;
 	int32_t recv_buff_len;
 	uint16_t seq_counter = 0;
 	struct icmp_packet icmp_packet;
 	struct unix_if unix_if;
 	struct timeval start,end,timeout;
-	struct ether_addr *mac;
+	struct ether_addr *dst_mac;
 
 	sigset_t sigmask_old, sigmask_new;
 	double time_delta;
@@ -88,8 +94,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	int time_out = 1;
 
 	char *mac_string = NULL;
-	struct hosts *tmp_hosts;
-	struct hash_it_t *hashit = NULL;
+	struct bat_host *bat_host;
 
 	while ( ( optchar = getopt ( argc, argv, "hc:i:t:" ) ) != -1 ) {
 		switch( optchar ) {
@@ -122,28 +127,25 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 		return(EXIT_FAILURE);
 	}
 
-	while ( NULL != ( hashit = hash_iterate( hash, hashit ) ) ) {
+	bat_hosts_init();
+	bat_host = bat_hosts_find_by_name(argv[found_args]);
 
-		tmp_hosts = (struct hosts *)hashit->bucket->data;
-		if(strcmp(tmp_hosts->name, argv[found_args]) == 0)
-			break;
-		else
-			tmp_hosts = NULL;
-	}
+	if (!bat_host) {
 
-	if( tmp_hosts == NULL ) {
+		dst_mac = ether_aton(argv[found_args]);
 
-		if( ( mac = ether_aton( argv[found_args] ) ) == NULL ) {
-			DBG("the mac address was not correct");
-			return(EXIT_FAILURE);
+		if (!dst_mac) {
+			printf("Error - the ping destination is not a bat-hosts name or mac address: %s\n", argv[found_args]);
+			goto out;
 		}
 
-	} else
-		mac = &tmp_hosts->mac;
+	} else {
+		dst_mac = &bat_host->mac;
+	}
 
-	mac_string = ether_ntoa(mac);
-	signal( SIGINT, handler );
-	signal( SIGTERM, handler );
+	mac_string = ether_ntoa(dst_mac);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
 
 	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	memset( &unix_if.addr, 0, sizeof(struct sockaddr_un) );
@@ -154,13 +156,13 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 
 	if( ( unix_if.unix_sock = open( BAT_DEVICE, O_RDWR | O_NONBLOCK ) ) < 0 ) {
 
-		DBG( "can't find character device '%s': %s search for unix socket...\n", BAT_DEVICE, strerror(errno) );
+		printf( "can't find character device '%s': %s search for unix socket...\n", BAT_DEVICE, strerror(errno) );
 
 		if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
 
-			DBG( "can't connect to unix socket '%s': %s ! Is batmand running on this host ?", UNIX_PATH, strerror(errno) );
+			printf( "can't connect to unix socket '%s': %s ! Is batmand running on this host ?", UNIX_PATH, strerror(errno) );
 			close( unix_if.unix_sock );
-			return(EXIT_FAILURE);
+			goto out;
 
 		} else {
 			sbsize = sizeof( struct icmp_packet ) + 2;
@@ -178,7 +180,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	memset(rec_buff, '\0', rbsize );
 
 
-	memcpy( &icmp_packet.dst,mac, ETH_ALEN );
+	memcpy(&icmp_packet.dst, dst_mac, ETH_ALEN);
 	icmp_packet.packet_type = BAT_ICMP;
 	icmp_packet.version = COMPAT_VERSION;
 	icmp_packet.msg_type = ECHO_REQUEST;
@@ -211,7 +213,7 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 			printf( "Error - can't write to socket: %s %d\n", strerror(errno), errno );
 			close( unix_if.unix_sock );
 			free( send_buff);
-			return(EXIT_FAILURE);
+			goto out;
 		}
 
 		gettimeofday(&start,(struct timezone*)0);
@@ -264,5 +266,9 @@ int batping_main( int argc, char **argv, struct hashtable_t *hash ) {
 	printf("--- %s batping statistic ---\n",mac_string );
 	printf("%d packets transmitted, %d received, %d%c packet loss\n", trans, recv, ( (trans - recv) * 100 / trans ),'%');
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min < 0.0 ? 0.000 : min, avg_count?(avg / avg_count):0.000 ,max, max - ( min < 0.0 ? 0.0:min) );
-	return(EXIT_SUCCESS);
+	ret = EXIT_SUCCESS;
+
+out:
+	bat_hosts_free();
+	return ret;
 }

@@ -18,19 +18,15 @@
  *
  */
 
-#include <netinet/ether.h>
+
+
 #include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <getopt.h>
-#include <signal.h>
+#include <fcntl.h>
 
 #include "main.h"
 #include "traceroute.h"
@@ -39,188 +35,166 @@
 #include "bat-hosts.h"
 
 
-void batroute_usage() {
-	printf("batctl module traceroute\n");
-	printf("Usage: batctl traceroute|br mac|name\n");
-	printf("\t-h help\n");
-	return;
+#define TTL_MAX 50
+
+
+void traceroute_usage()
+{
+	printf("Usage: batctl traceroute mac|bat-host [options] \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
 }
 
 int traceroute(int argc, char **argv)
 {
-
-	char *send_buff,				/* buffer to send */
-		*rec_buff,				/* receive buffer */
-		*return_mac,
-		begin[] = "p:";				/* send buffer need two chars at begin for batman-advance socket*/
-
-	int sbsize,					/* size of send buffer */
-		rbsize,					/* size of receive buffer */
-		optchar,				/* ascii code of programm option */
-		i,
-		count=0;
-
-	uint8_t res,
-			stop = 0,
-			found_args = 1;
-
-	uint16_t seq_counter = 0;
-	int32_t recv_buff_len;
-	int ret = EXIT_FAILURE;
-
+	struct icmp_packet icmp_packet_out, icmp_packet_in;
+	struct bat_host *bat_host;
+	struct ether_addr *dst_mac = NULL;
+	struct timeval start, end, tv;
+	fd_set read_socket;
+	ssize_t read_len;
+	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
+	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
+	int found_args = 1, optchar, seq_counter = 0;
 	double time_delta = 0.0;
 
-	struct icmp_packet icmp_packet;
-	struct unix_if unix_if;
-	struct timeval start, end;
-
-	struct timeval timeout;
-	struct bat_host *bat_host;
-	struct ether_addr *dst_mac;
-
-	fd_set read_socket;
-
-	while ( ( optchar = getopt ( argc, argv, "h" ) ) != -1 ) {
-		switch( optchar ) {
-			case 'h':
-				batroute_usage();
-				exit(EXIT_SUCCESS);
-				break;
-			default:
-				batroute_usage();
-				exit(EXIT_FAILURE);
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			traceroute_usage();
+			return EXIT_SUCCESS;
+		default:
+			traceroute_usage();
+			return EXIT_FAILURE;
 		}
 	}
 
 	if (argc <= found_args) {
-		batroute_usage();
-		exit(EXIT_FAILURE);
+		printf("Error - target mac address or bat-host name not specified\n");
+		traceroute_usage();
+		return EXIT_FAILURE;
 	}
 
+	dst_string = argv[found_args];
 	bat_hosts_init();
-	bat_host = bat_hosts_find_by_name(argv[found_args]);
+	bat_host = bat_hosts_find_by_name(dst_string);
 
-	if (!bat_host) {
+	if (bat_host)
+		dst_mac = &bat_host->mac_addr;
 
-		dst_mac = ether_aton(argv[found_args]);
+	if (!dst_mac) {
+		dst_mac = ether_aton(dst_string);
 
 		if (!dst_mac) {
-			printf("Error - the traceroute destination is not a bat-hosts name or mac address: %s\n", argv[found_args]);
+			printf("Error - the traceroute destination is not a mac address or bat-host name: %s\n", dst_string);
 			goto out;
 		}
-
-	} else {
-		dst_mac = &bat_host->mac_addr;
 	}
 
-	unix_if.unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
-	memset( &unix_if.addr, 0, sizeof(struct sockaddr_un) );
+	mac_string = ether_ntoa(dst_mac);
 
-	unix_if.addr.sun_family = AF_LOCAL;
-	strcpy( unix_if.addr.sun_path, UNIX_PATH );
+	trace_fd = open(BAT_DEVICE, O_RDWR);
 
-
-	if ( connect ( unix_if.unix_sock, (struct sockaddr *)&unix_if.addr, sizeof(struct sockaddr_un) ) < 0 ) {
-
-		printf( "Error - can't connect to unix socket '%s': %s ! Is batmand running on this host ?\n", UNIX_PATH, strerror(errno) );
-		close( unix_if.unix_sock );
+	if (trace_fd < 0) {
+		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
+				BAT_DEVICE, strerror(errno));
+		printf("Check whether the module is loaded and active.\n");
 		goto out;
-
 	}
 
-	sbsize = sizeof( struct icmp_packet ) + 2;
-	rbsize = sizeof( struct icmp_packet );
-	send_buff = malloc( sbsize );
-	memset(send_buff, '\0', sbsize );
-	rec_buff = malloc( rbsize );
-	memset(rec_buff, '\0', rbsize );
+	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
+	icmp_packet_out.version = COMPAT_VERSION;
+	icmp_packet_out.packet_type = BAT_ICMP;
+	icmp_packet_out.msg_type = ECHO_REQUEST;
+	icmp_packet_out.seqno = 0;
 
-	memcpy(&icmp_packet.dst, dst_mac, ETH_ALEN);
-	icmp_packet.version = COMPAT_VERSION;
-	icmp_packet.packet_type = BAT_ICMP;
-	icmp_packet.msg_type = ECHO_REQUEST;
-	icmp_packet.ttl = 0;
-	icmp_packet.seqno = 0;
-	memcpy( send_buff, begin, 2 );
+	printf("traceroute to %s (%s), %d hops max, %d byte packets\n",
+		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
-	for( ; !stop && count < 50; count++ ) {
-		icmp_packet.ttl++;
-		icmp_packet.seqno = htons( ++seq_counter );
-		memcpy( send_buff+2, &icmp_packet, rbsize );
+	for (icmp_packet_out.ttl = 0; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
+		icmp_packet_out.seqno = htons(++seq_counter);
 
-
-		for( i=0; i<3 && !stop; i++ )
-		{
-
-			if ( write( unix_if.unix_sock, send_buff, sbsize ) < 0 ) {
-				printf( "Error - can't write to unix socket: %s\n", strerror(errno) );
-				close( unix_if.unix_sock );
-				free( send_buff);
-				goto out;
-			}
-
-			gettimeofday(&start,(struct timezone*)0);
-
-			timeout.tv_sec = 2;
-			timeout.tv_usec = 0;
-
-			FD_ZERO(&read_socket);
-			FD_SET( unix_if.unix_sock, &read_socket );
-
-			res = select( unix_if.unix_sock + 1, &read_socket, NULL, NULL, &timeout );
-
-			if( res > 0 )
-			{
-				if ( ( recv_buff_len = read( unix_if.unix_sock, rec_buff, rbsize ) ) > 0 )
-				{
-					gettimeofday(&end,(struct timezone*)0);
-
-					if( recv_buff_len == rbsize && ( ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY || ((struct icmp_packet *)rec_buff)->msg_type == TTL_EXCEEDED ) ) {
-
-						time_delta = time_diff( &start, &end );
-
-						if( i == 0) {
-
-							return_mac = ether_ntoa( ( struct ether_addr* ) ( ( struct icmp_packet * )rec_buff )->orig );
-							if( return_mac == NULL ) {
-								printf("returned mac address was not correct\n");
-								exit( EXIT_FAILURE );
-							}
-
-							bat_host = bat_hosts_find_by_mac(return_mac);
-
-							if (bat_host == NULL )
-								printf("%u: %s %.3f ms", ntohs( ( ( struct icmp_packet * )  rec_buff )->seqno ), return_mac, time_delta );
-							else
-								printf("%u: %s (%s) %.3f ms", ntohs( ( ( struct icmp_packet * ) rec_buff )->seqno ), return_mac, bat_host->name, time_delta );
-						} else {
-							printf("  %.3f ms", time_delta );
-						}
-
-					} else if( ((struct icmp_packet *)rec_buff)->msg_type == DESTINATION_UNREACHABLE ) {
-						printf("Host unreachable\n");
-						stop=1;
-					} else {
-						printf("undefined message type\n");
-						stop=1;
-					}
-				}
-			} else {
-				printf(" * ");
-				fflush(stdout);
-				i--;
+		for (i = 0; i < 3; i++) {
+			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
+				printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
 				continue;
 			}
-		}
-		printf("\n");
-		if( ((struct icmp_packet *)rec_buff)->msg_type == ECHO_REPLY )
-			stop = 1;
 
+			gettimeofday(&start, (struct timezone*)0);
+
+			tv.tv_sec = 2;
+			tv.tv_usec = 0;
+
+			FD_ZERO(&read_socket);
+			FD_SET(trace_fd, &read_socket);
+
+			res = select(trace_fd + 1, &read_socket, NULL, NULL, &tv);
+
+			if (res <= 0) {
+				printf(" * ");
+				fflush(stdout);
+				continue;
+			}
+
+			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
+
+			if (read_len < 0) {
+				printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
+				continue;
+			}
+
+			if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
+				printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
+					sizeof(icmp_packet_in), read_len);
+				continue;
+			}
+
+			switch (icmp_packet_in.msg_type) {
+			case ECHO_REPLY:
+			case TTL_EXCEEDED:
+				gettimeofday(&end, (struct timezone*)0);
+				time_delta = time_diff(&start, &end);
+
+				if (i > 0) {
+					printf("  %.3f ms", time_delta);
+					break;
+				}
+
+				return_mac = ether_ntoa((struct ether_addr *)icmp_packet_in.orig);
+				bat_host = bat_hosts_find_by_mac(return_mac);
+
+				if (!bat_host)
+					printf("%u: %s %.3f ms",
+						ntohs(icmp_packet_in.seqno), return_mac, time_delta);
+				else
+					printf("%u: %s (%s) %.3f ms",
+						ntohs(icmp_packet_in.seqno),
+						return_mac, bat_host->name, time_delta);
+
+				if (icmp_packet_in.msg_type == ECHO_REPLY)
+					dst_reached = 1;
+			case DESTINATION_UNREACHABLE:
+				printf("%s: Destination Host Unreachable\n", dst_string);
+				break;
+			case PARAMETER_PROBLEM:
+				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+						icmp_packet_in.ttl, COMPAT_VERSION);
+				printf("Please make sure to compatible versions!\n");
+				goto out;
+			default:
+				printf("Unknown message type %d len %d received\n", icmp_packet_in.msg_type, read_len);
+				break;
+			}
+		}
+
+		printf("\n");
 	}
 
 	ret = EXIT_SUCCESS;
 
 out:
 	bat_hosts_free();
+	if (trace_fd)
+		close(trace_fd);
 	return ret;
 }

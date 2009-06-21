@@ -128,7 +128,6 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 void bat_hosts_init(void)
 {
 	unsigned int i;
-#define CONF_DIR_LEN 256
 	char confdir[CONF_DIR_LEN];
 	char *homedir;
 
@@ -143,6 +142,7 @@ void bat_hosts_init(void)
 
 	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++) {
 		strcpy(confdir, "");
+
 		if (strlen(bat_hosts_path[i]) >= 2
 		    && bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
 			strncpy(confdir, homedir, CONF_DIR_LEN);
@@ -152,6 +152,7 @@ void bat_hosts_init(void)
 			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
 			confdir[CONF_DIR_LEN - 1] = '\0';
 		}
+
 		parse_hosts_file(host_hash, confdir);
 	}
 }

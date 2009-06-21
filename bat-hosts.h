@@ -25,6 +25,7 @@
 #include <netinet/ether.h>
 
 #define HOST_NAME_MAX_LEN 50
+#define CONF_DIR_LEN 256
 
 
 struct bat_host {

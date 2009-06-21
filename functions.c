@@ -1,6 +1,6 @@
 /* Copyright (C) 2007 B.A.T.M.A.N. contributors:
  * Andreas Langer <a.langer@q-dsl.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
  * License as published by the Free Software Foundation.
@@ -23,22 +23,24 @@
 
 #include "functions.h"
 
-double time_diff( struct timeval *start, struct timeval *end ) {
-	unsigned long sec = (unsigned long) end->tv_sec - start->tv_sec;
+
+double time_diff(struct timeval *start, struct timeval *end)
+{
+	unsigned long sec = (unsigned long)end->tv_sec - start->tv_sec;
 	unsigned long usec = (unsigned long)end->tv_usec - start->tv_usec;
 
-	if(sec > (unsigned long)end->tv_sec) {
+	if (sec > (unsigned long)end->tv_sec) {
 		sec += 1000000000UL;
 		--sec;
 	}
 
-	if(usec > (unsigned long)end->tv_usec) {
+	if (usec > (unsigned long)end->tv_usec) {
 		usec += 1000000000UL;
 		--usec;
 	}
 
-	if ( sec > 0 )
+	if (sec > 0)
 		usec = 1000000 * sec + usec;
 
-	return (double)usec/1000;
+	return (double)usec / 1000;
 }

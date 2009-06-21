@@ -65,7 +65,7 @@ int ping(int argc, char **argv)
 {
 	struct icmp_packet icmp_packet_out, icmp_packet_in;
 	struct timeval start, end, tv;
-	struct ether_addr *dst_mac =  NULL;
+	struct ether_addr *dst_mac = NULL;
 	struct bat_host *bat_host;
 	ssize_t read_len;
 	fd_set read_socket;
@@ -194,28 +194,27 @@ int ping(int argc, char **argv)
 			goto sleep;
 		}
 
-		if (read_len == 0)
+		if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
+			printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
+				sizeof(icmp_packet_in), read_len);
 			goto sleep;
+		}
 
-		gettimeofday(&end, (struct timezone*)0);
-
-		if ((read_len == sizeof(icmp_packet_in)) && (icmp_packet_in.msg_type == ECHO_REPLY)) {
-
+		switch (icmp_packet_in.msg_type) {
+		case ECHO_REPLY:
+			gettimeofday(&end, (struct timezone*)0);
 			time_delta = time_diff(&start, &end);
 			printf("%d bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
-				read_len, dst_string, ntohs(icmp_packet_in.seqno),
-				icmp_packet_in.ttl, time_delta);
+					read_len, dst_string, ntohs(icmp_packet_in.seqno),
+					icmp_packet_in.ttl, time_delta);
 
-			if (time_delta < min || min == 0.0)
+			if ((time_delta < min) || (min == 0.0))
 				min = time_delta;
 			if (time_delta > max)
 				max = time_delta;
 			avg += time_delta;
 			packets_in++;
-			goto sleep;
-		}
-
-		switch(icmp_packet_in.msg_type) {
+			break;
 		case DESTINATION_UNREACHABLE:
 			printf("From %s icmp_seq=%u Destination Host Unreachable\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;

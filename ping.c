@@ -147,7 +147,7 @@ int ping(int argc, char **argv)
 	icmp_packet_out.ttl = 50;
 	icmp_packet_out.seqno = 0;
 
-	printf("PING %s (%s) %i(%i) bytes of data\n", dst_string, mac_string,
+	printf("PING %s (%s) %zi(%zi) bytes of data\n", dst_string, mac_string,
 		sizeof(icmp_packet_out), sizeof(icmp_packet_out) + 28);
 
 	while (!is_aborted) {
@@ -194,8 +194,8 @@ int ping(int argc, char **argv)
 			goto sleep;
 		}
 
-		if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
-			printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
+		if ((size_t)read_len < sizeof(icmp_packet_in)) {
+			printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
 				sizeof(icmp_packet_in), read_len);
 			goto sleep;
 		}
@@ -204,7 +204,7 @@ int ping(int argc, char **argv)
 		case ECHO_REPLY:
 			gettimeofday(&end, (struct timezone*)0);
 			time_delta = time_diff(&start, &end);
-			printf("%d bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
+			printf("%zd bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
 					icmp_packet_in.ttl, time_delta);
 
@@ -227,7 +227,7 @@ int ping(int argc, char **argv)
 			printf("Please make sure to compatible versions!\n");
 			goto out;
 		default:
-			printf("Unknown message type %d len %d received\n", icmp_packet_in.msg_type, read_len);
+			printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
 			break;
 		}
 

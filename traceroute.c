@@ -108,7 +108,7 @@ int traceroute(int argc, char **argv)
 	icmp_packet_out.msg_type = ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
 
-	printf("traceroute to %s (%s), %d hops max, %d byte packets\n",
+	printf("traceroute to %s (%s), %d hops max, %zd byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 0; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
@@ -143,8 +143,8 @@ int traceroute(int argc, char **argv)
 				continue;
 			}
 
-			if ((unsigned int)read_len < sizeof(icmp_packet_in)) {
-				printf("Warning - dropping received packet as it is smaller than expected (%d): %d\n",
+			if ((size_t)read_len < sizeof(icmp_packet_in)) {
+				printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
 					sizeof(icmp_packet_in), read_len);
 				continue;
 			}
@@ -182,7 +182,7 @@ int traceroute(int argc, char **argv)
 				printf("Please make sure to compatible versions!\n");
 				goto out;
 			default:
-				printf("Unknown message type %d len %d received\n", icmp_packet_in.msg_type, read_len);
+				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
 				break;
 			}
 		}

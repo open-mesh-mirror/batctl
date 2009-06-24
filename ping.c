@@ -42,7 +42,7 @@ char is_aborted = 0;
 
 void ping_usage(void)
 {
-	printf("Usage: batctl ping mac|bat-host [options] \n");
+	printf("Usage: batctl ping [options] mac|bat-host \n");
 	printf("options:\n");
 	printf(" \t -c ping packet count \n");
 	printf(" \t -h print this help\n");

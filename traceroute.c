@@ -41,7 +41,7 @@
 
 void traceroute_usage(void)
 {
-	printf("Usage: batctl traceroute mac|bat-host [options] \n");
+	printf("Usage: batctl traceroute [options] mac|bat-host \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }

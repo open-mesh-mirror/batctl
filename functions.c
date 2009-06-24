@@ -77,7 +77,7 @@ int read_proc_file(char *path, int read_opt)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
-	int fd = 0, res = EXIT_FAILURE;
+	int fd = 0, res = EXIT_FAILURE, fd_opts;
 	unsigned int bytes_written;
 	char full_path[500], buff[1500], *buff_ptr, *space_ptr;
 	ssize_t read_len;
@@ -86,15 +86,19 @@ int read_proc_file(char *path, int read_opt)
 		goto out;
 
 	strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-	full_path[strlen(PROC_ROOT_PATH) - 1] = '\0';
+	full_path[strlen(PROC_ROOT_PATH)] = '\0';
 	strncat(full_path, path, sizeof(full_path) - strlen(full_path));
 
 	fd = open(full_path, O_RDONLY);
 
 	if (fd < 0) {
-		printf("Error - can't open file '%s': %s", full_path, strerror(errno));
+		printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
 		goto out;
 	}
+
+	/* make fd socket non blocking to exit immediately if the file to read is empty */
+	fd_opts = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, fd_opts | O_NONBLOCK);
 
 read:
 	if (read_opt & CLR_CONT_READ)
@@ -104,6 +108,10 @@ read:
 		read_len = read(fd, buff, sizeof(buff));
 
 		if (read_len < 0) {
+			/* file was empty */
+			if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
+				break;
+
 			printf("Error - can't read from file '%s': %s\n", full_path, strerror(errno));
 			goto out;
 		}
@@ -114,8 +122,8 @@ read:
 		buff[read_len] = '\0';
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
-			printf("%s\n", buff);
-			continue;
+			printf("%s", buff);
+			goto check_eof;
 		}
 
 		/* replace mac addresses with bat host names */
@@ -154,13 +162,15 @@ written:
 		if (bytes_written != (size_t)read_len)
 			printf("%s", buff_ptr);
 
+check_eof:
+		if (sizeof(buff) != (size_t)read_len)
+			break;
 	}
 
-	if (read_opt & CLR_CONT_READ)
+	if (read_opt != SINGLE_READ) {
 		sleep(1);
-
-	if (read_opt != SINGLE_READ)
 		goto read;
+	}
 
 	res = EXIT_SUCCESS;
 
@@ -180,17 +190,17 @@ int write_proc_file(char *path, char *value)
 		goto out;
 
 	strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-	full_path[strlen(PROC_ROOT_PATH) - 1] = '\0';
+	full_path[strlen(PROC_ROOT_PATH)] = '\0';
 	strncat(full_path, path, sizeof(full_path) - strlen(full_path));
 
 	fd = open(full_path, O_WRONLY);
 
 	if (fd < 0) {
-		printf("Error - can't open file '%s': %s", full_path, strerror(errno));
+		printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
 		goto out;
 	}
 
-	write_len = write(fd, value, strlen(value));
+	write_len = write(fd, value, strlen(value) + 1);
 
 	if (write_len < 0) {
 		printf("Error - can't write to file '%s': %s\n", full_path, strerror(errno));

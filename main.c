@@ -46,8 +46,8 @@ void print_usage(void) {
 	printf(" \ttraceroute|tr <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td    <interface>       \ttcpdump layer 2 traffic on the given interface\n");
 	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -v print version\n");
+	printf(" \t-h print this help\n");
+	printf(" \t-v print version\n");
 }
 
 int main(int argc, char **argv)

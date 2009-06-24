@@ -49,16 +49,20 @@ uint8_t print_names = 1;
 
 struct list_head_first dump_if_list;
 
-void batdump_usage() {
-	printf("batctl module tcpdump\n");
-	printf("Usage: batctl tcpdump|bd [option] interface\n");
-	printf("\t-p packet type\n\t\t1=batman packets\n\t\t2=icmp packets\n\t\t3=unicast packets\n\t\t4=broadcast packets\n");
-	printf("\t-a all packet types\n");
-	printf("\t-d packet dump in hex\n");
-	printf("\t-v verbose\n");
-	printf("\t-n don't convert addesses to names\n");
-	printf("\t-h help\n");
-	return;
+void tcpdump_usage(void)
+{
+	printf("Usage: batctl tcpdump [options] interface [interface]\n");
+	printf("options:\n");
+	printf(" \t -a dump all packet types\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't convert addesses to bat-host names\n");
+	printf(" \t -p dump specific packet type\n");
+	printf(" \t\t1 - batman packets\n");
+	printf(" \t\t2 - icmp packets\n");
+	printf(" \t\t3 - unicast packets\n");
+	printf(" \t\t4 - broadcast packets\n");
+	printf(" \t -v verbose\n");
+	printf(" \t -t timeout in seconds\n");
 }
 
 void print_arp(unsigned char *buff) {
@@ -312,6 +316,9 @@ int tcpdump(int argc, char **argv)
     				print_dump = 1;
 				found_args+=1;
 				break;
+			case 'h':
+				tcpdump_usage();
+				return EXIT_SUCCESS;
 			case 'v':
     				verbose = 1;
 				found_args+=1;
@@ -326,18 +333,14 @@ int tcpdump(int argc, char **argv)
 					ptype = tmp;
 				found_args+=2;
 				break;
-			case 'h':
-				batdump_usage();
-				exit(EXIT_SUCCESS);
-				break;
 			default:
-				batdump_usage();
-				exit(EXIT_FAILURE);
+				tcpdump_usage();
+				return EXIT_FAILURE;
 		}
 	}
 
 	if ( argc <= found_args ) {
-		batdump_usage();
+		tcpdump_usage();
 		exit(EXIT_FAILURE);
 	}
 

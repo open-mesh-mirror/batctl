@@ -1,5 +1,4 @@
-/* Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
- * Andreas Langer <a.langer@q-dsl.de>
+/* Copyright (C) 2009 B.A.T.M.A.N. contributors:
  * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
@@ -20,7 +19,21 @@
 
 
 
-#define SOURCE_VERSION "0.2-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#define PROC_INTERFACES "interfaces"
+#define PROC_ORIGINATORS "originators"
+#define PROC_ORIG_INTERVAL "orig_interval"
+#define PROC_LOG_LEVEL "log_level"
+#define PROC_LOG "log"
+#define PROC_GATEWAYS "gateways"
+#define PROC_TRANSTABLE_LOCAL "transtable_local"
+#define PROC_TRANSTABLE_GLOBAL "transtable_global"
+#define PROC_VIS "vis"
+#define PROC_VIS_FORMAT "vis_format"
+#define PROC_AGGR "aggregate_ogm"
 
-#define BAT_DEVICE "/dev/batman-adv"
-#define PROC_ROOT_PATH "/proc/net/batman-adv/"
+
+int interface(int argc, char **argv);
+int originators(int argc, char **argv);
+int orig_interval(int argc, char **argv);
+int log_level(int argc, char **argv);
+int log_print(int argc, char **argv);

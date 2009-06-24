@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "main.h"
 #include "traceroute.h"
@@ -38,7 +39,7 @@
 #define TTL_MAX 50
 
 
-void traceroute_usage()
+void traceroute_usage(void)
 {
 	printf("Usage: batctl traceroute mac|bat-host [options] \n");
 	printf("options:\n");
@@ -161,7 +162,7 @@ int traceroute(int argc, char **argv)
 				}
 
 				return_mac = ether_ntoa((struct ether_addr *)icmp_packet_in.orig);
-				bat_host = bat_hosts_find_by_mac(return_mac);
+				bat_host = bat_hosts_find_by_mac((char *)icmp_packet_in.orig);
 
 				if (!bat_host)
 					printf("%u: %s %.3f ms",

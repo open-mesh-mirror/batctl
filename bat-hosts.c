@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "main.h"
 #include "bat-hosts.h"

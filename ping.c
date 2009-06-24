@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "main.h"
 #include "ping.h"
@@ -39,7 +40,7 @@
 char is_aborted = 0;
 
 
-void ping_usage()
+void ping_usage(void)
 {
 	printf("Usage: batctl ping mac|bat-host [options] \n");
 	printf("options:\n");

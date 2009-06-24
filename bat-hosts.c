@@ -72,7 +72,7 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 	if (fd == NULL)
 		return;
 
-	while (fscanf(fd,"%[^ \t]%s\n", name, mac_str) != EOF) {
+	while (fscanf(fd,"%[^ \t]%s\n", mac_str, name) != EOF) {
 
 		mac_addr = ether_aton(mac_str);
 		if (!mac_addr) {

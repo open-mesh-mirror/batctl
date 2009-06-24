@@ -171,7 +171,6 @@ struct bat_host *bat_hosts_find_by_name(char *name)
 
 		if (strncmp(tmp_bat_host->name, name, HOST_NAME_MAX_LEN - 1) == 0)
 			bat_host = tmp_bat_host;
-			break;
 	}
 
 	return bat_host;

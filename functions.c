@@ -79,8 +79,11 @@ int read_proc_file(char *path, int read_opt)
 	struct bat_host *bat_host;
 	int fd = 0, res = EXIT_FAILURE, fd_opts;
 	unsigned int bytes_written;
-	char full_path[500], buff[1500], *buff_ptr, *space_ptr;
+	char full_path[500], buff[1500], *buff_ptr, *cr_ptr, *space_ptr;
 	ssize_t read_len;
+
+	if (read_opt & USE_BAT_HOSTS)
+		bat_hosts_init();
 
 	if (check_proc_dir() != EXIT_SUCCESS)
 		goto out;
@@ -131,37 +134,46 @@ read:
 		buff_ptr = buff;
 		bytes_written = 0;
 
-		while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
+		while ((cr_ptr = strchr(buff_ptr, '\n')) != NULL) {
 
-			*space_ptr = '\0';
+			*cr_ptr = '\0';
 
-			if (strlen(buff_ptr) != ETH_STR_LEN)
-				goto print_plain_buff;
+			while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
 
-			mac_addr = ether_aton(buff_ptr);
+				*space_ptr = '\0';
 
-			if (!mac_addr)
-				goto print_plain_buff;
+				if (strlen(buff_ptr) != ETH_STR_LEN)
+					goto print_plain_buff;
 
-			bat_host = bat_hosts_find_by_mac((char *)mac_addr);
+				mac_addr = ether_aton(buff_ptr);
 
-			if (!bat_host)
-				goto print_plain_buff;
+				if (!mac_addr)
+					goto print_plain_buff;
 
-			printf("%s ", bat_host->name);
-			goto written;
+				bat_host = bat_hosts_find_by_mac((char *)mac_addr);
+
+				if (!bat_host)
+					goto print_plain_buff;
+
+				printf("%s ", bat_host->name);
+				goto written;
 
 print_plain_buff:
-			printf("%s ", buff_ptr);
+				printf("%s ", buff_ptr);
 
 written:
-			bytes_written += strlen(buff_ptr) + 1;
-			buff_ptr = space_ptr + 1;
+				bytes_written += strlen(buff_ptr) + 1;
+				buff_ptr = space_ptr + 1;
+
+			}
+
+			if (bytes_written != (size_t)read_len)
+				printf("%s", buff_ptr);
+
+			printf("\n");
+			buff_ptr = cr_ptr + 1;
 
 		}
-
-		if (bytes_written != (size_t)read_len)
-			printf("%s", buff_ptr);
 
 check_eof:
 		if (sizeof(buff) != (size_t)read_len)
@@ -185,6 +197,10 @@ check_eof:
 out:
 	if (fd)
 		close(fd);
+
+	if (read_opt & USE_BAT_HOSTS)
+		bat_hosts_free();
+
 	return res;
 }
 

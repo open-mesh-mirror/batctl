@@ -112,7 +112,7 @@ int traceroute(int argc, char **argv)
 	printf("traceroute to %s (%s), %d hops max, %zd byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
-	for (icmp_packet_out.ttl = 0; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
+	for (icmp_packet_out.ttl = 1; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
 		icmp_packet_out.seqno = htons(++seq_counter);
 
 		for (i = 0; i < 3; i++) {
@@ -161,19 +161,21 @@ int traceroute(int argc, char **argv)
 					break;
 				}
 
-				return_mac = ether_ntoa((struct ether_addr *)icmp_packet_in.orig);
-				bat_host = bat_hosts_find_by_mac((char *)icmp_packet_in.orig);
+				return_mac = ether_ntoa((struct ether_addr *)&icmp_packet_in.orig);
+				bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
 
 				if (!bat_host)
-					printf("%u: %s %.3f ms",
+					printf("%2u: %s %.3f ms",
 						ntohs(icmp_packet_in.seqno), return_mac, time_delta);
 				else
-					printf("%u: %s (%s) %.3f ms",
+					printf("%2u: %s (%s) %.3f ms",
 						ntohs(icmp_packet_in.seqno),
-						return_mac, bat_host->name, time_delta);
+						bat_host->name, return_mac, time_delta);
 
 				if (icmp_packet_in.msg_type == ECHO_REPLY)
 					dst_reached = 1;
+
+				break;
 			case DESTINATION_UNREACHABLE:
 				printf("%s: Destination Host Unreachable\n", dst_string);
 				break;

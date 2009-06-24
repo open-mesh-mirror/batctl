@@ -233,10 +233,8 @@ int ping(int argc, char **argv)
 		}
 
 sleep:
-		if ((tv.tv_sec != 0) || (tv.tv_usec != 0)) {
-			printf("sleeping: sec: %d, usec: %d\n", (int)tv.tv_sec, (int)tv.tv_usec);
+		if ((tv.tv_sec != 0) || (tv.tv_usec != 0))
 			select(0, NULL, NULL, NULL, &tv);
-		}
 
 	}
 

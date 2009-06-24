@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 		ret = originators(argc - 1, argv + 1);
 
-	} else if ((strcmp(argv[1], "log_level") == 0) || (strcmp(argv[1], "ll") == 0)) {
+	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
 		ret = log_level(argc - 1, argv + 1);
 

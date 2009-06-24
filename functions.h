@@ -28,8 +28,8 @@ int read_proc_file(char *path, int read_opt);
 int write_proc_file(char *path, char *value);
 
 enum {
-	SINGLE_READ = 0,
-	CONT_READ = 1,
-	CLR_CONT_READ = 2,
-	USE_BAT_HOSTS = 4,
+	SINGLE_READ = 0x00,
+	CONT_READ = 0x01,
+	CLR_CONT_READ = 0x02,
+	USE_BAT_HOSTS = 0x04,
 };

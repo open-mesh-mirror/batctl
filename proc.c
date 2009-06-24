@@ -78,18 +78,18 @@ void originators_usage(void)
 
 int originators(int argc, char **argv)
 {
-	int optchar, read_opt = CLR_CONT_READ + USE_BAT_HOSTS;
+	int optchar, read_opt = CLR_CONT_READ | USE_BAT_HOSTS;
 
 	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
 		switch (optchar) {
 		case 'b':
-			read_opt -= CLR_CONT_READ;
+			read_opt &= ~CLR_CONT_READ;
 			break;
 		case 'h':
 			originators_usage();
 			return EXIT_SUCCESS;
 		case 'n':
-			read_opt -= USE_BAT_HOSTS;
+			read_opt &= ~USE_BAT_HOSTS;
 			break;
 		default:
 			originators_usage();
@@ -171,7 +171,7 @@ int log_print(int argc, char **argv)
 	while ((optchar = getopt(argc, argv, "bh")) != -1) {
 		switch (optchar) {
 		case 'b':
-			read_opt -= CONT_READ;
+			read_opt &= ~CONT_READ;
 			break;
 		case 'h':
 			log_usage();

@@ -89,6 +89,7 @@ int read_proc_file(char *path, int read_opt)
 	full_path[strlen(PROC_ROOT_PATH)] = '\0';
 	strncat(full_path, path, sizeof(full_path) - strlen(full_path));
 
+open:
 	fd = open(full_path, O_RDONLY);
 
 	if (fd < 0) {
@@ -100,10 +101,10 @@ int read_proc_file(char *path, int read_opt)
 	fd_opts = fcntl(fd, F_GETFL, 0);
 	fcntl(fd, F_SETFL, fd_opts | O_NONBLOCK);
 
-read:
 	if (read_opt & CLR_CONT_READ)
 		system("clear");
 
+read:
 	while (1) {
 		read_len = read(fd, buff, sizeof(buff));
 
@@ -167,9 +168,16 @@ check_eof:
 			break;
 	}
 
-	if (read_opt != SINGLE_READ) {
+	if (read_opt & CONT_READ) {
 		sleep(1);
 		goto read;
+	}
+
+	if (read_opt & CLR_CONT_READ) {
+		if (fd)
+			close(fd);
+		sleep(1);
+		goto open;
 	}
 
 	res = EXIT_SUCCESS;

@@ -113,9 +113,10 @@ int traceroute(int argc, char **argv)
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
-		icmp_packet_out.seqno = htons(++seq_counter);
 
 		for (i = 0; i < 3; i++) {
+			icmp_packet_out.seqno = htons(++seq_counter);
+
 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
 				printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
 				continue;
@@ -132,6 +133,9 @@ int traceroute(int argc, char **argv)
 			res = select(trace_fd + 1, &read_socket, NULL, NULL, &tv);
 
 			if (res <= 0) {
+				if (i == 0)
+					printf("%2u: ", icmp_packet_out.ttl);
+
 				printf(" * ");
 				fflush(stdout);
 				continue;
@@ -166,11 +170,10 @@ int traceroute(int argc, char **argv)
 
 				if (!bat_host)
 					printf("%2u: %s %.3f ms",
-						ntohs(icmp_packet_in.seqno), return_mac, time_delta);
+						icmp_packet_out.ttl, return_mac, time_delta);
 				else
 					printf("%2u: %s (%s) %.3f ms",
-						ntohs(icmp_packet_in.seqno),
-						bat_host->name, return_mac, time_delta);
+						icmp_packet_out.ttl, bat_host->name, return_mac, time_delta);
 
 				if (icmp_packet_in.msg_type == ECHO_REPLY)
 					dst_reached = 1;

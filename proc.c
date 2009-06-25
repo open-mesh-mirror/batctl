@@ -29,7 +29,7 @@
 #include "proc.h"
 #include "functions.h"
 
-void interface_usage(void)
+static void interface_usage(void)
 {
 	printf("Usage: batctl interface [options] [none|interface] \n");
 	printf("options:\n");
@@ -67,96 +67,7 @@ int interface(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-void originators_usage(void)
-{
-	printf("Usage: batctl [options] origs \n");
-	printf("options:\n");
-	printf(" \t -b batch mode - read the originator table once and quit\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-}
-
-int originators(int argc, char **argv)
-{
-	int optchar, read_opt = CLR_CONT_READ | USE_BAT_HOSTS;
-
-	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
-		switch (optchar) {
-		case 'b':
-			read_opt &= ~CLR_CONT_READ;
-			break;
-		case 'h':
-			originators_usage();
-			return EXIT_SUCCESS;
-		case 'n':
-			read_opt &= ~USE_BAT_HOSTS;
-			break;
-		default:
-			originators_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	return read_proc_file(PROC_ORIGINATORS, read_opt);
-}
-
-void orig_interval_usage(void)
-{
-	printf("Usage: batctl [options] interval \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-int orig_interval(int argc, char **argv)
-{
-	int optchar;
-
-	while ((optchar = getopt(argc, argv, "h")) != -1) {
-		switch (optchar) {
-		case 'h':
-			orig_interval_usage();
-			return EXIT_SUCCESS;
-		default:
-			orig_interval_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (argc == 1)
-		return read_proc_file(PROC_ORIG_INTERVAL, SINGLE_READ);
-
-	return write_proc_file(PROC_ORIG_INTERVAL, argv[1]);
-}
-
-void log_level_usage(void)
-{
-	printf("Usage: batctl [options] loglevel \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-int log_level(int argc, char **argv)
-{
-	int optchar;
-
-	while ((optchar = getopt(argc, argv, "h")) != -1) {
-		switch (optchar) {
-		case 'h':
-			log_level_usage();
-			return EXIT_SUCCESS;
-		default:
-			log_level_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (argc == 1)
-		return read_proc_file(PROC_LOG_LEVEL, SINGLE_READ);
-
-	return write_proc_file(PROC_LOG_LEVEL, argv[1]);
-}
-
-void log_usage(void)
+static void log_usage(void)
 {
 	printf("Usage: batctl [options] log \n");
 	printf("options:\n");
@@ -185,3 +96,102 @@ int log_print(int argc, char **argv)
 	return read_proc_file(PROC_LOG, read_opt);
 }
 
+void originators_usage(void)
+{
+	printf("Usage: batctl [options] origs \n");
+	printf("options:\n");
+	printf(" \t -b batch mode - read the originator table once and quit\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+}
+
+void trans_local_usage(void)
+{
+	printf("Usage: batctl [options] translocal \n");
+	printf("options:\n");
+	printf(" \t -b batch mode - read the local translation table once and quit\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+}
+
+void trans_global_usage(void)
+{
+	printf("Usage: batctl [options] transglobal \n");
+	printf("options:\n");
+	printf(" \t -b batch mode - read the global translation table once and quit\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+}
+
+void orig_interval_usage(void)
+{
+	printf("Usage: batctl [options] interval \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void log_level_usage(void)
+{
+	printf("Usage: batctl [options] loglevel \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void vis_format_usage(void)
+{
+	printf("Usage: batctl [options] visformat \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void aggregation_usage(void)
+{
+	printf("Usage: batctl [options] aggregation \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+int handle_table(int argc, char **argv, char *file_path, void table_usage(void))
+{
+	int optchar, read_opt = CLR_CONT_READ | USE_BAT_HOSTS;
+
+	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
+		switch (optchar) {
+		case 'b':
+			read_opt &= ~CLR_CONT_READ;
+			break;
+		case 'h':
+			table_usage();
+			return EXIT_SUCCESS;
+		case 'n':
+			read_opt &= ~USE_BAT_HOSTS;
+			break;
+		default:
+			table_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	return read_proc_file(file_path, read_opt);
+}
+
+int handle_setting(int argc, char **argv, char *file_path, void setting_usage(void))
+{
+	int optchar;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			setting_usage();
+			return EXIT_SUCCESS;
+		default:
+			setting_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (argc == 1)
+		return read_proc_file(file_path, SINGLE_READ);
+
+	return write_proc_file(file_path, argv[1]);
+}

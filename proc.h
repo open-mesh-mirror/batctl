@@ -33,7 +33,14 @@
 
 
 int interface(int argc, char **argv);
-int originators(int argc, char **argv);
-int orig_interval(int argc, char **argv);
-int log_level(int argc, char **argv);
 int log_print(int argc, char **argv);
+
+void originators_usage(void);
+void trans_local_usage(void);
+void trans_global_usage(void);
+void orig_interval_usage(void);
+void log_level_usage(void);
+void vis_format_usage(void);
+void aggregation_usage(void);
+int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
+int handle_setting(int argc, char **argv, char *file_path, void setting_usage(void));

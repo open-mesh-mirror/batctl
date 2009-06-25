@@ -42,6 +42,11 @@ void print_usage(void) {
 	printf(" \tinterval|it   [orig_interval]   \tdisplay or modify the originator interval in ms\n");
 	printf(" \tloglevel|ll   [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
+	printf(" \ttranslocal|tl                   \tdisplay the local translation table\n");
+	printf(" \ttransglobal|tg                  \tdisplay the global translation table\n");
+	printf(" \tvisformat|vf  [format]          \tdisplay or modify the vis output format\n");
+	printf(" \taggregation|ag   [0|1]          \tdisplay or modify the packet aggregation setting\n");
+	printf("\n");
 	printf(" \tping|p        <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td    <interface>       \ttcpdump layer 2 traffic on the given interface\n");
@@ -88,11 +93,19 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "origs") == 0) || (strcmp(argv[1], "o") == 0)) {
 
-		ret = originators(argc - 1, argv + 1);
+		ret = handle_table(argc - 1, argv + 1, PROC_ORIGINATORS, originators_usage);
+
+	} else if ((strcmp(argv[1], "translocal") == 0) || (strcmp(argv[1], "tl") == 0)) {
+
+		ret = handle_table(argc - 1, argv + 1, PROC_TRANSTABLE_LOCAL, trans_local_usage);
+
+	} else if ((strcmp(argv[1], "transglobal") == 0) || (strcmp(argv[1], "tg") == 0)) {
+
+		ret = handle_table(argc - 1, argv + 1, PROC_TRANSTABLE_GLOBAL, trans_global_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
-		ret = log_level(argc - 1, argv + 1);
+		ret = handle_setting(argc - 1, argv + 1, PROC_LOG_LEVEL, log_level_usage);
 
 	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
 
@@ -100,7 +113,15 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
 
-		ret = orig_interval(argc - 1, argv + 1);
+		ret = handle_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
+
+	} else if ((strcmp(argv[1], "visformat") == 0) || (strcmp(argv[1], "vf") == 0)) {
+
+		ret = handle_setting(argc - 1, argv + 1, PROC_VIS_FORMAT, vis_format_usage);
+
+	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
+
+		ret = handle_setting(argc - 1, argv + 1, PROC_AGGR, aggregation_usage);
 
 	} else {
 		print_usage();

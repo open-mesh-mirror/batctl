@@ -155,7 +155,7 @@ read:
 				if (!bat_host)
 					goto print_plain_buff;
 
-				printf("%s ", bat_host->name);
+				printf("%17s ", bat_host->name);
 				goto written;
 
 print_plain_buff:

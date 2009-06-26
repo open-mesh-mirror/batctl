@@ -32,4 +32,5 @@ enum {
 	CONT_READ = 0x01,
 	CLR_CONT_READ = 0x02,
 	USE_BAT_HOSTS = 0x04,
+	LOG_MODE = 0x08,
 };

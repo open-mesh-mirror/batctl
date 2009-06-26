@@ -79,7 +79,7 @@ int read_proc_file(char *path, int read_opt)
 	struct bat_host *bat_host;
 	int fd = 0, res = EXIT_FAILURE, fd_opts;
 	unsigned int bytes_written;
-	char full_path[500], buff[1500], *buff_ptr, *cr_ptr, *space_ptr;
+	char full_path[500], buff[1500], *buff_ptr, *cr_ptr, *space_ptr, extra_char;
 	ssize_t read_len;
 
 	if (read_opt & USE_BAT_HOSTS)
@@ -141,6 +141,12 @@ read:
 			while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
 
 				*space_ptr = '\0';
+				extra_char = '\0';
+
+				if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
+					extra_char = ',';
+					buff_ptr[ETH_STR_LEN] = '\0';
+				}
 
 				if (strlen(buff_ptr) != ETH_STR_LEN)
 					goto print_plain_buff;
@@ -155,7 +161,16 @@ read:
 				if (!bat_host)
 					goto print_plain_buff;
 
-				printf("%17s ", bat_host->name);
+				if (read_opt & LOG_MODE)
+					printf("%s", bat_host->name);
+				else
+					/* keep table format */
+					printf("%17s", bat_host->name);
+
+				if (extra_char != '\0')
+					printf("%c", extra_char);
+
+				printf(" ");
 				goto written;
 
 print_plain_buff:
@@ -167,13 +182,13 @@ written:
 
 			}
 
-			if (bytes_written != (size_t)read_len)
-				printf("%s", buff_ptr);
-
-			printf("\n");
+			printf("%s\n", buff_ptr);
 			buff_ptr = cr_ptr + 1;
 
 		}
+
+		if (bytes_written != (size_t)read_len)
+			printf("%s", buff_ptr);
 
 check_eof:
 		if (sizeof(buff) != (size_t)read_len)

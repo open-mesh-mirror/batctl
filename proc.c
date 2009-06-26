@@ -73,13 +73,14 @@ static void log_usage(void)
 	printf("options:\n");
 	printf(" \t -b batch mode - read the log file once and quit\n");
 	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
 }
 
 int log_print(int argc, char **argv)
 {
-	int optchar, read_opt = CONT_READ;
+	int optchar, read_opt = CONT_READ | USE_BAT_HOSTS | LOG_MODE;
 
-	while ((optchar = getopt(argc, argv, "bh")) != -1) {
+	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
 		switch (optchar) {
 		case 'b':
 			read_opt &= ~CONT_READ;
@@ -87,6 +88,9 @@ int log_print(int argc, char **argv)
 		case 'h':
 			log_usage();
 			return EXIT_SUCCESS;
+		case 'n':
+			read_opt &= ~USE_BAT_HOSTS;
+			break;
 		default:
 			log_usage();
 			return EXIT_FAILURE;

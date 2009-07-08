@@ -90,7 +90,8 @@ int dump_arp(unsigned char *packet_buff, ssize_t buff_len)
 	switch (ntohs(arphdr->arp_op)) {
 	case ARPOP_REQUEST:
 		printf("ARP, Request who-has %s", inet_ntoa(*(struct in_addr *)&arphdr->arp_tpa));
-		printf(" tell %s, length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa), buff_len);
+		printf(" tell %s (%s), length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
+			ether_ntoa((struct ether_addr *)&arphdr->arp_sha), buff_len);
 		break;
 	case ARPOP_REPLY:
 		printf("ARP, Reply %s is-at %s, length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
@@ -263,36 +264,42 @@ int print_ip(unsigned char *packet_buff, ssize_t buff_len)
 // 	return;
 // }
 
-void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len)
+int dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len)
 {
-// 	struct batman_packet *bp = (struct batman_packet *)buff;
-// 	struct bat_host *bat_host;
-// 	char *name_orig = NULL, *name_old_orig=NULL;
-//
-// 	if (print_names) {
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)bp->orig);
-// 		if (bat_host)
-// 			name_orig = bat_host->name;
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)bp->old_orig);
-// 		if (bat_host)
-// 			name_old_orig = bat_host->name;
-//
-// 	}
-//
-// 	if (!name_orig)
-// 		name_orig = ether_ntoa((struct ether_addr*) bp->orig);
-//
-// 	printf("BAT %s ", name_orig);
-//
-// 	if (!name_old_orig)
-// 		name_old_orig = ether_ntoa((struct ether_addr*) bp->old_orig);
-//
-// 	printf("%s (seqno %d, tq %d, TTL %d, V %d, UD %d, DL %d)\n", name_old_orig, ntohs(bp->seqno), bp->tq,
-// 	       bp->ttl, bp->version, (bp->flags & UNIDIRECTIONAL ? 1 : 0), (bp->flags & DIRECTLINK ? 1 : 0));
+	struct ether_header *ether_header;
+	struct batman_packet *batman_packet;
+	struct bat_host *bat_host;
+	char *name;
 
-	return;
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_packet), "BAT OGM");
+
+	ether_header = (struct ether_header *)packet_buff;
+	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
+
+	print_time();
+
+	bat_host = bat_hosts_find_by_mac((char *)batman_packet->orig);
+	if (!bat_host)
+		name = ether_ntoa((struct ether_addr *)batman_packet->orig);
+	else
+		name = bat_host->name;
+
+	printf("BAT: OGM from orig %s, ", name);
+
+	bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+	if (!bat_host)
+		name = ether_ntoa((struct ether_addr *)ether_header->ether_shost);
+	else
+		name = bat_host->name;
+
+	printf("via neigh %s, seqno %d, tq %03d, ttl %02d, v %d, flags [%c%c], length %zd\n",
+		name, ntohs(batman_packet->seqno), batman_packet->tq,
+		batman_packet->ttl, batman_packet->version,
+		(batman_packet->flags & VIS_SERVER ? 'V' : '.'),
+		(batman_packet->flags & DIRECTLINK ? 'D' : '.'),
+		(size_t)buff_len - sizeof(struct ether_header));
+
+	return 1;
 }
 
 void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len)

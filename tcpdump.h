@@ -29,11 +29,6 @@
 #define DUMP_TYPE_BATVIS 16
 #define DUMP_TYPE_NONBAT 32
 
-/* protocol numbers */
-#define ICMP 0x01
-#define TCP 0x06
-#define UDP 0x11
-
 struct dump_if {
 	struct list_head list;
 	char *dev;

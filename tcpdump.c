@@ -23,24 +23,34 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/tcp.h>
 #include <net/if.h>
 #include <netpacket/packet.h>
 #include <sys/ioctl.h>
 #include <netinet/ether.h>
 #include <time.h>
 #include <sys/time.h>
+
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
 #include <netinet/if_ether.h>
 
 #include "main.h"
 #include "tcpdump.h"
 #include "packet.h"
 #include "bat-hosts.h"
+
+
+#define LEN_CHECK(buff_len, check_len, desc) \
+if ((size_t)(buff_len) < (check_len)) { \
+	printf("Warning - dropping received %s packet as it is smaller than expected (%zd): %zd\n", \
+		desc, (check_len), (size_t)(buff_len)); \
+	return -1; \
+}
 
 
 void tcpdump_usage(void)
@@ -57,7 +67,6 @@ void tcpdump_usage(void)
 	printf(" \t\t%d - batman vis packets\n", DUMP_TYPE_BATVIS);
 	printf(" \t\t%d - non batman packets\n", DUMP_TYPE_NONBAT);
 	printf(" \t\t%d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
-	printf(" \t -v verbose\n");
 }
 
 void print_time(void)
@@ -73,11 +82,7 @@ void print_time(void)
 
 int dump_arp(unsigned char *packet_buff, ssize_t buff_len)
 {
-	if ((size_t)buff_len < sizeof(struct ether_arp)) {
-		printf("Warning - dropping received ARP packet as it is smaller than expected (%zd): %zd\n",
-			sizeof(struct ether_arp), (size_t)buff_len);
-		return -1;
-	}
+	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
 
 	print_time();
 	struct ether_arp *arphdr = (struct ether_arp *)packet_buff;
@@ -93,6 +98,124 @@ int dump_arp(unsigned char *packet_buff, ssize_t buff_len)
 		break;
 	default:
 		printf("ARP, unknown op code: %i\n", ntohs(arphdr->arp_op));
+		break;
+	}
+
+	return 1;
+}
+
+int print_ip(unsigned char *packet_buff, ssize_t buff_len)
+{
+	struct iphdr *iphdr, *tmp_iphdr;
+	struct tcphdr *tcphdr;
+	struct udphdr *udphdr, *tmp_udphdr;
+	struct icmphdr *icmphdr;
+
+	iphdr = (struct iphdr *)packet_buff;
+	LEN_CHECK((size_t)buff_len, (iphdr->ihl * 4), "IP");
+
+	print_time();
+
+	switch (iphdr->protocol) {
+	case IPPROTO_ICMP:
+		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct icmphdr), "ICMP");
+
+		icmphdr = (struct icmphdr *)(packet_buff + (iphdr->ihl * 4));
+		printf("IP %s > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr));
+
+		switch (icmphdr->type) {
+		case ICMP_ECHOREPLY:
+			printf("%s: ICMP echo reply, id %u, seq %u, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
+				(size_t)buff_len - (iphdr->ihl * 4));
+			break;
+		case ICMP_DEST_UNREACH:
+			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct icmphdr),
+				sizeof(struct iphdr) + 8, "ICMP DEST_UNREACH");
+
+			switch (icmphdr->code) {
+			case ICMP_PORT_UNREACH:
+				tmp_iphdr = (struct iphdr *)(((char *)icmphdr) + sizeof(struct icmphdr));
+				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
+
+				printf("%s: ICMP ", inet_ntoa(*(struct in_addr *)&iphdr->daddr));
+				printf("%s udp port %u unreachable, length %zd\n",
+					inet_ntoa(*(struct in_addr *)&tmp_iphdr->daddr),
+					ntohs(tmp_udphdr->dest), (size_t)buff_len - (iphdr->ihl * 4));
+				break;
+			default:
+				printf("%s: ICMP unreachable %u, length %zd\n",
+					inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+					icmphdr->code, (size_t)buff_len - (iphdr->ihl * 4));
+				break;
+			}
+
+			break;
+		case ICMP_ECHO:
+			printf("%s: ICMP echo request, id %u, seq %u, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
+				(size_t)buff_len - (iphdr->ihl * 4));
+			break;
+		case ICMP_TIME_EXCEEDED:
+			printf("%s: ICMP time exceeded in-transit, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+				(size_t)buff_len - (iphdr->ihl * 4));
+			break;
+		default:
+			printf("%s: ICMP type %u, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr), icmphdr->type,
+				(size_t)buff_len - (iphdr->ihl * 4));
+			break;
+		}
+
+		break;
+	case IPPROTO_TCP:
+		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct tcphdr), "TCP");
+
+		tcphdr = (struct tcphdr *)(packet_buff + (iphdr->ihl * 4));
+		printf("IP %s.%i > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr), ntohs(tcphdr->source));
+		printf("%s.%i: TCP, Flags [%c%c%c%c%c%c], length %zd\n",
+			inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(tcphdr->dest),
+			(tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
+			(tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
+			(tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
+			(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct tcphdr));
+		break;
+	case IPPROTO_UDP:
+		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct udphdr), "UDP");
+
+		udphdr = (struct udphdr *)(packet_buff + (iphdr->ihl * 4));
+		printf("IP %s.%i > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr), ntohs(udphdr->source));
+
+		switch (ntohs(udphdr->dest)) {
+		case 67:
+			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), 44, "DHCP");
+			printf("%s.67: BOOTP/DHCP, Request from %s, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+				ether_ntoa((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),
+				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
+			break;
+		case 68:
+			printf("%s.68: BOOTP/DHCP, Reply, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
+				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
+			break;
+		default:
+			printf("%s.%i: UDP, length %zd\n",
+				inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(udphdr->dest),
+				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
+			break;
+		}
+
+		break;
+	case IPPROTO_IPV6:
+		printf("IP6: not implemented yet\n");
+		break;
+	default:
+		printf("IP unknown protocol: %i\n", iphdr->protocol);
+		break;
 	}
 
 	return 1;
@@ -312,17 +435,13 @@ int tcpdump(int argc, char **argv)
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, ether_type, tmp;
 	unsigned char dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP |
 		DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_NONBAT;
-	unsigned char use_bat_hosts = 1, verbose = 0, packet_buff[2000];
+	unsigned char use_bat_hosts = 1, packet_buff[2000];
 
-	while ((optchar = getopt(argc, argv, "vnp:h")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			tcpdump_usage();
 			return EXIT_SUCCESS;
-		case 'v':
-			verbose = 1;
-			found_args += 1;
-			break;
 		case 'n':
 			use_bat_hosts = 0;
 			found_args +=1;
@@ -446,11 +565,10 @@ int tcpdump(int argc, char **argv)
 				if (dump_level & DUMP_TYPE_NONBAT)
 					dump_arp(packet_buff + sizeof(struct ether_header), read_len - sizeof(struct ether_header));
 				break;
-
-// 			case ETH_P_IP:
-// 				printf("ip comming soon\n");
-// 				break;
-
+			case ETH_P_IP:
+				if (dump_level & DUMP_TYPE_NONBAT)
+					print_ip(packet_buff + sizeof(struct ether_header), read_len - sizeof(struct ether_header));
+				break;
 			case ETH_P_BATMAN:
 				batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
 

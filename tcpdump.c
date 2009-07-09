@@ -43,13 +43,14 @@
 #include "tcpdump.h"
 #include "packet.h"
 #include "bat-hosts.h"
+#include "functions.h"
 
 
 #define LEN_CHECK(buff_len, check_len, desc) \
 if ((size_t)(buff_len) < (check_len)) { \
 	printf("Warning - dropping received %s packet as it is smaller than expected (%zd): %zd\n", \
 		desc, (check_len), (size_t)(buff_len)); \
-	return -1; \
+	return; \
 }
 
 
@@ -80,32 +81,46 @@ void print_time(void)
 	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
 }
 
-int dump_arp(unsigned char *packet_buff, ssize_t buff_len)
+char *ether_ntoa_long(const struct ether_addr *addr)
 {
+	static char asc[18];
+
+	sprintf(asc, "%02x:%02x:%02x:%02x:%02x:%02x",
+		addr->ether_addr_octet[0], addr->ether_addr_octet[1],
+		addr->ether_addr_octet[2], addr->ether_addr_octet[3],
+		addr->ether_addr_octet[4], addr->ether_addr_octet[5]);
+
+	return asc;
+}
+
+void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
+{
+	struct ether_arp *arphdr;
+
 	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
 
-	print_time();
-	struct ether_arp *arphdr = (struct ether_arp *)packet_buff;
+	if (!time_printed)
+		print_time();
+
+	arphdr = (struct ether_arp *)packet_buff;
 
 	switch (ntohs(arphdr->arp_op)) {
 	case ARPOP_REQUEST:
 		printf("ARP, Request who-has %s", inet_ntoa(*(struct in_addr *)&arphdr->arp_tpa));
 		printf(" tell %s (%s), length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
-			ether_ntoa((struct ether_addr *)&arphdr->arp_sha), buff_len);
+			ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
 		break;
 	case ARPOP_REPLY:
 		printf("ARP, Reply %s is-at %s, length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
-			ether_ntoa((struct ether_addr *)&arphdr->arp_sha), buff_len);
+			ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
 		break;
 	default:
 		printf("ARP, unknown op code: %i\n", ntohs(arphdr->arp_op));
 		break;
 	}
-
-	return 1;
 }
 
-int print_ip(unsigned char *packet_buff, ssize_t buff_len)
+void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 {
 	struct iphdr *iphdr, *tmp_iphdr;
 	struct tcphdr *tcphdr;
@@ -113,9 +128,10 @@ int print_ip(unsigned char *packet_buff, ssize_t buff_len)
 	struct icmphdr *icmphdr;
 
 	iphdr = (struct iphdr *)packet_buff;
-	LEN_CHECK((size_t)buff_len, (iphdr->ihl * 4), "IP");
+	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
 
-	print_time();
+	if (!time_printed)
+		print_time();
 
 	switch (iphdr->protocol) {
 	case IPPROTO_ICMP:
@@ -177,7 +193,7 @@ int print_ip(unsigned char *packet_buff, ssize_t buff_len)
 
 		tcphdr = (struct tcphdr *)(packet_buff + (iphdr->ihl * 4));
 		printf("IP %s.%i > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr), ntohs(tcphdr->source));
-		printf("%s.%i: TCP, Flags [%c%c%c%c%c%c], length %zd\n",
+		printf("%s.%i: TCP, flags [%c%c%c%c%c%c], length %zd\n",
 			inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(tcphdr->dest),
 			(tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
 			(tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
@@ -195,7 +211,7 @@ int print_ip(unsigned char *packet_buff, ssize_t buff_len)
 			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), 44, "DHCP");
 			printf("%s.67: BOOTP/DHCP, Request from %s, length %zd\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
-				ether_ntoa((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),
+				ether_ntoa_long((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),
 				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
 			break;
 		case 68:
@@ -218,53 +234,9 @@ int print_ip(unsigned char *packet_buff, ssize_t buff_len)
 		printf("IP unknown protocol: %i\n", iphdr->protocol);
 		break;
 	}
-
-	return 1;
 }
 
-// void print_ether(unsigned char *buff) {
-//
-// 	struct ether_header *eth = (struct ether_header*)buff;
-// 	struct bat_host *bat_host;
-// 	struct tm *tm;
-// 	time_t tnow;
-//
-// 	char *name_shost = NULL, *name_dhost = NULL;
-//
-// 	/* get localtime */
-// 	time( &tnow );
-// 	tm = localtime(&tnow);
-//
-// 	if (print_names) {
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)eth->ether_shost);
-//
-// 		if (bat_host)
-// 			name_shost = bat_host->name;
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)eth->ether_dhost);
-//
-// 		if (bat_host)
-// 			name_dhost = bat_host->name;
-//
-// 	}
-//
-// 	printf("%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec );
-//
-// 	if (!name_shost)
-// 		name_shost = ether_ntoa((struct ether_addr *)eth->ether_shost);
-//
-// 	printf("%s -> ", name_shost );
-//
-// 	if (!name_dhost)
-// 		name_dhost = ether_ntoa((struct ether_addr *)eth->ether_dhost);
-//
-// 	printf("%s ", name_dhost );
-//
-// 	return;
-// }
-
-int dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len)
+void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
 	struct ether_header *ether_header;
 	struct batman_packet *batman_packet;
@@ -278,155 +250,190 @@ int dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len)
 
 	print_time();
 
-	bat_host = bat_hosts_find_by_mac((char *)batman_packet->orig);
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)batman_packet->orig);
+
 	if (!bat_host)
-		name = ether_ntoa((struct ether_addr *)batman_packet->orig);
+		name = ether_ntoa_long((struct ether_addr *)batman_packet->orig);
 	else
 		name = bat_host->name;
 
-	printf("BAT: OGM from orig %s, ", name);
+	printf("BAT %s: ", name);
 
-	bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+
 	if (!bat_host)
-		name = ether_ntoa((struct ether_addr *)ether_header->ether_shost);
+		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
 	else
 		name = bat_host->name;
 
-	printf("via neigh %s, seqno %d, tq %03d, ttl %02d, v %d, flags [%c%c], length %zd\n",
+	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c], length %zd\n",
 		name, ntohs(batman_packet->seqno), batman_packet->tq,
 		batman_packet->ttl, batman_packet->version,
 		(batman_packet->flags & VIS_SERVER ? 'V' : '.'),
 		(batman_packet->flags & DIRECTLINK ? 'D' : '.'),
 		(size_t)buff_len - sizeof(struct ether_header));
-
-	return 1;
 }
 
-void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len)
+void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
-// 	struct icmp_packet *ip = (struct icmp_packet *)buff;
-// 	struct bat_host *bat_host;
-// 	char *name_orig = NULL, *name_dst=NULL;
-//
-// 	if (print_names) {
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)ip->orig);
-//
-// 		if (bat_host)
-// 			name_orig = bat_host->name;
-//
-// 		bat_host = bat_hosts_find_by_mac((char *)ip->dst);
-//
-// 		if (bat_host)
-// 			name_dst = bat_host->name;
-//
-// 	}
-//
-// 	if (!name_orig)
-// 		name_orig = ether_ntoa((struct ether_addr*) ip->orig);
-//
-// 	printf("BAT_ICMP %s", name_orig );
-//
-// 	switch( ip->msg_type ) {
-// 		case ECHO_REPLY:
-// 			printf(" ECHO_REP");
-// 			break;
-// 		case DESTINATION_UNREACHABLE:
-// 			printf(" UNREACH");
-// 			break;
-// 		case ECHO_REQUEST:
-// 			printf(" ECHO_REQ");
-// 			break;
-// 		case TTL_EXCEEDED:
-// 			printf(" TTL_EXC");
-// 			break;
-// 		default:
-// 			printf("unknown");
-// 	}
-//
-// 	if (!name_dst)
-// 		name_dst = ether_ntoa((struct ether_addr*) ip->dst);
-//
-// 	printf(" %s\n", name_dst );
-// 	return;
+	struct ether_header *ether_header;
+	struct icmp_packet *icmp_packet;
+	struct bat_host *bat_host;
+	char *name;
+
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
+
+	ether_header = (struct ether_header *)packet_buff;
+	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
+
+	print_time();
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)icmp_packet->orig);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)icmp_packet->orig);
+	else
+		name = bat_host->name;
+
+	printf("BAT %s > ", name);
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)icmp_packet->dst);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)icmp_packet->dst);
+	else
+		name = bat_host->name;
+
+	switch (icmp_packet->msg_type) {
+	case ECHO_REPLY:
+		printf("%s: ICMP echo reply, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+			icmp_packet->ttl, icmp_packet->version,
+			(size_t)buff_len - sizeof(struct ether_header));
+		break;
+	case ECHO_REQUEST:
+		printf("%s: ICMP echo request, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+			icmp_packet->ttl, icmp_packet->version,
+			(size_t)buff_len - sizeof(struct ether_header));
+		break;
+	case TTL_EXCEEDED:
+		printf("%s: ICMP time exceeded in-transit, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+			icmp_packet->ttl, icmp_packet->version,
+			(size_t)buff_len - sizeof(struct ether_header));
+		break;
+	default:
+		printf("%s: ICMP type %u, length %zd\n",
+			name, icmp_packet->msg_type, (size_t)buff_len - sizeof(struct ether_header));
+		break;
+	}
 }
 
-void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len)
+void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
-// 	struct ether_header *eth1 = (struct ether_header*) ( buff + sizeof( struct unicast_packet) );
-//
-// 	if( ntohs( eth1->ether_type ) == ETH_P_IP ) {
-// 		struct ip *ip = (struct ip*) ( buff + ( sizeof(struct ether_header) ) + sizeof(struct unicast_packet ) );
-// 		printf("BAT_UNI IP V%u %s -> ", ip->ip_v, inet_ntoa( ip->ip_src) );
-// 		printf("%s ", inet_ntoa( ip->ip_dst ) );
-// 		switch( ip->ip_p ) {
-// 			case ICMP:
-// 				printf("ICMP\n");
-// 				break;
-// 			case TCP:
-// 				printf("TCP\n");
-// 				break;
-// 			case UDP:
-// 				printf("UDP\n");
-// 				break;
-// 			default:
-// 				printf("unknown IP protocol\n");
-// 		}
-// 	} else if( ntohs( eth1->ether_type ) == ETH_P_ARP ) {
-// 		printf("BAT_UNI ");
-// 		print_arp(buff + sizeof( struct unicast_packet ) + sizeof( struct ether_header ));
-// 	} else {
-// 		printf("BAT_UNI unknow ether type %x\n", ntohs( eth1->ether_type ) );
-// 	}
+	struct ether_header *ether_header;
+	struct unicast_packet *unicast_packet;
+	struct bat_host *bat_host;
+	char *name;
+
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct unicast_packet), "BAT UCAST");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct unicast_packet),
+		sizeof(struct ether_header), "BAT UCAST (unpacked)");
+
+	ether_header = (struct ether_header *)packet_buff;
+	unicast_packet = (struct unicast_packet *)(packet_buff + sizeof(struct ether_header));
+
+	print_time();
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
+	else
+		name = bat_host->name;
+
+	printf("BAT %s > ", name);
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)unicast_packet->dest);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)unicast_packet->dest);
+	else
+		name = bat_host->name;
+
+	printf("%s: UCAST, ttl %u, ", name, unicast_packet->ttl);
+
+	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct unicast_packet));
+
+	switch (ntohs(ether_header->ether_type)) {
+	case ETH_P_ARP:
+		dump_arp(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
+			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
+		break;
+	case ETH_P_IP:
+		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
+			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
+		break;
+	default:
+		printf(" unknown payload ether type: %u\n", ntohs(ether_header->ether_type));
+		break;
+	}
 }
 
-// void print_packet(int length, unsigned char *buf)
-// {
-// 	int i = 0;
-// 	printf("\n");
-// 	for( ; i < length; i++ ) {
-// 		if( i == 0 )
-// 			printf("0000| ");
-//
-// 		if( i != 0 && i%8 == 0 )
-// 			printf("  ");
-// 		if( i != 0 && i%16 == 0 )
-// 			printf("\n%04d| ", i/16*10);
-//
-// 		printf("%02x ", buf[i] );
-// 	}
-// 	printf("\n\n");
-// 	return;
-// }
-
-void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len)
+void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
-// 	struct bcast_packet *bc = (struct bcast_packet*)buff;
-// 	struct bat_host *bat_host;
-// 	char *name_orig = NULL;
-//
-// 	if (print_names) {
-// 		bat_host = bat_hosts_find_by_mac((char *)bc->orig);
-// 		if (bat_host)
-// 			name_orig = bat_host->name;
-// 	}
-//
-// 	if(!name_orig)
-// 		name_orig = ether_ntoa((struct ether_addr*) bc->orig);
-//
-// 	printf("BAT_BCAST %s", name_orig );
-//
-//
-// 	if( ntohs(((struct ether_header*)(buff + sizeof( struct bcast_packet )))->ether_type) == ETH_P_ARP )
-// 		print_arp( buff + sizeof( struct bcast_packet ) + sizeof( struct ether_header ));
-// // 		if( verbose ) {
-// // 			printf("\n\tether source = %s",ether_ntoa( (struct ether_addr *) eth->ether_shost ) );
-// // 			printf(" ether dest. = %s", ether_ntoa( (struct ether_addr *)eth->ether_dhost ) );
-// // 			printf("\n\tsender = %s %u.%u.%u.%u\n\ttarget = %s %u.%u.%u.%u\n", ether_ntoa((struct ether_addr*) arp->ar_sha ),arp->ar_sip[0], arp->ar_sip[1], arp->ar_sip[2], arp->ar_sip[3],
-// // 			 ether_ntoa((struct ether_addr*) arp->ar_tha ),arp->ar_tip[0], arp->ar_tip[1], arp->ar_tip[2], arp->ar_tip[3]);
-// // 		} else
-// 			printf("\n");
+	struct ether_header *ether_header;
+	struct bcast_packet *bcast_packet;
+	struct bat_host *bat_host;
+	char *name;
 
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct bcast_packet), "BAT BCAST");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct bcast_packet),
+		sizeof(struct ether_header), "BAT BCAST (unpacked)");
+
+	bcast_packet = (struct bcast_packet *)(packet_buff + sizeof(struct ether_header));
+
+	print_time();
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)bcast_packet->orig);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)bcast_packet->orig);
+	else
+		name = bat_host->name;
+
+	printf("BAT %s: BCAST, seqno %u, ", name, ntohs(bcast_packet->seqno));
+
+	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct bcast_packet));
+
+	switch (ntohs(ether_header->ether_type)) {
+	case ETH_P_ARP:
+		dump_arp(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
+			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		break;
+	case ETH_P_IP:
+		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
+			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		break;
+	default:
+		printf(" unknown payload ether type: %u\n", ntohs(ether_header->ether_type));
+		break;
+	}
 }
 
 int tcpdump(int argc, char **argv)
@@ -440,9 +447,10 @@ int tcpdump(int argc, char **argv)
 	fd_set wait_sockets, tmp_wait_sockets;
 	ssize_t read_len;
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, ether_type, tmp;
+	int read_opt = USE_BAT_HOSTS;
 	unsigned char dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP |
 		DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_NONBAT;
-	unsigned char use_bat_hosts = 1, packet_buff[2000];
+	unsigned char packet_buff[2000];
 
 	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
 		switch (optchar) {
@@ -450,8 +458,8 @@ int tcpdump(int argc, char **argv)
 			tcpdump_usage();
 			return EXIT_SUCCESS;
 		case 'n':
-			use_bat_hosts = 0;
-			found_args +=1;
+			read_opt &= ~USE_BAT_HOSTS;
+			found_args += 1;
 			break;
 		case 'p':
 			tmp = strtol(optarg, NULL , 10);
@@ -570,11 +578,13 @@ int tcpdump(int argc, char **argv)
 			switch (ether_type) {
 			case ETH_P_ARP:
 				if (dump_level & DUMP_TYPE_NONBAT)
-					dump_arp(packet_buff + sizeof(struct ether_header), read_len - sizeof(struct ether_header));
+					dump_arp(packet_buff + sizeof(struct ether_header),
+						read_len - sizeof(struct ether_header), 0);
 				break;
 			case ETH_P_IP:
 				if (dump_level & DUMP_TYPE_NONBAT)
-					print_ip(packet_buff + sizeof(struct ether_header), read_len - sizeof(struct ether_header));
+					dump_ip(packet_buff + sizeof(struct ether_header),
+						read_len - sizeof(struct ether_header), 0);
 				break;
 			case ETH_P_BATMAN:
 				batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
@@ -582,19 +592,19 @@ int tcpdump(int argc, char **argv)
 				switch (batman_packet->packet_type) {
 				case BAT_PACKET:
 					if (dump_level & DUMP_TYPE_BATOGM)
-						dump_batman_ogm(packet_buff, read_len);
+						dump_batman_ogm(packet_buff, read_len, read_opt);
 					break;
 				case BAT_ICMP:
 					if (dump_level & DUMP_TYPE_BATICMP)
-						dump_batman_icmp(packet_buff, read_len);
+						dump_batman_icmp(packet_buff, read_len, read_opt);
 					break;
 				case BAT_UNICAST:
 					if (dump_level & DUMP_TYPE_BATUCAST)
-						dump_batman_ucast(packet_buff, read_len);
+						dump_batman_ucast(packet_buff, read_len, read_opt);
 					break;
 				case BAT_BCAST:
 					if (dump_level & DUMP_TYPE_BATBCAST)
-						dump_batman_bcast(packet_buff, read_len);
+						dump_batman_bcast(packet_buff, read_len, read_opt);
 					break;
 				case BAT_VIS:
 					if (dump_level & DUMP_TYPE_BATVIS)
@@ -602,6 +612,9 @@ int tcpdump(int argc, char **argv)
 					break;
 				}
 
+				break;
+			default:
+				printf("Warning - packet contains unknown ether type: %u\n", ether_type);
 				break;
 			}
 

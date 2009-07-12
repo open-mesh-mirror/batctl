@@ -38,7 +38,7 @@ void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
 	printf("commands:\n");
 	printf(" \tinterface|if  [none|interface]  \tdisplay or modify the interface settings\n");
-	printf(" \torigs|o                         \tdisplay the originator table\n");
+	printf(" \toriginators|o                   \tdisplay the originator table\n");
 	printf(" \tinterval|it   [orig_interval]   \tdisplay or modify the originator interval in ms\n");
 	printf(" \tloglevel|ll   [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
 		ret = interface(argc - 1, argv + 1);
 
-	} else if ((strcmp(argv[1], "origs") == 0) || (strcmp(argv[1], "o") == 0)) {
+	} else if ((strcmp(argv[1], "originators") == 0) || (strcmp(argv[1], "o") == 0)) {
 
 		ret = handle_table(argc - 1, argv + 1, PROC_ORIGINATORS, originators_usage);
 

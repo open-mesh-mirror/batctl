@@ -22,16 +22,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <net/if.h>
-#include <netpacket/packet.h>
 #include <sys/ioctl.h>
-#include <netinet/ether.h>
 #include <time.h>
 #include <sys/time.h>
-
+#include <arpa/inet.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
@@ -79,18 +74,6 @@ void print_time(void)
 	tm = localtime(&tv.tv_sec);
 
 	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
-}
-
-char *ether_ntoa_long(const struct ether_addr *addr)
-{
-	static char asc[18];
-
-	sprintf(asc, "%02x:%02x:%02x:%02x:%02x:%02x",
-		addr->ether_addr_octet[0], addr->ether_addr_octet[1],
-		addr->ether_addr_octet[2], addr->ether_addr_octet[3],
-		addr->ether_addr_octet[4], addr->ether_addr_octet[5]);
-
-	return asc;
 }
 
 void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
@@ -404,9 +387,21 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct bcast_packet),
 		sizeof(struct ether_header), "BAT BCAST (unpacked)");
 
+	ether_header = (struct ether_header *)packet_buff;
 	bcast_packet = (struct bcast_packet *)(packet_buff + sizeof(struct ether_header));
 
 	print_time();
+
+	bat_host = NULL;
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+
+	if (!bat_host)
+		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
+	else
+		name = bat_host->name;
+
+	printf("BAT %s: ", name);
 
 	bat_host = NULL;
 	if (read_opt & USE_BAT_HOSTS)
@@ -417,7 +412,7 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	else
 		name = bat_host->name;
 
-	printf("BAT %s: BCAST, seqno %u, ", name, ntohs(bcast_packet->seqno));
+	printf("BCAST, orig %s, seqno %u, ", name, ntohs(bcast_packet->seqno));
 
 	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct bcast_packet));
 

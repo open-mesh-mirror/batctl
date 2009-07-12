@@ -102,7 +102,7 @@ int log_print(int argc, char **argv)
 
 void originators_usage(void)
 {
-	printf("Usage: batctl [options] origs \n");
+	printf("Usage: batctl [options] originators \n");
 	printf("options:\n");
 	printf(" \t -b batch mode - read the originator table once and quit\n");
 	printf(" \t -h print this help\n");

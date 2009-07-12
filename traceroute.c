@@ -92,7 +92,7 @@ int traceroute(int argc, char **argv)
 		}
 	}
 
-	mac_string = ether_ntoa(dst_mac);
+	mac_string = ether_ntoa_long(dst_mac);
 
 	trace_fd = open(BAT_DEVICE, O_RDWR);
 
@@ -165,7 +165,7 @@ int traceroute(int argc, char **argv)
 					break;
 				}
 
-				return_mac = ether_ntoa((struct ether_addr *)&icmp_packet_in.orig);
+				return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
 				bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
 
 				if (!bat_host)

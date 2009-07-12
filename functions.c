@@ -55,6 +55,18 @@ double time_diff(struct timeval *start, struct timeval *end)
 	return (double)usec / 1000;
 }
 
+char *ether_ntoa_long(const struct ether_addr *addr)
+{
+	static char asc[18];
+
+	sprintf(asc, "%02x:%02x:%02x:%02x:%02x:%02x",
+		addr->ether_addr_octet[0], addr->ether_addr_octet[1],
+		addr->ether_addr_octet[2], addr->ether_addr_octet[3],
+		addr->ether_addr_octet[4], addr->ether_addr_octet[5]);
+
+	return asc;
+}
+
 static int check_proc_dir(void)
 {
 	struct stat st;

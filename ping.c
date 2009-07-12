@@ -128,7 +128,7 @@ int ping(int argc, char **argv)
 		}
 	}
 
-	mac_string = ether_ntoa(dst_mac);
+	mac_string = ether_ntoa_long(dst_mac);
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
 
@@ -181,7 +181,7 @@ int ping(int argc, char **argv)
 		packets_out++;
 
 		if (res == 0) {
-			printf("Host %s timeout\n", mac_string);
+			printf("Reply from host %s timed out\n", dst_string);
 			goto sleep;
 		}
 
@@ -239,8 +239,8 @@ sleep:
 	}
 
 	printf("--- %s ping statistics ---\n", dst_string);
-	printf("%d packets transmitted, %d received, %d%c packet loss\n",
-		packets_out, packets_in, (((packets_out - packets_in) * 100) / packets_out), '%');
+	printf("%d packets transmitted, %d received, %d%% packet loss\n",
+		packets_out, packets_in, (((packets_out - packets_in) * 100) / packets_out));
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
 		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
 

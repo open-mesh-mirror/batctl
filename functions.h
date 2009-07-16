@@ -26,7 +26,8 @@
 #define ETH_STR_LEN 17
 
 /* return time delta from start to end in milliseconds */
-double time_diff(struct timeval *start, struct timeval *end);
+void start_timer(void);
+double end_timer(void);
 char *ether_ntoa_long(const struct ether_addr *addr);
 int read_proc_file(char *path, int read_opt);
 int write_proc_file(char *path, char *value);

@@ -28,31 +28,34 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 #include "main.h"
 #include "functions.h"
 #include "bat-hosts.h"
 
 
-double time_diff(struct timeval *start, struct timeval *end)
+static struct timeval start_time;
+
+void start_timer(void)
 {
-	unsigned long sec = (unsigned long)end->tv_sec - start->tv_sec;
-	unsigned long usec = (unsigned long)end->tv_usec - start->tv_usec;
+	gettimeofday(&start_time, NULL);
+}
 
-	if (sec > (unsigned long)end->tv_sec) {
-		sec += 1000000000UL;
-		--sec;
+double end_timer(void)
+{
+	struct timeval end_time, diff;
+
+	gettimeofday(&end_time, NULL);
+	diff.tv_sec = end_time.tv_sec - start_time.tv_sec;
+	diff.tv_usec = end_time.tv_usec - start_time.tv_usec;
+
+	if (diff.tv_usec < 0) {
+		diff.tv_sec--;
+		diff.tv_usec += 1000000;
 	}
 
-	if (usec > (unsigned long)end->tv_usec) {
-		usec += 1000000000UL;
-		--usec;
-	}
-
-	if (sec > 0)
-		usec = 1000000 * sec + usec;
-
-	return (double)usec / 1000;
+	return (((double)diff.tv_sec * 1000) + ((double)diff.tv_usec / 1000));
 }
 
 char *ether_ntoa_long(const struct ether_addr *addr)

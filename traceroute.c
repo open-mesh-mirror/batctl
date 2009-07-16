@@ -21,7 +21,6 @@
 
 
 #include <netinet/in.h>
-#include <sys/time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,13 +50,13 @@ int traceroute(int argc, char **argv)
 	struct icmp_packet icmp_packet_out, icmp_packet_in;
 	struct bat_host *bat_host;
 	struct ether_addr *dst_mac = NULL;
-	struct timeval start, end, tv;
+	struct timeval tv;
 	fd_set read_socket;
 	ssize_t read_len;
 	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
 	int found_args = 1, optchar, seq_counter = 0;
-	double time_delta = 0.0;
+	double time_delta;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -122,7 +121,7 @@ int traceroute(int argc, char **argv)
 				continue;
 			}
 
-			gettimeofday(&start, (struct timezone*)0);
+			start_timer();
 
 			tv.tv_sec = 2;
 			tv.tv_usec = 0;
@@ -157,8 +156,7 @@ int traceroute(int argc, char **argv)
 			switch (icmp_packet_in.msg_type) {
 			case ECHO_REPLY:
 			case TTL_EXCEEDED:
-				gettimeofday(&end, (struct timezone*)0);
-				time_delta = time_diff(&start, &end);
+				time_delta = end_timer();
 
 				if (i > 0) {
 					printf("  %.3f ms", time_delta);

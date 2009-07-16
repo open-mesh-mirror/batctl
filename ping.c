@@ -21,7 +21,6 @@
 
 
 #include <netinet/in.h>
-#include <sys/time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +64,7 @@ void sig_handler(int sig)
 int ping(int argc, char **argv)
 {
 	struct icmp_packet icmp_packet_out, icmp_packet_in;
-	struct timeval start, end, tv;
+	struct timeval tv;
 	struct ether_addr *dst_mac = NULL;
 	struct bat_host *bat_host;
 	ssize_t read_len;
@@ -165,7 +164,7 @@ int ping(int argc, char **argv)
 			goto sleep;
 		}
 
-		gettimeofday(&start, (struct timezone*)0);
+		start_timer();
 
 		tv.tv_sec = timeout;
 		tv.tv_usec = 0;
@@ -203,8 +202,7 @@ int ping(int argc, char **argv)
 
 		switch (icmp_packet_in.msg_type) {
 		case ECHO_REPLY:
-			gettimeofday(&end, (struct timezone*)0);
-			time_delta = time_diff(&start, &end);
+			time_delta = end_timer();
 			printf("%zd bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
 					icmp_packet_in.ttl, time_delta);
@@ -217,10 +215,10 @@ int ping(int argc, char **argv)
 			packets_in++;
 			break;
 		case DESTINATION_UNREACHABLE:
-			printf("From %s icmp_seq=%u Destination Host Unreachable\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Destination Host Unreachable (icmp_seq %u)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case TTL_EXCEEDED:
-			printf("From %s icmp_seq=%u Time to live exceeded\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Time to live exceeded (icmp_seq %u)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",

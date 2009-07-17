@@ -191,7 +191,7 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 
 		switch (ntohs(udphdr->dest)) {
 		case 67:
-			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), 44, "DHCP");
+                        LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), (size_t) 44, "DHCP");
 			printf("%s.67: BOOTP/DHCP, Request from %s, length %zd\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				ether_ntoa_long((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),

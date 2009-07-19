@@ -43,6 +43,7 @@ void traceroute_usage(void)
 	printf("Usage: batctl traceroute [options] mac|bat-host \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
+	printf(" \t -n don't convert addesses to bat-host names\n");
 }
 
 int traceroute(int argc, char **argv)
@@ -55,14 +56,18 @@ int traceroute(int argc, char **argv)
 	ssize_t read_len;
 	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
-	int found_args = 1, optchar, seq_counter = 0;
+	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta;
 
-	while ((optchar = getopt(argc, argv, "h")) != -1) {
+	while ((optchar = getopt(argc, argv, "hn")) != -1) {
 		switch (optchar) {
 		case 'h':
 			traceroute_usage();
 			return EXIT_SUCCESS;
+		case 'n':
+			read_opt &= ~USE_BAT_HOSTS;
+			found_args += 1;
+			break;
 		default:
 			traceroute_usage();
 			return EXIT_FAILURE;
@@ -164,7 +169,10 @@ int traceroute(int argc, char **argv)
 				}
 
 				return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
-				bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
+
+				bat_host = NULL;
+				if (read_opt & USE_BAT_HOSTS)
+					bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
 
 				if (!bat_host)
 					printf("%2u: %s %.3f ms",

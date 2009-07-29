@@ -54,7 +54,7 @@ void tcpdump_usage(void)
 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
-	printf(" \t -n don't convert addesses to bat-host names\n");
+	printf(" \t -n don't convert addresses to bat-host names\n");
 	printf(" \t -p dump specific packet type\n");
 	printf(" \t\t%d - batman ogm packets\n", DUMP_TYPE_BATOGM);
 	printf(" \t\t%d - batman icmp packets\n", DUMP_TYPE_BATICMP);

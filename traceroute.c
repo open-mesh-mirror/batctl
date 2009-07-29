@@ -43,7 +43,7 @@ void traceroute_usage(void)
 	printf("Usage: batctl traceroute [options] mac|bat-host \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
-	printf(" \t -n don't convert addesses to bat-host names\n");
+	printf(" \t -n don't convert addresses to bat-host names\n");
 }
 
 int traceroute(int argc, char **argv)

@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH BATCTL 8 "Sep 17, 2007"
+.TH batctl 8 "Aug 01, 2009"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -15,44 +15,16 @@
 .\" .br        insert line break
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
-
-.\" --------------------------------------------------------------------------
-.\" Macro definitions
-.\" --------------------------------------------------------------------------
-.
-.\" default indentation is 7, don't change!
-.nr IN 5
-.\" define indentation for suboptions
-.nr SS 3
-.\" add new suboption
-.de IPs
-.IP "\\$1" \n(SS
-..
-.\" begin of first level suboptions, end with .RE
-.de RSs
-.RS \n(IN+3
-..
-.\" begin of 2nd level suboptions
-.de RSss
-.PD 0
-.RS \n(SS+3
-..
-.\" end of 2nd level suboptions
-.de REss
-.RE
-.PD 1
-..
-.
-
 .\" --------------------------------------------------------------------------
 .\" Process this file with
 .\" groff -man batctl.8 -Tutf8
+.\" --------------------------------------------------------------------------
 .TH "batctl" 8
 .SH NAME
 batctl \- B.A.T.M.A.N. advanced control and managing tool
 .SH SYNOPSIS
 .B batctl
-.RI [\fIbatctl\-options\fP]\ \fIcommand\fP\ [\fIcommand\-options\fP]
+.I [\fIbatctl\-options\fP]\ \fIcommand\fP\ [\fIcommand\-options\fP]
 .br
 .SH DESCRIPTION
 B.A.T.M.A.N. advanced operates on layer 2 and thus all hosts participating in the virtual switch are completely transparent for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To overcome these problems \fBbatctl\fP was created. At the moment the batctl contains \fBping\fP, \fBtraceroute\fP, \fBtcpdump\fP interfaces to the kernel module settings.
@@ -63,56 +35,52 @@ Furthermore batctl offers an convenient way to configure the batman\-adv kernel 
 .PP
 .SH OPTIONS
 .TP
-.RI \fBbatctl\-options:
-.RSs
-.IPs "\-h	print general batctl help"
-.IPs "\-v	print batctl version"
-.RE
-
+.I \fBbatctl\-options:
+\-h	print general batctl help
+.br
+\-v	print batctl version
+.br
 .TP
-.RI \fBcommands:
-.RSs
-.IPs "\fBinterface|if	[none|interface]\fP"
+.I \fBcommands:
+.IP "\fBinterface|if	[none|interface]\fP"
 If no parameter is given the current interface settings are displayed otherwise the parameter(s) are added as new interfaces. Use the "none" keyword to deactivate all interfaces.
-
-.IPs "\fBoriginators|o\fP"
+.br
+.IP "\fBoriginators|o\fP"
 Once started batctl will refresh the displayed originator table every second. Use the "\-b" option to let batctl display the table only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-
-.IPs "\fBinterval|it	[orig_interval]\fP"
+.br
+.IP "\fBinterval|it	[orig_interval]\fP"
 If no parameter is given the current originator interval settings are displayed otherwise the parameter is used to set the originator interval.
-
-.IPs "\fBloglevel|ll	[level]\fP"
+.br
+.IP "\fBloglevel|ll	[level]\fP"
 If no parameter is given the current log level settings are displayed otherwise the parameter is used to set the log level.
-
-.IPs "\fBlog|l\fP"
+.br
+.IP "\fBlog|l\fP	"
 Once started batctl will continuously read the log produced by the kernel module (the amount of log message can be influenced by modifying the log level). Whenever there are new log messages sent by the kernel batctl will display it. Use the "\-b" option to let batctl exit after the existing log buffer has been displayed. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-
-.IPs "\fBtranslocal|tl\fP"
+.br
+.IP "\fBtranslocal|tl\fP"
 Once started batctl will refresh the displayed local translation table every second. Use the "\-b" option to let batctl display the table only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-
-.IPs "\fBtransglobal|tg\fP"
+.br
+.IP "\fBtransglobal|tg\fP"
 Once started batctl will refresh the displayed global translation table every second. Use the "\-b" option to let batctl display the table only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-
-.IPs "\fBvisformat|vf	[format]\fP"
+.br
+.IP "\fBvisformat|vf	[format]\fP"
 If no parameter is given the current vis format settings are displayed otherwise the parameter is used to set the vis format.
-
-.IPs "\fBaggregation|ag	[0|1]\fP"
+.br
+.IP "\fBaggregation|ag	[0|1]\fP"
 If no parameter is given the current aggregation settings are displayed otherwise the parameter is used to enable or disable the packet aggregation.
-
-.IPs "\fBping|p		mac\ address|bat\-host\ name\fP"
+.br
+.IP "\fBping|p		mac\ address|bat\-host\ name\fP"
 Layer 2 ping mac address or bat\-host name (batctl will try to find bat\-host name if the given parameter was not a mac address) until batctl has been stopped with CTRL + C. The "\-c" option tells batctl how often it should ping the given host before it stops by itself. With "\-i" and "\-t" you can influence the default interval time between pings and the timeout time for replies respectively.
-
-.IPs "\fBtraceroute|tr	mac\ address|bat\-host\ name\fP"
+.br
+.IP "\fBtraceroute|tr	mac\ address|bat\-host\ name\fP"
 Layer 2 traceroute mac address or bat\-host name (batctl will try to find bat\-host name if the given parameter was not a mac address). batctl will send 3 packets to each host and display the response time. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-
-.IPs "\fBtcpdump|td	interface [interface]\fP"
+.IP "\fBtcpdump|td	interface [interface]\fP"
 Per default batctl will display all packets that were seen on the given interface(s). The "\-p" options allows to filter certain packet types: 1 displays batman ogm packets only, 2 displays batman icmp packets only, etc. These numbers can be added to filter more than one packet type, e.g. use "\-p 3" to display batman ogm packets and batman icmp packets only. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
-.RE
-
 .br
 .SH FILES
-.IPs bat-hosts
-This file is simliar to the /etc/hosts file. You can write one mac address and one host name per line. batctl will search for bat-hosts in /etc, your home directory and the current directory. The found data is used to match mac address to your provided host name or replace mac addresses in debug output and logs. Host names are much easier to remember than mac addresses.  ;)
+.TP
+.I "\fBbat-hosts\fP"
+This file is simliar to the /etc/hosts file. You can write one mac address and one host name per line. batctl will search for bat-hosts in /etc, your home directory and the current directory. The found data is used to match mac address to your provided host name or replace mac addresses in debug output and logs. Host names are much easier to remember than mac addresses.
 .SH AUTHOR
 batctl was written by Andreas Langer <a.langer@q-dsl.de> and Marek Lindner <lindner_marek@yahoo.de>.
 .PP

@@ -302,13 +302,13 @@ struct hashtable_t *hash_resize(struct hashtable_t *hash, int size)
 	int i;
 	struct element_t *bucket;
 
-	for (i=0; i<hash->size;i++) {
-		printf("[%d] ",i);
-		bucket= hash->table[i];
+	for (i = 0; i < hash->size; i++) {
+		printf("[%d] ", i);
+		bucket = hash->table[i];
 
-		while (bucket != NULL) {
+		while (bucket) {
 			printf("-> [%10p] ", (void *)bucket);
-			bucket= bucket->next;
+			bucket = bucket->next;
 		}
 
 		printf("\n");

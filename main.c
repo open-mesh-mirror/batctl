@@ -32,6 +32,7 @@
 #include "ping.h"
 #include "traceroute.h"
 #include "tcpdump.h"
+#include "bisect.h"
 
 
 void print_usage(void) {
@@ -50,6 +51,7 @@ void print_usage(void) {
 	printf(" \tping|p        <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td    <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+	printf(" \tbisect        <file1> .. <fileN>\tanalyze given log files for routing stability\n");
 	printf("options:\n");
 	printf(" \t-h print this help\n");
 	printf(" \t-v print version\n");
@@ -122,6 +124,10 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 
 		ret = handle_setting(argc - 1, argv + 1, PROC_AGGR, aggregation_usage);
+
+	} else if ((strcmp(argv[1], "bisect") == 0)) {
+
+		ret = bisect(argc - 1, argv + 1);
 
 	} else {
 		print_usage();

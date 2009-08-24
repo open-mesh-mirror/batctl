@@ -36,8 +36,11 @@ LOG_BRANCH = trunk/batctl
 
 SRC_FILES = "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README\)\|\(THANKS\)\|\(TRASH\)\|\(Doxyfile\)\|\(./posix\)\|\(./linux\)\|\(./bsd\)\|\(./man\)\|\(./doc\)"
 
-SRC_C = main.c bat-hosts.c functions.c proc.c ping.c traceroute.c tcpdump.c list-batman.c hash.c
-SRC_H = main.h bat-hosts.h functions.h proc.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h
+EXTRA_MODULES_C := bisect.c
+EXTRA_MODULES_H := bisect.h
+
+SRC_C = main.c bat-hosts.c functions.c proc.c ping.c traceroute.c tcpdump.c list-batman.c hash.c $(EXTRA_MODULES_C)
+SRC_H = main.h bat-hosts.h functions.h proc.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h $(EXTRA_MODULES_H)
 SRC_O = $(SRC_C:.c=.o)
 
 PACKAGE_NAME = batctl

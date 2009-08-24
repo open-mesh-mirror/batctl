@@ -31,7 +31,7 @@
 #include "hash.h"
 
 
-struct hashtable_t *host_hash = NULL;
+static struct hashtable_t *host_hash = NULL;
 const char *bat_hosts_path[3] = {"/etc/bat-hosts", "~/bat-hosts", "bat-hosts"};
 
 
@@ -68,8 +68,9 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 	struct hashtable_t *swaphash;
 
 	name[0] = mac_str[0] = '\0';
+
 	fd = fopen(path, "r");
-	if (fd == NULL)
+	if (!fd)
 		return;
 
 	while (fscanf(fd,"%[^ \t]%s\n", mac_str, name) != EOF) {
@@ -104,7 +105,7 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 
 		if (!bat_host) {
 			printf("Error - could not allocate memory: %s\n", strerror(errno));
-			return;
+			goto out;
 		}
 
 		memcpy(&bat_host->mac_addr, mac_addr, sizeof(struct ether_addr));
@@ -123,6 +124,9 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 
 	}
 
+out:
+	if (fd)
+		fclose(fd);
 	return;
 }
 

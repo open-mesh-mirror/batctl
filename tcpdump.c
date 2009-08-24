@@ -435,8 +435,7 @@ int tcpdump(int argc, char **argv)
 {
 	struct ifreq req;
 	struct timeval tv;
-	struct dump_if *dump_if;
-	struct list_head *list_pos;
+	struct dump_if *dump_if, *dump_if_tmp;
 	struct batman_packet *batman_packet;
 	struct list_head_first dump_if_list;
 	fd_set wait_sockets, tmp_wait_sockets;
@@ -548,10 +547,7 @@ int tcpdump(int argc, char **argv)
 			continue;
 		}
 
-		list_for_each(list_pos, &dump_if_list) {
-
-			dump_if = list_entry(list_pos, struct dump_if, list);
-
+		list_for_each_entry(dump_if, &dump_if_list, list) {
 			if (!FD_ISSET(dump_if->raw_sock, &tmp_wait_sockets))
 				continue;
 
@@ -621,9 +617,12 @@ int tcpdump(int argc, char **argv)
 	ret = EXIT_SUCCESS;
 
 out:
-	list_for_each(list_pos, &dump_if_list) {
-		dump_if = list_entry(list_pos, struct dump_if, list);
-		close(dump_if->raw_sock);
+	list_for_each_entry_safe(dump_if, dump_if_tmp, &dump_if_list, list) {
+		if (dump_if->raw_sock)
+			close(dump_if->raw_sock);
+
+		list_del((struct list_head *)&dump_if_list, &dump_if->list, &dump_if_list);
+		free(dump_if);
 	}
 
 	bat_hosts_free();

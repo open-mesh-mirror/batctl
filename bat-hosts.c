@@ -188,8 +188,13 @@ struct bat_host *bat_hosts_find_by_mac(char *mac)
 	return (struct bat_host *)hash_find(host_hash, mac);
 }
 
+static void bat_host_free(void *data)
+{
+	free(data);
+}
+
 void bat_hosts_free(void)
 {
 	if (host_hash)
-		hash_destroy(host_hash);
+		hash_delete(host_hash, bat_host_free);
 }

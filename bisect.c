@@ -41,12 +41,12 @@ static void bisect_usage(void)
 	printf(" \t -n don't convert addresses to bat-host names\n");
 }
 
-static int compare_mac(void *data1, void *data2)
+static int compare_name(void *data1, void *data2)
 {
-	return (memcmp(data1, data2, NAME_LEN - 1) == 0 ? 1 : 0);
+	return (memcmp(data1, data2, NAME_LEN) == 0 ? 1 : 0);
 }
 
-static int choose_mac(void *data, int32_t size)
+static int choose_name(void *data, int32_t size)
 {
 	unsigned char *key= data;
 	uint32_t hash = 0, m_size = NAME_LEN - 1;
@@ -63,11 +63,6 @@ static int choose_mac(void *data, int32_t size)
 	hash += (hash << 15);
 
 	return (hash % size);
-}
-
-static int compare_name(void *data1, void *data2)
-{
-	return (memcmp(data1, data2, NAME_LEN) == 0 ? 1 : 0);
 }
 
 static struct bat_node *node_get(char *name)
@@ -499,7 +494,7 @@ int bisect(int argc, char **argv)
 		goto err;
 	}
 
-	node_hash = hash_new(64, compare_mac, choose_mac);
+	node_hash = hash_new(64, compare_name, choose_name);
 
 	if (!node_hash) {
 		printf("Error - couldn't not create node hash table\n");

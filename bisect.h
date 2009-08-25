@@ -20,7 +20,7 @@
 #include "list-batman.h"
 
 #define NAME_LEN 18
-#define LOOP_MAGIC_LEN (2 * NAME_LEN + sizeof(int) - 2)
+#define LOOP_MAGIC_LEN ((2 * NAME_LEN) + (2 * sizeof(int)) - 2)
 
 int bisect(int argc, char **argv);
 

@@ -356,7 +356,8 @@ static int parse_log_file(char *file_path)
 	return 1;
 }
 
-int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_event, struct rt_entry *rt_entry)
+int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_event,
+                  struct rt_entry *rt_entry, int seqno_count)
 {
 	struct bat_node *next_hop_node;
 	struct seqno_event *seqno_event_tmp;
@@ -365,7 +366,9 @@ int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_event, st
 	char curr_loop_magic[LOOP_MAGIC_LEN];
 	int i;
 
-	snprintf(curr_loop_magic, LOOP_MAGIC_LEN, "%s%s%i", bat_node->name, rt_entry->orig, seqno_event->seqno);
+	snprintf(curr_loop_magic, LOOP_MAGIC_LEN, "%s%s%i%i",
+	         bat_node->name, rt_entry->orig,
+	         seqno_event->seqno, seqno_count);
 
 	printf("Path towards %s (seqno %i):", rt_entry->orig, seqno_event->seqno);
 
@@ -433,7 +436,7 @@ void validate_rt_tables(void)
 	struct bat_node *bat_node;
 	struct seqno_event *seqno_event;
 	struct hash_it_t *hashit = NULL;
-	int i;
+	int i, last_seqno = -1, seqno_count = 0;
 
 	printf("\nAnalyzing routing tables:\n");
 
@@ -461,8 +464,21 @@ void validate_rt_tables(void)
 			if (!seqno_event->rt_table)
 				continue;
 
+			/**
+			 * sometime we change the routing table more than once
+			 * with the same seqno
+			 */
+			if (last_seqno == seqno_event->seqno)
+				seqno_count++;
+			else
+				seqno_count = 0;
+
+			last_seqno = seqno_event->seqno;
+
 			for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
-				validate_path(bat_node, seqno_event, (struct rt_entry *)&seqno_event->rt_table->entries[i]);
+				validate_path(bat_node, seqno_event,
+				              (struct rt_entry *)&seqno_event->rt_table->entries[i],
+				              seqno_count);
 			}
 		}
 	}

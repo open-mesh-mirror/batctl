@@ -20,6 +20,7 @@
 #include "list-batman.h"
 
 #define NAME_LEN 18
+#define MAX_LINE 256
 #define LOOP_MAGIC_LEN ((2 * NAME_LEN) + (2 * sizeof(int)) - 2)
 
 int bisect(int argc, char **argv);
@@ -46,7 +47,22 @@ struct seqno_event {
 	struct list_head list;
 	struct bat_node *orig;
 	struct bat_node *neigh;
+	struct bat_node *old_orig;
 	int seqno;
 	int tq;
+	int ttl;
 	struct rt_table *rt_table;
+};
+
+struct seqno_trace_neigh {
+	struct bat_node *bat_node;
+	struct seqno_event *seqno_event;
+	int num_neighbors;
+	struct seqno_trace_neigh **seqno_trace_neigh;
+};
+
+struct seqno_trace {
+	struct list_head list;
+	int seqno;
+	struct seqno_trace_neigh seqno_trace_neigh;
 };

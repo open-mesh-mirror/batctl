@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	}
 
 	/* check if user is root */
-	if ((getuid()) || (getgid())) {
+	if ((strcmp(argv[1], "bisect") != 0) && ((getuid()) || (getgid()))) {
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}

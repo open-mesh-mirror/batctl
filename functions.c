@@ -36,6 +36,7 @@
 
 
 static struct timeval start_time;
+static char *host_name;
 
 void start_timer(void)
 {
@@ -68,6 +69,32 @@ char *ether_ntoa_long(const struct ether_addr *addr)
 		addr->ether_addr_octet[4], addr->ether_addr_octet[5]);
 
 	return asc;
+}
+
+char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt)
+{
+	struct bat_host *bat_host = NULL;
+
+	if (read_opt & USE_BAT_HOSTS)
+		bat_host = bat_hosts_find_by_mac((char *)mac_addr);
+
+	if (!bat_host)
+		host_name = ether_ntoa_long((struct ether_addr *)mac_addr);
+	else
+		host_name = bat_host->name;
+
+	return host_name;
+}
+
+char *get_name_by_macstr(char *mac_str, int read_opt)
+{
+	struct ether_addr *mac_addr;
+
+	mac_addr = ether_aton(mac_str);
+	if (!mac_addr)
+		return mac_str;
+
+	return get_name_by_macaddr(mac_addr, read_opt);
 }
 
 static int check_proc_dir(void)

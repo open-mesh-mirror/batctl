@@ -357,7 +357,7 @@ static int parse_log_file(char *file_path)
 }
 
 int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_event,
-                  struct rt_entry *rt_entry, int seqno_count)
+                  struct rt_entry *rt_entry, int seqno_count, int read_opt)
 {
 	struct bat_node *next_hop_node;
 	struct seqno_event *seqno_event_tmp;
@@ -370,16 +370,20 @@ int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_event,
 	         bat_node->name, rt_entry->orig,
 	         seqno_event->seqno, seqno_count);
 
-	printf("Path towards %s (seqno %i):", rt_entry->orig, seqno_event->seqno);
+	printf("Path towards %s (seqno %i):",
+	       get_name_by_macstr(rt_entry->orig, read_opt),
+	       seqno_event->seqno);
 
 	/* single hop neighbors won't enter the while loop */
 	if (compare_name(rt_entry->orig, rt_entry_tmp->next_hop->name))
-		printf(" * %s", rt_entry_tmp->next_hop->name);
+		printf(" * %s",
+		       get_name_by_macstr(rt_entry_tmp->next_hop->name, read_opt));
 
 	while (!compare_name(rt_entry->orig, rt_entry_tmp->next_hop->name)) {
 		next_hop_node = rt_entry_tmp->next_hop;
 
-		printf(" * %s", next_hop_node->name);
+		printf(" * %s",
+		       get_name_by_macstr(next_hop_node->name, read_opt));
 
 		/* no more data - path seems[tm] fine */
 		if (list_empty(&next_hop_node->event_list))
@@ -431,7 +435,7 @@ out:
 	return 1;
 }
 
-void validate_rt_tables(void)
+void validate_rt_tables(int read_opt)
 {
 	struct bat_node *bat_node;
 	struct seqno_event *seqno_event;
@@ -445,17 +449,20 @@ void validate_rt_tables(void)
 
 		/* we might have no log file from this node */
 		if (list_empty(&bat_node->event_list)) {
-			printf("No seqno data from node '%s' - skipping\n", bat_node->name);
+			printf("No seqno data from node '%s' - skipping\n",
+			       get_name_by_macstr(bat_node->name, read_opt));
 			continue;
 		}
 
 		/* or routing tables */
 		if (list_empty(&bat_node->rt_table_list)) {
-			printf("No routing tables from node '%s' - skipping\n", bat_node->name);
+			printf("No routing tables from node '%s' - skipping\n",
+			       get_name_by_macstr(bat_node->name, read_opt));
 			continue;
 		}
 
-		printf("Checking host: %s\n", bat_node->name);
+		printf("Checking host: %s\n",
+		       get_name_by_macstr(bat_node->name, read_opt));
 		list_for_each_entry(seqno_event, &bat_node->event_list, list) {
 			/**
 			 * this received packet did not trigger a routing
@@ -478,7 +485,7 @@ void validate_rt_tables(void)
 			for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
 				validate_path(bat_node, seqno_event,
 				              (struct rt_entry *)&seqno_event->rt_table->entries[i],
-				              seqno_count);
+				              seqno_count, read_opt);
 			}
 		}
 	}
@@ -534,7 +541,7 @@ int bisect(int argc, char **argv)
 		goto err;
 	}
 
-	validate_rt_tables();
+	validate_rt_tables(read_opt);
 	ret = EXIT_SUCCESS;
 
 err:

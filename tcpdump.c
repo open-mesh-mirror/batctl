@@ -223,8 +223,6 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
 	struct ether_header *ether_header;
 	struct batman_packet *batman_packet;
-	struct bat_host *bat_host;
-	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_packet), "BAT OGM");
 
@@ -233,39 +231,22 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 
 	print_time();
 
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)batman_packet->orig);
-
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)batman_packet->orig);
-	else
-		name = bat_host->name;
-
-	printf("BAT %s: ", name);
-
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
-
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
-	else
-		name = bat_host->name;
+	printf("BAT %s: ",
+	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
 
 	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c], length %zd\n",
-		name, ntohs(batman_packet->seqno), batman_packet->tq,
-		batman_packet->ttl, batman_packet->version,
-		(batman_packet->flags & VIS_SERVER ? 'V' : '.'),
-		(batman_packet->flags & DIRECTLINK ? 'D' : '.'),
-		(size_t)buff_len - sizeof(struct ether_header));
+	        get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
+	        ntohs(batman_packet->seqno), batman_packet->tq,
+	        batman_packet->ttl, batman_packet->version,
+	        (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
+	        (batman_packet->flags & DIRECTLINK ? 'D' : '.'),
+	        (size_t)buff_len - sizeof(struct ether_header));
 }
 
 void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
 	struct ether_header *ether_header;
 	struct icmp_packet *icmp_packet;
-	struct bat_host *bat_host;
 	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
@@ -275,25 +256,9 @@ void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 
 	print_time();
 
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)icmp_packet->orig);
+	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
 
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)icmp_packet->orig);
-	else
-		name = bat_host->name;
-
-	printf("BAT %s > ", name);
-
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)icmp_packet->dst);
-
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)icmp_packet->dst);
-	else
-		name = bat_host->name;
+	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst, read_opt);
 
 	switch (icmp_packet->msg_type) {
 	case ECHO_REPLY:
@@ -325,8 +290,6 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 {
 	struct ether_header *ether_header;
 	struct unicast_packet *unicast_packet;
-	struct bat_host *bat_host;
-	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct unicast_packet), "BAT UCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct unicast_packet),
@@ -337,27 +300,12 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 
 	print_time();
 
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
-	else
-		name = bat_host->name;
-
-	printf("BAT %s > ", name);
-
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)unicast_packet->dest);
-
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)unicast_packet->dest);
-	else
-		name = bat_host->name;
-
-	printf("%s: UCAST, ttl %u, ", name, unicast_packet->ttl);
+	printf("%s: UCAST, ttl %u, ",
+	       get_name_by_macaddr((struct ether_addr *)unicast_packet->dest, read_opt),
+	       unicast_packet->ttl);
 
 	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct unicast_packet));
 
@@ -380,39 +328,22 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 {
 	struct ether_header *ether_header;
 	struct bcast_packet *bcast_packet;
-	struct bat_host *bat_host;
-	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct bcast_packet), "BAT BCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct bcast_packet),
-		sizeof(struct ether_header), "BAT BCAST (unpacked)");
+	          sizeof(struct ether_header), "BAT BCAST (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
 	bcast_packet = (struct bcast_packet *)(packet_buff + sizeof(struct ether_header));
 
 	print_time();
 
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)ether_header->ether_shost);
+	printf("BAT %s: ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)ether_header->ether_shost);
-	else
-		name = bat_host->name;
-
-	printf("BAT %s: ", name);
-
-	bat_host = NULL;
-	if (read_opt & USE_BAT_HOSTS)
-		bat_host = bat_hosts_find_by_mac((char *)bcast_packet->orig);
-
-	if (!bat_host)
-		name = ether_ntoa_long((struct ether_addr *)bcast_packet->orig);
-	else
-		name = bat_host->name;
-
-	printf("BCAST, orig %s, seqno %u, ", name, ntohs(bcast_packet->seqno));
+	printf("BCAST, orig %s, seqno %u, ",
+	       get_name_by_macaddr((struct ether_addr *)bcast_packet->orig, read_opt),
+	       ntohs(bcast_packet->seqno));
 
 	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct bcast_packet));
 

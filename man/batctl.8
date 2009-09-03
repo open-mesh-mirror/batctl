@@ -77,6 +77,9 @@ Layer 2 traceroute mac address or bat\-host name (batctl will try to find bat\-h
 .IP "\fBtcpdump|td	interface [interface]\fP"
 Per default batctl will display all packets that were seen on the given interface(s). The "\-p" options allows to filter certain packet types: 1 displays batman ogm packets only, 2 displays batman icmp packets only, etc. These numbers can be added to filter more than one packet type, e.g. use "\-p 3" to display batman ogm packets and batman icmp packets only. If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
 .br
+.IP "\fBbisect		logfile1 logfile2 .. logfileN\fP"
+Analyzes the logfiles to build a small internal database of all sent sequence numbers and routing table changes. This database can be used to search for routing loops (default action) or to trace OGMs of a host (use "-t" to specify the mac address or bat\-host name) throughout the network. You can name a specific sequence number or a range using the "-s" option to reduce the trace output.
+.br
 .SH FILES
 .TP
 .I "\fBbat-hosts\fP"

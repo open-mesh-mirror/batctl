@@ -39,7 +39,8 @@ static void bisect_usage(void)
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
-	printf(" \t -s seqno range (requires trace seqno node)\n");
+	printf(" \t -r print routing tables of given mac address or bat-host\n");
+	printf(" \t -s seqno range (requires routing table or trace seqno mode)\n");
 	printf(" \t -t trace seqnos of given mac address or bat-host\n");
 }
 
@@ -816,7 +817,7 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 				continue;
 
 			if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
-				continue;
+				break;
 
 			res = seqno_trace_add(&trace_list, bat_node, seqno_event);
 
@@ -836,16 +837,108 @@ out:
 	return;
 }
 
-int bisect(int argc, char **argv)
+static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int read_opt)
+{
+	struct bat_node *bat_node;
+	struct seqno_event *seqno_event;
+	int i;
+
+	printf("Routing tables of originator: %s ",
+	       get_name_by_macstr(rt_orig, read_opt));
+
+	if ((seqno_min == -1) && (seqno_max == -1))
+		printf("[all sequence numbers]\n");
+	else if (seqno_min == seqno_max)
+		printf("[sequence number: %i]\n", seqno_min);
+	else
+		printf("[sequence number range: %i-%i]\n", seqno_min, seqno_max);
+
+	bat_node = node_get(rt_orig);
+	if (!bat_node)
+		goto out;
+
+	/* we might have no log file from this node */
+	if (list_empty(&bat_node->event_list))
+		goto out;
+
+	/* or routing tables */
+	if (list_empty(&bat_node->rt_table_list))
+		goto out;
+
+	list_for_each_entry(seqno_event, &bat_node->event_list, list) {
+		if (!seqno_event->rt_table)
+			continue;
+
+		if ((seqno_min != -1) && (seqno_event->seqno < seqno_min))
+			continue;
+
+		if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
+			continue;
+
+		printf("rt change triggered by OGM from: %s (tq: %i, ttl: %i, seqno %i",
+		       get_name_by_macstr(seqno_event->orig->name, read_opt),
+		       seqno_event->tq, seqno_event->ttl, seqno_event->seqno);
+		printf(", neigh: %s",
+		       get_name_by_macstr(seqno_event->neigh->name, read_opt));
+		printf(", old_orig: %s)\n",
+		       get_name_by_macstr(seqno_event->old_orig->name, read_opt));
+
+		for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
+			printf("   %s via next hop",
+			       get_name_by_macstr(seqno_event->rt_table->entries[i].orig, read_opt));
+			printf(" %s\n",
+			       get_name_by_macstr(seqno_event->rt_table->entries[i].next_hop->name, read_opt));
+		}
+
+		printf("\n");
+	}
+
+out:
+	return;
+}
+
+static int get_orig_addr(char *orig_name, char *orig_addr)
 {
 	struct bat_host *bat_host;
-	struct ether_addr *trace_orig_addr;
+	struct ether_addr *orig_mac;
+	char *orig_name_tmp = orig_name;
+
+	bat_host = bat_hosts_find_by_name(orig_name_tmp);
+
+	if (bat_host) {
+		orig_name_tmp = ether_ntoa_long((struct ether_addr *)&bat_host->mac_addr);
+		goto copy_name;
+	}
+
+	orig_mac = ether_aton(orig_name_tmp);
+
+	if (!orig_mac) {
+		printf("Error - the originator is not a mac address or bat-host name: %s\n", orig_name);
+		goto err;
+	}
+
+	/**
+	* convert the given mac address to the long format to
+	* make sure we can find it
+	*/
+	orig_name_tmp = ether_ntoa_long(orig_mac);
+
+copy_name:
+	strncpy(orig_addr, orig_name_tmp, NAME_LEN);
+	return 1;
+
+err:
+	return 0;
+}
+
+int bisect(int argc, char **argv)
+{
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
 	int tmp_seqno, seqno_max = -1, seqno_min = -1;
-	char *trace_orig_ptr = NULL, trace_orig[NAME_LEN], *dash_ptr;
+	char *trace_orig_ptr = NULL, *rt_orig_ptr = NULL, orig[NAME_LEN], *dash_ptr;
 
-	while ((optchar = getopt(argc, argv, "hns:t:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnr:s:t:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			bisect_usage();
@@ -853,6 +946,10 @@ int bisect(int argc, char **argv)
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
 			found_args += 1;
+			break;
+		case 'r':
+			rt_orig_ptr = optarg;
+			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
 			break;
 		case 's':
 			dash_ptr = strchr(optarg, '-');
@@ -903,33 +1000,23 @@ int bisect(int argc, char **argv)
 	bat_hosts_init();
 	num_parsed_files = 0;
 
-	if (trace_orig_ptr) {
-		bat_host = bat_hosts_find_by_name(trace_orig_ptr);
+	if ((rt_orig_ptr) && (trace_orig_ptr)) {
+		printf("Error - the 'print routing table' option can't be used together with the the 'trace seqno' option\n");
+		goto err;
+	} else if (rt_orig_ptr) {
+		res = get_orig_addr(rt_orig_ptr, orig);
 
-		if (bat_host) {
-			trace_orig_ptr = ether_ntoa_long((struct ether_addr *)&bat_host->mac_addr);
-			goto copy_name;
-		}
-
-		trace_orig_addr = ether_aton(trace_orig_ptr);
-
-		if (!trace_orig_addr) {
-			printf("Error - the trace host is not a mac address or bat-host name: %s\n", trace_orig_ptr);
+		if (res < 1)
 			goto err;
-		}
+	} else if (trace_orig_ptr) {
+		res = get_orig_addr(trace_orig_ptr, orig);
 
-		/**
-		 * convert the given mac address to the long format to
-		 * make sure we can find it
-		 */
-		trace_orig_ptr = ether_ntoa_long(trace_orig_addr);
-
-copy_name:
-		strncpy(trace_orig, trace_orig_ptr, NAME_LEN);
+		if (res < 1)
+			goto err;
 	}
 
-	if ((seqno_min > 0) && (!trace_orig_ptr)) {
-		printf("Error - the sequence range option can't be used without specifying a trace host\n");
+	if ((seqno_min > 0) && (!rt_orig_ptr) && (!trace_orig_ptr)) {
+		printf("Error - the sequence range option can't be used without specifying an originator via print routing tables or the trace mode\n");
 		goto err;
 	}
 
@@ -958,7 +1045,9 @@ copy_name:
 	}
 
 	if (trace_orig_ptr)
-		trace_seqnos(trace_orig, seqno_min, seqno_max, read_opt);
+		trace_seqnos(orig, seqno_min, seqno_max, read_opt);
+	else if (rt_orig_ptr)
+		print_rt_tables(orig, seqno_min, seqno_max, read_opt);
 	else
 		validate_rt_tables(read_opt);
 

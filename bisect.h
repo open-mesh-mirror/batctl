@@ -47,7 +47,7 @@ struct seqno_event {
 	struct list_head list;
 	struct bat_node *orig;
 	struct bat_node *neigh;
-	struct bat_node *old_orig;
+	struct bat_node *prev_sender;
 	int seqno;
 	int tq;
 	int ttl;

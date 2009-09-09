@@ -196,9 +196,9 @@ err:
 	return 0;
 }
 
-static int seqno_event_new(char *iface_addr, char *orig, char *old_orig, char *neigh, int seqno, int tq, int ttl)
+static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char *neigh, int seqno, int tq, int ttl)
 {
-	struct bat_node *orig_node, *neigh_node, *old_orig_node;
+	struct bat_node *orig_node, *neigh_node, *prev_sender_node;
 	struct seqno_event *seqno_event;
 
 	if (!iface_addr) {
@@ -243,8 +243,8 @@ static int seqno_event_new(char *iface_addr, char *orig, char *old_orig, char *n
 	if (!neigh_node)
 		goto err;
 
-	old_orig_node = node_get(old_orig);
-	if (!old_orig_node)
+	prev_sender_node = node_get(prev_sender);
+	if (!prev_sender_node)
 		goto err;
 
 	seqno_event = malloc(sizeof(struct seqno_event));
@@ -256,7 +256,7 @@ static int seqno_event_new(char *iface_addr, char *orig, char *old_orig, char *n
 	INIT_LIST_HEAD(&seqno_event->list);
 	seqno_event->orig = orig_node;
 	seqno_event->neigh = neigh_node;
-	seqno_event->old_orig = old_orig_node;
+	seqno_event->prev_sender = prev_sender_node;
 	seqno_event->seqno = seqno;
 	seqno_event->tq = tq;
 	seqno_event->ttl = ttl;
@@ -273,7 +273,7 @@ static int parse_log_file(char *file_path)
 {
 	FILE *fd;
 	char line_buff[MAX_LINE], *start_ptr, *tok_ptr;
-	char *neigh, *iface_addr, *orig, *old_orig;
+	char *neigh, *iface_addr, *orig, *prev_sender;
 	int line_count = 0, tq, ttl, seqno, i, res;
 
 	fd = fopen(file_path, "r");
@@ -290,7 +290,7 @@ static int parse_log_file(char *file_path)
 
 		if (strstr(start_ptr, "Received BATMAN packet via NB")) {
 			tok_ptr = strtok(start_ptr, " ");
-			neigh = iface_addr = orig = old_orig = NULL;
+			neigh = iface_addr = orig = prev_sender = NULL;
 			seqno = tq = ttl = -1;
 
 			for (i = 0; i < 21; i++) {
@@ -312,8 +312,8 @@ static int parse_log_file(char *file_path)
 					orig[strlen(orig) - 1] = 0;
 					break;
 				case 14:
-					old_orig = tok_ptr;
-					old_orig[strlen(old_orig) - 1] = 0;
+					prev_sender = tok_ptr;
+					prev_sender[strlen(prev_sender) - 1] = 0;
 					break;
 				case 16:
 					seqno = strtol(tok_ptr, NULL, 10);
@@ -332,15 +332,15 @@ static int parse_log_file(char *file_path)
 				continue;
 			}
 
-// 			fprintf(stderr, "received packet  (line %i): neigh: '%s', iface_addr: '%s', orig: '%s', old_orig: '%s', seqno: %i, tq: %i, ttl: %i\n", line_count, neigh, iface_addr, orig, old_orig, seqno, tq, ttl);
+// 			fprintf(stderr, "received packet  (line %i): neigh: '%s', iface_addr: '%s', orig: '%s', prev_sender: '%s', seqno: %i, tq: %i, ttl: %i\n", line_count, neigh, iface_addr, orig, prev_sender, seqno, tq, ttl);
 
-			res = seqno_event_new(iface_addr, orig, old_orig, neigh, seqno, tq, ttl);
+			res = seqno_event_new(iface_addr, orig, prev_sender, neigh, seqno, tq, ttl);
 			if (res < 1)
 				fprintf(stderr, " [file: %s, line: %i]\n", file_path, line_count);
 
 		} else if (strstr(start_ptr, "Changing route towards")) {
 			tok_ptr = strtok(start_ptr, " ");
-			orig = neigh = old_orig = NULL;
+			orig = neigh = prev_sender = NULL;
 
 			for (i = 0; i < 12; i++) {
 				tok_ptr = strtok(NULL, " ");
@@ -355,20 +355,20 @@ static int parse_log_file(char *file_path)
 					neigh = tok_ptr;
 					break;
 				case 9:
-					old_orig = tok_ptr;
-					old_orig[strlen(old_orig) - 2] = 0;
+					prev_sender = tok_ptr;
+					prev_sender[strlen(prev_sender) - 2] = 0;
 					break;
 				}
 			}
 
-			if (!old_orig) {
+			if (!prev_sender) {
 				fprintf(stderr, "Broken 'changing route' line found - skipping [file: %s, line: %i]\n", file_path, line_count);
 				continue;
 			}
 
-// 			printf("changing route (line %i): orig: '%s', neigh: '%s', old_orig: '%s'\n", line_count, orig, neigh, old_orig);
+// 			printf("changing route (line %i): orig: '%s', neigh: '%s', prev_sender: '%s'\n", line_count, orig, neigh, prev_sender);
 
-			res = routing_table_new(orig, neigh, old_orig);
+			res = routing_table_new(orig, neigh, prev_sender);
 			if (res < 1)
 				fprintf(stderr, " [file: %s, line: %i]\n", file_path, line_count);
 		}
@@ -527,7 +527,7 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 	               seqno_trace_neigh->seqno_event->ttl);
 
 	printf(", neigh: %s", get_name_by_macstr(seqno_trace_neigh->seqno_event->neigh->name, read_opt));
-	printf(", old_orig: %s]\n", get_name_by_macstr(seqno_trace_neigh->seqno_event->old_orig->name, read_opt));
+	printf(", prev_sender: %s]\n", get_name_by_macstr(seqno_trace_neigh->seqno_event->prev_sender->name, read_opt));
 
 	for (i = 0; i < seqno_trace_neigh->num_neighbors; i++) {
 		snprintf(new_head, sizeof(new_head), "%s%s",
@@ -625,7 +625,7 @@ err:
 	return NULL;
 }
 
-static struct seqno_trace_neigh *seqno_trace_find_neigh(struct bat_node *neigh, struct bat_node *old_orig,
+static struct seqno_trace_neigh *seqno_trace_find_neigh(struct bat_node *neigh, struct bat_node *prev_sender,
 				struct seqno_trace_neigh *seqno_trace_neigh)
 {
 	struct seqno_trace_neigh *seqno_trace_neigh_tmp, *seqno_trace_neigh_ret;
@@ -635,10 +635,10 @@ static struct seqno_trace_neigh *seqno_trace_find_neigh(struct bat_node *neigh, 
 		seqno_trace_neigh_tmp = seqno_trace_neigh->seqno_trace_neigh[i];
 
 		if ((neigh == seqno_trace_neigh_tmp->bat_node) &&
-		    (old_orig == seqno_trace_neigh_tmp->seqno_event->neigh))
+		    (prev_sender == seqno_trace_neigh_tmp->seqno_event->neigh))
 			return seqno_trace_neigh_tmp;
 
-		seqno_trace_neigh_ret = seqno_trace_find_neigh(neigh, old_orig, seqno_trace_neigh_tmp);
+		seqno_trace_neigh_ret = seqno_trace_find_neigh(neigh, prev_sender, seqno_trace_neigh_tmp);
 
 		if (seqno_trace_neigh_ret)
 			return seqno_trace_neigh_ret;
@@ -697,7 +697,7 @@ static int seqno_trace_check_leaves(struct seqno_trace *seqno_trace, struct seqn
 		seqno_trace_neigh_tmp = seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i];
 
 		if ((seqno_trace_neigh_tmp->seqno_event->neigh == seqno_trace_neigh_new->bat_node) &&
-		    (seqno_trace_neigh_tmp->seqno_event->old_orig == seqno_trace_neigh_new->seqno_event->neigh)) {
+		    (seqno_trace_neigh_tmp->seqno_event->prev_sender == seqno_trace_neigh_new->seqno_event->neigh)) {
 			res = seqno_trace_fix_leaf(seqno_trace_neigh_new, &seqno_trace->seqno_trace_neigh, seqno_trace_neigh_tmp);
 
 			if (res < 1)
@@ -772,7 +772,7 @@ static int seqno_trace_add(struct list_head_first *trace_list, struct bat_node *
 	}
 
 	seqno_trace_neigh = seqno_trace_find_neigh(seqno_event->neigh,
-				                   seqno_event->old_orig,
+				                   seqno_event->prev_sender,
 				                   &seqno_trace->seqno_trace_neigh);
 
 	/* no neighbor found to hook up to - adding new root node */
@@ -880,8 +880,8 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 		       seqno_event->tq, seqno_event->ttl, seqno_event->seqno);
 		printf(", neigh: %s",
 		       get_name_by_macstr(seqno_event->neigh->name, read_opt));
-		printf(", old_orig: %s)\n",
-		       get_name_by_macstr(seqno_event->old_orig->name, read_opt));
+		printf(", prev_sender: %s)\n",
+		       get_name_by_macstr(seqno_event->prev_sender->name, read_opt));
 
 		for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
 			printf("   %s via next hop",

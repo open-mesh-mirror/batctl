@@ -817,7 +817,7 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 				continue;
 
 			if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
-				break;
+				continue;
 
 			res = seqno_trace_add(&trace_list, bat_node, seqno_event);
 

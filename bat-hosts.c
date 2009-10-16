@@ -59,7 +59,7 @@ static int choose_mac(void *data, int32_t size)
 	return (hash % size);
 }
 
-static void parse_hosts_file(struct hashtable_t *hash, const char path[])
+static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 {
 	FILE *fd;
 	char name[HOST_NAME_MAX_LEN], mac_str[18];
@@ -97,7 +97,7 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 		if (bat_host) {
 			printf("Warning - name already known (changing mac from '%s' to '%s'): %s\n",
 					ether_ntoa(&bat_host->mac_addr), mac_str, name);
-			hash_remove(hash, bat_host);
+			hash_remove(*hash, bat_host);
 			free(bat_host);
 		}
 
@@ -111,15 +111,15 @@ static void parse_hosts_file(struct hashtable_t *hash, const char path[])
 		memcpy(&bat_host->mac_addr, mac_addr, sizeof(struct ether_addr));
 		strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
 
-		hash_add(hash, bat_host);
+		hash_add(*hash, bat_host);
 
-		if (hash->elements * 4 > hash->size) {
-			swaphash = hash_resize(hash, hash->size * 2);
+		if ((*hash)->elements * 4 > (*hash)->size) {
+			swaphash = hash_resize((*hash), (*hash)->size * 2);
 
 			if (swaphash == NULL)
 				printf("Warning - couldn't resize bat hosts hash table\n");
 			else
-				hash = swaphash;
+				*hash = swaphash;
 		}
 
 	}
@@ -158,7 +158,7 @@ void bat_hosts_init(void)
 			confdir[CONF_DIR_LEN - 1] = '\0';
 		}
 
-		parse_hosts_file(host_hash, confdir);
+		parse_hosts_file(&host_hash, confdir);
 	}
 }
 

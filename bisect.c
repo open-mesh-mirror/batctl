@@ -841,7 +841,8 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 {
 	struct bat_node *bat_node;
 	struct seqno_event *seqno_event;
-	int i;
+	struct rt_table *prev_rt_table = NULL;
+	int i, j, changed_entry;
 
 	printf("Routing tables of originator: %s ",
 	       get_name_by_macstr(rt_orig, read_opt));
@@ -884,13 +885,30 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 		       get_name_by_macstr(seqno_event->prev_sender->name, read_opt));
 
 		for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
-			printf("   %s via next hop",
+			changed_entry = 1;
+
+			if (prev_rt_table) {
+				for (j = 0; j < prev_rt_table->num_entries; j++) {
+					if (!compare_name(seqno_event->rt_table->entries[i].orig, prev_rt_table->entries[j].orig))
+						continue;
+
+					if (seqno_event->rt_table->entries[i].next_hop != prev_rt_table->entries[j].next_hop)
+						continue;
+
+					changed_entry = 0;
+					break;
+				}
+			}
+
+			printf("%s %s via next hop", (changed_entry ? "   *" : "    "),
 			       get_name_by_macstr(seqno_event->rt_table->entries[i].orig, read_opt));
 			printf(" %s\n",
 			       get_name_by_macstr(seqno_event->rt_table->entries[i].next_hop->name, read_opt));
 		}
 
 		printf("\n");
+
+		prev_rt_table = seqno_event->rt_table;
 	}
 
 out:

@@ -397,15 +397,10 @@ static int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_ev
 	       get_name_by_macstr(rt_entry->orig, read_opt),
 	       seqno_event->seqno);
 
-	/* single hop neighbors won't enter the while loop */
-	if (compare_name(rt_entry->orig, rt_entry_tmp->next_hop->name))
-		printf(" * %s",
-		       get_name_by_macstr(rt_entry_tmp->next_hop->name, read_opt));
-
-	while (!compare_name(rt_entry->orig, rt_entry_tmp->next_hop->name)) {
+	while (1) {
 		next_hop_node = rt_entry_tmp->next_hop;
 
-		printf(" * %s",
+		printf(" -> %s",
 		       get_name_by_macstr(next_hop_node->name, read_opt));
 
 		/* no more data - path seems[tm] fine */
@@ -421,7 +416,7 @@ static int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_ev
 
 		/* we are running in a loop */
 		if (memcmp(curr_loop_magic, next_hop_node->loop_magic, LOOP_MAGIC_LEN) == 0) {
-			printf(" -> aborted due to loop");
+			printf("   aborted due to loop!");
 			goto out;
 		}
 
@@ -451,6 +446,12 @@ static int validate_path(struct bat_node *bat_node, struct seqno_event *seqno_ev
 		/* no routing entry of orig ?? */
 		if (!rt_entry_tmp)
 			goto out;
+
+		if (compare_name(rt_entry->orig, rt_entry_tmp->next_hop->name)) {
+			printf(" -> %s.",
+				get_name_by_macstr(rt_entry_tmp->next_hop->name, read_opt));
+			break;
+		}
 	}
 
 out:
@@ -472,19 +473,19 @@ static void validate_rt_tables(int read_opt)
 
 		/* we might have no log file from this node */
 		if (list_empty(&bat_node->event_list)) {
-			fprintf(stderr, "No seqno data from node '%s' - skipping\n",
+			fprintf(stderr, "\nNo seqno data from node '%s' - skipping\n",
 			       get_name_by_macstr(bat_node->name, read_opt));
 			continue;
 		}
 
 		/* or routing tables */
 		if (list_empty(&bat_node->rt_table_list)) {
-			fprintf(stderr, "No routing tables from node '%s' - skipping\n",
+			fprintf(stderr, "\nNo routing tables from node '%s' - skipping\n",
 			       get_name_by_macstr(bat_node->name, read_opt));
 			continue;
 		}
 
-		printf("Checking host: %s\n",
+		printf("\nChecking host: %s\n",
 		       get_name_by_macstr(bat_node->name, read_opt));
 		list_for_each_entry(seqno_event, &bat_node->event_list, list) {
 			/**

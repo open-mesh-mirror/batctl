@@ -38,9 +38,10 @@ static void bisect_usage(void)
 	printf("Usage: batctl bisect [options] <file1> <file2> .. <fileN>\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
+	printf(" \t -l run a loop detection of given mac address or bat-host (default)\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
 	printf(" \t -r print routing tables of given mac address or bat-host\n");
-	printf(" \t -s seqno range (requires routing table or trace seqno mode)\n");
+	printf(" \t -s seqno range to limit the output\n");
 	printf(" \t -t trace seqnos of given mac address or bat-host\n");
 }
 
@@ -459,17 +460,35 @@ out:
 	return 1;
 }
 
-static void validate_rt_tables(int read_opt)
+static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int read_opt)
 {
 	struct bat_node *bat_node;
 	struct seqno_event *seqno_event;
 	struct hash_it_t *hashit = NULL;
 	int i, last_seqno = -1, seqno_count = 0;
+	char check_orig[NAME_LEN];
 
-	printf("\nAnalyzing routing tables:\n");
+	printf("\nAnalyzing routing tables ");
+
+	/* if no option was given loop_orig is empty */
+	memset(check_orig, 0, NAME_LEN);
+	if (memcmp(loop_orig, check_orig, NAME_LEN))
+		printf("of originator: %s ",
+		       get_name_by_macstr(loop_orig, read_opt));
+
+	if ((seqno_min == -1) && (seqno_max == -1))
+		printf("[all sequence numbers]\n");
+	else if (seqno_min == seqno_max)
+		printf("[sequence number: %i]\n", seqno_min);
+	else
+		printf("[sequence number range: %i-%i]\n", seqno_min, seqno_max);
 
 	while (NULL != (hashit = hash_iterate(node_hash, hashit))) {
 		bat_node = hashit->bucket->data;
+
+		if (memcmp(loop_orig, check_orig, NAME_LEN) &&
+		    memcmp(loop_orig, bat_node->name, NAME_LEN) != 0)
+			continue;
 
 		/* we might have no log file from this node */
 		if (list_empty(&bat_node->event_list)) {
@@ -493,6 +512,12 @@ static void validate_rt_tables(int read_opt)
 			 * table change and is considered harmless
 			 */
 			if (!seqno_event->rt_table)
+				continue;
+
+			if ((seqno_min != -1) && (seqno_event->seqno < seqno_min))
+				continue;
+
+			if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
 				continue;
 
 			/**
@@ -963,13 +988,20 @@ int bisect(int argc, char **argv)
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
 	int tmp_seqno, seqno_max = -1, seqno_min = -1;
-	char *trace_orig_ptr = NULL, *rt_orig_ptr = NULL, orig[NAME_LEN], *dash_ptr;
+	char *trace_orig_ptr = NULL, *rt_orig_ptr = NULL, *loop_orig_ptr = NULL;
+	char orig[NAME_LEN], *dash_ptr;
 
-	while ((optchar = getopt(argc, argv, "hnr:s:t:")) != -1) {
+	memset(orig, 0, NAME_LEN);
+
+	while ((optchar = getopt(argc, argv, "hl:nr:s:t:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			bisect_usage();
 			return EXIT_SUCCESS;
+		case 'l':
+			loop_orig_ptr = optarg;
+			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
 			found_args += 1;
@@ -1030,6 +1062,12 @@ int bisect(int argc, char **argv)
 	if ((rt_orig_ptr) && (trace_orig_ptr)) {
 		printf("Error - the 'print routing table' option can't be used together with the the 'trace seqno' option\n");
 		goto err;
+	} else if ((loop_orig_ptr) && (trace_orig_ptr)) {
+		printf("Error - the 'loop detection' option can't be used together with the the 'trace seqno' option\n");
+		goto err;
+	} else if ((loop_orig_ptr) && (rt_orig_ptr)) {
+		printf("Error - the 'loop detection' option can't be used together with the the 'print routing table' option\n");
+		goto err;
 	} else if (rt_orig_ptr) {
 		res = get_orig_addr(rt_orig_ptr, orig);
 
@@ -1040,11 +1078,11 @@ int bisect(int argc, char **argv)
 
 		if (res < 1)
 			goto err;
-	}
+	} else if (loop_orig_ptr) {
+		res = get_orig_addr(loop_orig_ptr, orig);
 
-	if ((seqno_min > 0) && (!rt_orig_ptr) && (!trace_orig_ptr)) {
-		printf("Error - the sequence range option can't be used without specifying an originator via print routing tables or the trace mode\n");
-		goto err;
+		if (res < 1)
+			goto err;
 	}
 
 	/* we search a specific seqno - no range */
@@ -1076,7 +1114,7 @@ int bisect(int argc, char **argv)
 	else if (rt_orig_ptr)
 		print_rt_tables(orig, seqno_min, seqno_max, read_opt);
 	else
-		validate_rt_tables(read_opt);
+		loop_detection(orig, seqno_min, seqno_max, read_opt);
 
 	ret = EXIT_SUCCESS;
 

@@ -515,27 +515,34 @@ static void validate_rt_tables(int read_opt)
 }
 
 static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
+			            struct seqno_event *seqno_event_parent,
 			            int num_sisters, char *head, int read_opt)
 {
 	char new_head[MAX_LINE];
 	int i;
 
-	printf("%s%s--- %s [tq: %i, ttl: %i", head,
+	printf("%s%s- %s [tq: %i, ttl: %i", head,
 	               (strlen(head) == 1 ? "" : num_sisters == 0 ? "\\" : "|"),
 	               get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
 	               seqno_trace_neigh->seqno_event->tq,
 	               seqno_trace_neigh->seqno_event->ttl);
 
 	printf(", neigh: %s", get_name_by_macstr(seqno_trace_neigh->seqno_event->neigh->name, read_opt));
-	printf(", prev_sender: %s]\n", get_name_by_macstr(seqno_trace_neigh->seqno_event->prev_sender->name, read_opt));
+	printf(", prev_sender: %s]", get_name_by_macstr(seqno_trace_neigh->seqno_event->prev_sender->name, read_opt));
+
+	if ((seqno_event_parent) &&
+		(seqno_trace_neigh->seqno_event->tq > seqno_event_parent->tq))
+		printf("  TQ UP!\n");
+	else
+		printf("\n");
 
 	for (i = 0; i < seqno_trace_neigh->num_neighbors; i++) {
 		snprintf(new_head, sizeof(new_head), "%s%s",
-		         (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
-		         (strlen(head) == 1 ? " " :
-		         num_sisters == 0 ? "  " : "| "));
+		         (strlen(head) > 1 ? head : num_sisters == 0 ? "  " : head),
+		         (strlen(head) == 1 ? "  " :
+		         num_sisters == 0 ? "   " : "|  "));
 
-		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i],
+		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i], seqno_trace_neigh->seqno_event,
 		                        seqno_trace_neigh->num_neighbors - i - 1, new_head, read_opt);
 	}
 }
@@ -569,6 +576,7 @@ static void seqno_trace_print(struct list_head_first *trace_list, char *trace_or
 			         (seqno_trace->seqno_trace_neigh.num_neighbors == i + 1 ? '\\' : '|'));
 
 			seqno_trace_print_neigh(seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i],
+			                        NULL,
 			                        seqno_trace->seqno_trace_neigh.num_neighbors - i - 1,
 			                        head, read_opt);
 		}

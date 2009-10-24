@@ -73,6 +73,9 @@ static struct bat_node *node_get(char *name)
 {
 	struct bat_node *bat_node;
 
+	if (!name)
+		return NULL;
+
 	bat_node = (struct bat_node *)hash_find(node_hash, name);
 	if (bat_node)
 		goto out;
@@ -114,11 +117,12 @@ static void node_free(void *data)
 	free(bat_node);
 }
 
-static int routing_table_new(char *orig, char *next_hop, char *old_next_hop)
+static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, char rt_flag)
 {
 	struct bat_node *next_hop_node;
-	struct rt_table *rt_table, *prev_rt_table;
-	int i;
+	struct seqno_event *seqno_event;
+	struct rt_table *rt_table, *prev_rt_table = NULL;
+	int i, j;
 
 	if (!curr_bat_node) {
 		fprintf(stderr, "Routing table change without preceeding OGM - skipping");
@@ -130,18 +134,18 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop)
 		goto err;
 	}
 
-	if (!next_hop) {
+	if ((rt_flag != RT_FLAG_DELETE) && (!next_hop)) {
 		fprintf(stderr, "Invalid next hop found - skipping");
 		goto err;
 	}
 
-	if (!old_next_hop) {
+	if ((rt_flag == RT_FLAG_UPDATE) && (!old_next_hop)) {
 		fprintf(stderr, "Invalid old next hop found - skipping");
 		goto err;
 	}
 
 	next_hop_node = node_get(next_hop);
-	if (!next_hop_node)
+	if ((rt_flag != RT_FLAG_DELETE) && (!next_hop_node))
 		goto err;
 
 	rt_table = malloc(sizeof(struct rt_table));
@@ -151,19 +155,73 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop)
 	}
 
 	INIT_LIST_HEAD(&rt_table->list);
+
+	if (!(list_empty(&curr_bat_node->rt_table_list)))
+		prev_rt_table = (struct rt_table *)(curr_bat_node->rt_table_list.prev);
+
 	rt_table->num_entries = 1;
 
-	if (!(list_empty(&curr_bat_node->rt_table_list))) {
-		prev_rt_table = (struct rt_table *)(curr_bat_node->rt_table_list.prev);
-		rt_table->num_entries = prev_rt_table->num_entries + 1;
+	switch (rt_flag) {
+	case RT_FLAG_ADD:
+		if (prev_rt_table)
+			rt_table->num_entries = prev_rt_table->num_entries + 1;
+		break;
+	case RT_FLAG_UPDATE:
+		if (prev_rt_table) {
+			rt_table->num_entries = prev_rt_table->num_entries + 1;
 
-		/* if we had a route already we just change the entry */
-		for (i = 0; i < prev_rt_table->num_entries; i++) {
-			if (compare_name(orig, prev_rt_table->entries[i].orig)) {
-				rt_table->num_entries--;
-				break;
+			/* if we had that route already we just change the entry */
+			for (i = 0; i < prev_rt_table->num_entries; i++) {
+				if (compare_name(orig, prev_rt_table->entries[i].orig)) {
+					rt_table->num_entries = prev_rt_table->num_entries;
+					break;
+				}
 			}
 		}
+		break;
+	case RT_FLAG_DELETE:
+		if (prev_rt_table) {
+			rt_table->num_entries = prev_rt_table->num_entries + 1;
+
+			/* if we had that route already we just change the entry */
+			for (i = 0; i < prev_rt_table->num_entries; i++) {
+				if (compare_name(orig, prev_rt_table->entries[i].orig)) {
+					rt_table->num_entries = prev_rt_table->num_entries;
+					break;
+				}
+			}
+
+			if (rt_table->num_entries != prev_rt_table->num_entries) {
+				fprintf(stderr,
+				        "Found a delete entry of orig '%s' but no previous existing record - skipping",
+				        orig);
+				goto table_free;
+			}
+
+			/**
+			 * we need to create a special seqno event as a timer instead
+			 * of an OGM triggered that event
+			 */
+			seqno_event = malloc(sizeof(struct seqno_event));
+			if (!seqno_event) {
+				fprintf(stderr, "Could not allocate memory for delete seqno event (out of mem?) - skipping");
+				goto table_free;
+			}
+
+			INIT_LIST_HEAD(&seqno_event->list);
+			seqno_event->orig = NULL;
+			seqno_event->neigh = NULL;
+			seqno_event->prev_sender = NULL;
+			seqno_event->seqno = -1;
+			seqno_event->tq = -1;
+			seqno_event->ttl = -1;
+			seqno_event->rt_table = NULL;
+			list_add_tail(&seqno_event->list, &curr_bat_node->event_list);
+		}
+		break;
+	default:
+		fprintf(stderr, "Unknown rt_flag received: %i - skipping", rt_flag);
+		goto table_free;
 	}
 
 	rt_table->entries = malloc(sizeof(struct rt_entry) * rt_table->num_entries);
@@ -172,18 +230,40 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop)
 		goto table_free;
 	}
 
-	if (!(list_empty(&curr_bat_node->rt_table_list)))
-		memcpy(rt_table->entries, prev_rt_table->entries, prev_rt_table->num_entries * sizeof(struct rt_entry));
+	if (prev_rt_table) {
+		j = -1;
+		for (i = 0; i < prev_rt_table->num_entries; i++) {
+			/* if we have a previously deleted item don't copy it over */
+			if (prev_rt_table->entries[i].flags == RT_FLAG_DELETE) {
+				rt_table->num_entries--;
+				continue;
+			}
 
-	if ((rt_table->num_entries == 1) ||
-	    (rt_table->num_entries != prev_rt_table->num_entries)) {
+			/**
+			 * if we delete one item the entries are not in sync anymore,
+			 * therefore we need to counters: one for the old and one for
+			 * the new routing table
+			 */
+			j++;
+
+			memcpy((char *)&rt_table->entries[j], (char *)&prev_rt_table->entries[i], sizeof(struct rt_entry));
+
+			if (compare_name(orig, rt_table->entries[j].orig)) {
+				if (rt_flag != RT_FLAG_DELETE)
+					rt_table->entries[j].next_hop = next_hop_node;
+				rt_table->entries[j].flags = rt_flag;
+				continue;
+			}
+
+			rt_table->entries[j].flags = 0;
+		}
+	}
+
+	if ((rt_table->num_entries == 1) || (rt_table->num_entries != j + 1)) {
 		i = rt_table->num_entries;
 		strncpy(rt_table->entries[i - 1].orig, orig, NAME_LEN);
 		rt_table->entries[i - 1].next_hop = next_hop_node;
-	} else {
-
-		rt_table->entries[i].next_hop = next_hop_node;
-
+		rt_table->entries[i - 1].flags = rt_flag;
 	}
 
 	list_add_tail(&rt_table->list, &curr_bat_node->rt_table_list);
@@ -274,8 +354,8 @@ static int parse_log_file(char *file_path)
 {
 	FILE *fd;
 	char line_buff[MAX_LINE], *start_ptr, *tok_ptr;
-	char *neigh, *iface_addr, *orig, *prev_sender;
-	int line_count = 0, tq, ttl, seqno, i, res;
+	char *neigh, *iface_addr, *orig, *prev_sender, rt_flag;
+	int line_count = 0, tq, ttl, seqno, i, res, max;
 
 	fd = fopen(file_path, "r");
 
@@ -339,11 +419,25 @@ static int parse_log_file(char *file_path)
 			if (res < 1)
 				fprintf(stderr, " [file: %s, line: %i]\n", file_path, line_count);
 
-		} else if (strstr(start_ptr, "Changing route towards")) {
+		} else if (strstr(start_ptr, "Adding route towards") ||
+			   strstr(start_ptr, "Changing route towards") ||
+			   strstr(start_ptr, "Deleting route towards")) {
+
+			rt_flag = RT_FLAG_UPDATE;
+			max = 12;
+
+			if (strstr(start_ptr, "Adding route towards")) {
+				rt_flag = RT_FLAG_ADD;
+				max = 5;
+			} else if (strstr(start_ptr, "Deleting route towards")) {
+				rt_flag = RT_FLAG_DELETE;
+				max = 3;
+			}
+
 			tok_ptr = strtok(start_ptr, " ");
 			orig = neigh = prev_sender = NULL;
 
-			for (i = 0; i < 12; i++) {
+			for (i = 0; i < max; i++) {
 				tok_ptr = strtok(NULL, " ");
 				if (!tok_ptr)
 					break;
@@ -351,6 +445,14 @@ static int parse_log_file(char *file_path)
 				switch (i) {
 				case 2:
 					orig = tok_ptr;
+					if (rt_flag == RT_FLAG_DELETE)
+						orig[strlen(orig) - 1] = 0;
+					break;
+				case 4:
+					if (rt_flag == RT_FLAG_ADD) {
+						neigh = tok_ptr;
+						neigh[strlen(neigh) - 2] = 0;
+					}
 					break;
 				case 5:
 					neigh = tok_ptr;
@@ -362,14 +464,20 @@ static int parse_log_file(char *file_path)
 				}
 			}
 
-			if (!prev_sender) {
-				fprintf(stderr, "Broken 'changing route' line found - skipping [file: %s, line: %i]\n", file_path, line_count);
+// 			printf("route (line %i): orig: '%s', neigh: '%s', prev_sender: '%s'\n",
+// 			       line_count, orig, neigh, prev_sender);
+
+			if (((rt_flag == RT_FLAG_ADD) && (!neigh)) ||
+			    ((rt_flag == RT_FLAG_UPDATE) && (!prev_sender)) ||
+			    ((rt_flag == RT_FLAG_DELETE) && (!orig))) {
+				fprintf(stderr, "Broken '%s route' line found - skipping [file: %s, line: %i]\n",
+				        (rt_flag == RT_FLAG_UPDATE ? "changing" :
+				        (rt_flag == RT_FLAG_ADD ? "adding" : "deleting")),
+				        file_path, line_count);
 				continue;
 			}
 
-// 			printf("changing route (line %i): orig: '%s', neigh: '%s', prev_sender: '%s'\n", line_count, orig, neigh, prev_sender);
-
-			res = routing_table_new(orig, neigh, prev_sender);
+			res = routing_table_new(orig, neigh, prev_sender, rt_flag);
 			if (res < 1)
 				fprintf(stderr, " [file: %s, line: %i]\n", file_path, line_count);
 		}
@@ -506,6 +614,7 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int re
 
 		printf("\nChecking host: %s\n",
 		       get_name_by_macstr(bat_node->name, read_opt));
+
 		list_for_each_entry(seqno_event, &bat_node->event_list, list) {
 			/**
 			 * this received packet did not trigger a routing
@@ -518,6 +627,10 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int re
 				continue;
 
 			if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
+				continue;
+
+			/* special seqno that indicates an originator timeout */
+			if (seqno_event->seqno == -1)
 				continue;
 
 			/**
@@ -844,6 +957,10 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 			continue;
 
 		list_for_each_entry(seqno_event, &bat_node->event_list, list) {
+			/* special seqno that indicates an originator timeout */
+			if (seqno_event->seqno == -1)
+				continue;
+
 			if (!compare_name(trace_orig, seqno_event->orig->name))
 				continue;
 
@@ -875,8 +992,7 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 {
 	struct bat_node *bat_node;
 	struct seqno_event *seqno_event;
-	struct rt_table *prev_rt_table = NULL;
-	int i, j, changed_entry;
+	int i;
 
 	printf("Routing tables of originator: %s ",
 	       get_name_by_macstr(rt_orig, read_opt));
@@ -910,39 +1026,42 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 		if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
 			continue;
 
-		printf("rt change triggered by OGM from: %s (tq: %i, ttl: %i, seqno %i",
-		       get_name_by_macstr(seqno_event->orig->name, read_opt),
-		       seqno_event->tq, seqno_event->ttl, seqno_event->seqno);
-		printf(", neigh: %s",
-		       get_name_by_macstr(seqno_event->neigh->name, read_opt));
-		printf(", prev_sender: %s)\n",
-		       get_name_by_macstr(seqno_event->prev_sender->name, read_opt));
+		if (seqno_event->orig) {
+			printf("rt change triggered by OGM from: %s (tq: %i, ttl: %i, seqno %i",
+			       get_name_by_macstr(seqno_event->orig->name, read_opt),
+			       seqno_event->tq, seqno_event->ttl, seqno_event->seqno);
+			printf(", neigh: %s",
+			       get_name_by_macstr(seqno_event->neigh->name, read_opt));
+			printf(", prev_sender: %s)\n",
+			       get_name_by_macstr(seqno_event->prev_sender->name, read_opt));
+		} else {
+			printf("rt change triggered by originator timeout: \n");
+		}
 
 		for (i = 0; i < seqno_event->rt_table->num_entries; i++) {
-			changed_entry = 1;
-
-			if (prev_rt_table) {
-				for (j = 0; j < prev_rt_table->num_entries; j++) {
-					if (!compare_name(seqno_event->rt_table->entries[i].orig, prev_rt_table->entries[j].orig))
-						continue;
-
-					if (seqno_event->rt_table->entries[i].next_hop != prev_rt_table->entries[j].next_hop)
-						continue;
-
-					changed_entry = 0;
-					break;
-				}
-			}
-
-			printf("%s %s via next hop", (changed_entry ? "   *" : "    "),
+			printf("%s %s via next hop",
+			       (seqno_event->rt_table->entries[i].flags ? "   *" : "    "),
 			       get_name_by_macstr(seqno_event->rt_table->entries[i].orig, read_opt));
-			printf(" %s\n",
+			printf(" %s",
 			       get_name_by_macstr(seqno_event->rt_table->entries[i].next_hop->name, read_opt));
+
+			switch (seqno_event->rt_table->entries[i].flags) {
+			case RT_FLAG_ADD:
+				printf(" (route added)\n");
+				break;
+			case RT_FLAG_UPDATE:
+				printf(" (next hop changed)\n");
+				break;
+			case RT_FLAG_DELETE:
+				printf(" (route deleted)\n");
+				break;
+			default:
+				printf("\n");
+				break;
+			}
 		}
 
 		printf("\n");
-
-		prev_rt_table = seqno_event->rt_table;
 	}
 
 out:

@@ -23,6 +23,10 @@
 #define MAX_LINE 256
 #define LOOP_MAGIC_LEN ((2 * NAME_LEN) + (2 * sizeof(int)) - 2)
 
+#define RT_FLAG_ADD 1
+#define RT_FLAG_UPDATE 2
+#define RT_FLAG_DELETE 3
+
 int bisect(int argc, char **argv);
 
 struct bat_node {
@@ -41,6 +45,7 @@ struct rt_table {
 struct rt_entry {
 	char orig[NAME_LEN];
 	struct bat_node *next_hop;
+	char flags;
 };
 
 struct seqno_event {

@@ -26,7 +26,7 @@ endif
 endif
 
 CC = gcc
-CFLAGS += -pedantic -Wall -W -O1 -g3 -std=gnu99
+CFLAGS += -pedantic -Wall -W -g3 -std=gnu99
 EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
 LDFLAGS +=
 

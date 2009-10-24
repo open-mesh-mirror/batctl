@@ -29,17 +29,37 @@
 
 int bisect(int argc, char **argv);
 
+
+
 struct bat_node {
 	char name[NAME_LEN];
-	struct list_head_first event_list;
+	struct list_head_first orig_event_list;
 	struct list_head_first rt_table_list;
 	char loop_magic[LOOP_MAGIC_LEN];
+	char loop_magic2[LOOP_MAGIC_LEN];
+};
+
+struct orig_event {
+	struct list_head list;
+	struct bat_node *orig_node;
+	struct list_head_first event_list;
+	struct list_head_first rt_hist_list;
 };
 
 struct rt_table {
 	struct list_head list;
 	int num_entries;
 	struct rt_entry *entries;
+	struct rt_hist *rt_hist;
+};
+
+struct rt_hist {
+	struct list_head list;
+	struct rt_table *rt_table;
+	struct rt_hist *prev_rt_hist;
+	struct seqno_event *seqno_event;
+	struct bat_node *next_hop;
+	char flags;
 };
 
 struct rt_entry {
@@ -56,7 +76,7 @@ struct seqno_event {
 	int seqno;
 	int tq;
 	int ttl;
-	struct rt_table *rt_table;
+	struct rt_hist *rt_hist;
 };
 
 struct seqno_trace_neigh {

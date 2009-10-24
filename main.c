@@ -53,7 +53,7 @@ void print_usage(void) {
 	printf(" \ttcpdump|td    <interface>       \ttcpdump layer 2 traffic on the given interface\n");
 	printf(" \tbisect        <file1> .. <fileN>\tanalyze given log files for routing stability\n");
 	printf("options:\n");
-	printf(" \t-h print this help\n");
+	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
 	printf(" \t-v print version\n");
 }
 

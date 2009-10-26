@@ -665,7 +665,7 @@ static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *ds
 
 		/* same here */
 		if (list_empty(&orig_event->rt_hist_list))
-			continue;
+			goto out;
 
 		/* we are running in a loop */
 		if (memcmp(curr_loop_magic, next_hop_tmp->loop_magic, LOOP_MAGIC_LEN) == 0) {

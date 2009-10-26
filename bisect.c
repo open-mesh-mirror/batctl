@@ -40,6 +40,7 @@ static void bisect_usage(void)
 	printf(" \t -h print this help\n");
 	printf(" \t -l run a loop detection of given mac address or bat-host (default)\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
+	printf(" \t -o only display orig events that affect given mac address or bat-host\n");
 	printf(" \t -r print routing tables of given mac address or bat-host\n");
 	printf(" \t -s seqno range to limit the output\n");
 	printf(" \t -t trace seqnos of given mac address or bat-host\n");
@@ -777,7 +778,7 @@ out:
 	return -1;
 }
 
-static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int read_opt)
+static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, char *filter_orig, int read_opt)
 {
 	struct bat_node *bat_node;
 	struct orig_event *orig_event;
@@ -795,11 +796,17 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int re
 		       get_name_by_macstr(loop_orig, read_opt));
 
 	if ((seqno_min == -1) && (seqno_max == -1))
-		printf("[all sequence numbers]\n");
+		printf("[all sequence numbers]");
 	else if (seqno_min == seqno_max)
-		printf("[sequence number: %i]\n", seqno_min);
+		printf("[sequence number: %i]", seqno_min);
 	else
-		printf("[sequence number range: %i-%i]\n", seqno_min, seqno_max);
+		printf("[sequence number range: %i-%i]", seqno_min, seqno_max);
+
+	if (!compare_name(filter_orig, check_orig))
+		printf(" [filter originator: %s]",
+		       get_name_by_macstr(filter_orig, read_opt));
+
+	printf("\n");
 
 	while (NULL != (hashit = hash_iterate(node_hash, hashit))) {
 		bat_node = hashit->bucket->data;
@@ -813,6 +820,10 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, int re
 
 		list_for_each_entry(orig_event, &bat_node->orig_event_list, list) {
 			if (bat_node == orig_event->orig_node)
+				continue;
+
+			if (!compare_name(filter_orig, check_orig) &&
+			    !compare_name(filter_orig, orig_event->orig_node->name))
 				continue;
 
 			/* we might have no log file from this node */
@@ -926,23 +937,35 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 }
 
 static void seqno_trace_print(struct list_head_first *trace_list, char *trace_orig,
-					 int seqno_min, int seqno_max, int read_opt)
+                              int seqno_min, int seqno_max, char *filter_orig, int read_opt)
 {
 	struct seqno_trace *seqno_trace;
-	char head[MAX_LINE];
+	char head[MAX_LINE], check_orig[NAME_LEN];
 	int i;
+
+	/* if no option was given filter_orig is empty */
+	memset(check_orig, 0, NAME_LEN);
 
 	printf("Sequence number flow of originator: %s ",
 	       get_name_by_macstr(trace_orig, read_opt));
 
 	if ((seqno_min == -1) && (seqno_max == -1))
-		printf("[all sequence numbers]\n");
+		printf("[all sequence numbers]");
 	else if (seqno_min == seqno_max)
-		printf("[sequence number: %i]\n", seqno_min);
+		printf("[sequence number: %i]", seqno_min);
 	else
-		printf("[sequence number range: %i-%i]\n", seqno_min, seqno_max);
+		printf("[sequence number range: %i-%i]", seqno_min, seqno_max);
+
+	if (!compare_name(filter_orig, check_orig))
+		printf(" [filter originator: %s]",
+		       get_name_by_macstr(filter_orig, read_opt));
+
+	printf("\n");
 
 	list_for_each_entry(seqno_trace, trace_list, list) {
+		if (!seqno_trace->print)
+			continue;
+
 		printf("+=> %s (seqno %i)\n",
 		       get_name_by_macstr(trace_orig, read_opt),
 		       seqno_trace->seqno);
@@ -1109,6 +1132,7 @@ static struct seqno_trace *seqno_trace_new(struct seqno_event *seqno_event)
 
 	INIT_LIST_HEAD(&seqno_trace->list);
 	seqno_trace->seqno = seqno_event->seqno;
+	seqno_trace->print = 0;
 
 	seqno_trace->seqno_trace_neigh.num_neighbors = 0;
 
@@ -1126,7 +1150,7 @@ static void seqno_trace_free(struct seqno_trace *seqno_trace)
 }
 
 static int seqno_trace_add(struct list_head_first *trace_list, struct bat_node *bat_node,
-		           struct seqno_event *seqno_event)
+		           struct seqno_event *seqno_event, char print_trace)
 {
 	struct seqno_trace *seqno_trace = NULL, *seqno_trace_tmp = NULL, *seqno_trace_prev = NULL;
 	struct seqno_trace_neigh *seqno_trace_neigh;
@@ -1157,6 +1181,9 @@ static int seqno_trace_add(struct list_head_first *trace_list, struct bat_node *
 			list_add_before(&seqno_trace_prev->list, &seqno_trace_tmp->list, &seqno_trace->list);
 	}
 
+	if (print_trace)
+		seqno_trace->print = print_trace;
+
 	seqno_trace_neigh = seqno_trace_find_neigh(seqno_event->neigh,
 				                   seqno_event->prev_sender,
 				                   &seqno_trace->seqno_trace_neigh);
@@ -1177,7 +1204,7 @@ err:
 	return 0;
 }
 
-static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int read_opt)
+static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, char *filter_orig, int read_opt)
 {
 	struct bat_node *bat_node;
 	struct orig_event *orig_event;
@@ -1185,8 +1212,11 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 	struct hash_it_t *hashit = NULL;
 	struct list_head_first trace_list;
 	struct seqno_trace *seqno_trace, *seqno_trace_tmp;
+	char check_orig[NAME_LEN], print_trace;
 	int res;
 
+	/* if no option was given filter_orig is empty */
+	memset(check_orig, 0, NAME_LEN);
 	INIT_LIST_HEAD_FIRST(trace_list);
 
 	while (NULL != (hashit = hash_iterate(node_hash, hashit))) {
@@ -1212,7 +1242,14 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 				if ((seqno_max != -1) && (seqno_event->seqno > seqno_max))
 					continue;
 
-				res = seqno_trace_add(&trace_list, bat_node, seqno_event);
+				/* if no filter option was given all seqno traces are to be printed */
+				print_trace = compare_name(filter_orig, check_orig);
+
+				if (!compare_name(filter_orig, check_orig) &&
+				    compare_name(filter_orig, bat_node->name))
+					print_trace = 1;
+
+				res = seqno_trace_add(&trace_list, bat_node, seqno_event, print_trace);
 
 				if (res < 1)
 					goto out;
@@ -1220,7 +1257,7 @@ static void trace_seqnos(char *trace_orig, int seqno_min, int seqno_max, int rea
 		}
 	}
 
-	seqno_trace_print(&trace_list, trace_orig, seqno_min, seqno_max, read_opt);
+	seqno_trace_print(&trace_list, trace_orig, seqno_min, seqno_max, filter_orig, read_opt);
 
 out:
 	list_for_each_entry_safe(seqno_trace, seqno_trace_tmp, &trace_list, list) {
@@ -1231,22 +1268,32 @@ out:
 	return;
 }
 
-static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int read_opt)
+static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, char *filter_orig, int read_opt)
 {
 	struct bat_node *bat_node;
 	struct rt_table *rt_table;
 	struct seqno_event *seqno_event;
+	char check_orig[NAME_LEN];
 	int i;
+
+	/* if no option was given filter_orig is empty */
+	memset(check_orig, 0, NAME_LEN);
 
 	printf("Routing tables of originator: %s ",
 	       get_name_by_macstr(rt_orig, read_opt));
 
 	if ((seqno_min == -1) && (seqno_max == -1))
-		printf("[all sequence numbers]\n");
+		printf("[all sequence numbers]");
 	else if (seqno_min == seqno_max)
-		printf("[sequence number: %i]\n", seqno_min);
+		printf("[sequence number: %i]", seqno_min);
 	else
-		printf("[sequence number range: %i-%i]\n", seqno_min, seqno_max);
+		printf("[sequence number range: %i-%i]", seqno_min, seqno_max);
+
+	if (!compare_name(filter_orig, check_orig))
+		printf(" [filter originator: %s]",
+		       get_name_by_macstr(filter_orig, read_opt));
+
+	printf("\n");
 
 	bat_node = node_get(rt_orig);
 	if (!bat_node)
@@ -1258,6 +1305,10 @@ static void print_rt_tables(char *rt_orig, int seqno_min, int seqno_max, int rea
 
 	list_for_each_entry(rt_table, &bat_node->rt_table_list, list) {
 		seqno_event = rt_table->rt_hist->seqno_event;
+
+		if (!compare_name(filter_orig, check_orig) &&
+		    !compare_name(filter_orig, seqno_event->orig->name))
+			continue;
 
 		if ((seqno_min != -1) && (seqno_event->seqno < seqno_min))
 			continue;
@@ -1347,11 +1398,12 @@ int bisect(int argc, char **argv)
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
 	int tmp_seqno, seqno_max = -1, seqno_min = -1;
 	char *trace_orig_ptr = NULL, *rt_orig_ptr = NULL, *loop_orig_ptr = NULL;
-	char orig[NAME_LEN], *dash_ptr;
+	char orig[NAME_LEN], filter_orig[NAME_LEN], *dash_ptr, *filter_orig_ptr = NULL;
 
 	memset(orig, 0, NAME_LEN);
+	memset(filter_orig, 0, NAME_LEN);
 
-	while ((optchar = getopt(argc, argv, "hl:nr:s:t:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hl:no:r:s:t:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			bisect_usage();
@@ -1363,6 +1415,10 @@ int bisect(int argc, char **argv)
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
 			found_args += 1;
+			break;
+		case 'o':
+			filter_orig_ptr = optarg;
+			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
 			break;
 		case 'r':
 			rt_orig_ptr = optarg;
@@ -1453,6 +1509,13 @@ int bisect(int argc, char **argv)
 		goto err;
 	}
 
+	if (filter_orig_ptr) {
+		res = get_orig_addr(filter_orig_ptr, filter_orig);
+
+		if (res < 1)
+			goto err;
+	}
+
 	while (argc > found_args) {
 		res = parse_log_file(argv[found_args]);
 
@@ -1468,11 +1531,11 @@ int bisect(int argc, char **argv)
 	}
 
 	if (trace_orig_ptr)
-		trace_seqnos(orig, seqno_min, seqno_max, read_opt);
+		trace_seqnos(orig, seqno_min, seqno_max, filter_orig, read_opt);
 	else if (rt_orig_ptr)
-		print_rt_tables(orig, seqno_min, seqno_max, read_opt);
+		print_rt_tables(orig, seqno_min, seqno_max, filter_orig, read_opt);
 	else
-		loop_detection(orig, seqno_min, seqno_max, read_opt);
+		loop_detection(orig, seqno_min, seqno_max, filter_orig, read_opt);
 
 	ret = EXIT_SUCCESS;
 

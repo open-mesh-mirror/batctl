@@ -89,5 +89,6 @@ struct seqno_trace_neigh {
 struct seqno_trace {
 	struct list_head list;
 	int seqno;
+	char print;
 	struct seqno_trace_neigh seqno_trace_neigh;
 };

@@ -251,6 +251,7 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 	rt_hist->prev_rt_hist = NULL;
 	rt_hist->next_hop = next_hop_node;
 	rt_hist->flags = rt_flag;
+	memset(rt_hist->loop_magic, 0, sizeof(rt_hist->loop_magic));
 
 	if (!(list_empty(&orig_event->rt_hist_list)))
 		rt_hist->prev_rt_hist = (struct rt_hist *)(orig_event->rt_hist_list.prev);
@@ -606,8 +607,8 @@ static struct rt_hist *get_rt_hist_by_seqno(struct orig_event *orig_event, int s
 
 	list_for_each_entry(seqno_event, &orig_event->event_list, list) {
 		if (seqno_event->seqno > seqno)
-
 			break;
+
 		if (seqno_event->rt_hist)
 			rt_hist = seqno_event->rt_hist;
 	}
@@ -696,8 +697,14 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 {
 	struct orig_event *orig_event;
 	struct rt_hist *rt_hist, *rt_hist_tmp;
-	char curr_loop_magic[LOOP_MAGIC_LEN];
-	int res;
+	char curr_loop_magic[LOOP_MAGIC_LEN], loop_check = 0;
+	int res, seqno_tmp, seqno_min_tmp = seqno_min;
+
+	/* printf("%i: curr_node: %s ", bla,
+		       get_name_by_macstr(curr_node->name, read_opt));
+
+	printf("dst_node: %s [%i - %i]\n",
+	       get_name_by_macstr(dst_node->name, read_opt), seqno_min, seqno_max); */
 
 	/* recursion ends here */
 	if (curr_node == dst_node) {
@@ -712,19 +719,7 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 	memset(curr_loop_magic, 0, LOOP_MAGIC_LEN);
 	snprintf(curr_loop_magic, LOOP_MAGIC_LEN, "%s%s%i%i",
 	         src_node->name, dst_node->name,
-	         seqno_min, seqno_rand);
-
-	/* we are running in a loop */
-	if (memcmp(curr_loop_magic, curr_node->loop_magic2, LOOP_MAGIC_LEN) == 0) {
-		rt_hist = get_rt_hist_by_node_seqno(src_node, dst_node, seqno_max);
-
-		if (rt_hist)
-			print_rt_path_at_seqno(src_node, dst_node, rt_hist->next_hop,
-			                       seqno_max, seqno_rand, read_opt);
-		goto out;
-	}
-
-	memcpy(curr_node->loop_magic2, curr_loop_magic, sizeof(curr_node->loop_magic));
+	         seqno_min_tmp, seqno_rand);
 
 	orig_event = orig_event_get_by_ptr(curr_node, dst_node);
 	if (!orig_event)
@@ -737,19 +732,35 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 			continue;
 		}
 
-		if ((seqno_min != -1) && (rt_hist->seqno_event->seqno < seqno_min))
+		if ((seqno_min_tmp != -1) && (rt_hist->seqno_event->seqno < seqno_min_tmp))
 			continue;
 
 		if ((seqno_max != -1) && (rt_hist->seqno_event->seqno >= seqno_max))
 			continue;
 
-		/* printf("validate route after change (seqno %i) of next hop: %s\n",
+		/* we are running in a loop */
+		if (memcmp(curr_loop_magic, rt_hist->loop_magic, LOOP_MAGIC_LEN) == 0) {
+			rt_hist_tmp = get_rt_hist_by_node_seqno(src_node, dst_node,
+			                                        rt_hist->seqno_event->seqno);
+
+			if (rt_hist_tmp)
+				print_rt_path_at_seqno(src_node, dst_node, rt_hist_tmp->next_hop,
+				                       rt_hist->seqno_event->seqno, seqno_rand, read_opt);
+			goto loop;
+		}
+
+		memcpy(rt_hist->loop_magic, curr_loop_magic, sizeof(rt_hist->loop_magic));
+		loop_check = 1;
+
+		/* printf("validate route after change (seqno %i) at node: %s\n",
 		       rt_hist->seqno_event->seqno,
-		       get_name_by_macstr(rt_hist->next_hop->name, read_opt));*/
+		       get_name_by_macstr(curr_node->name, read_opt)); */
 
 		res = find_rt_table_change(src_node, dst_node, rt_hist->next_hop,
-		                     seqno_min, rt_hist->seqno_event->seqno,
-		                     seqno_rand, read_opt);
+		                           seqno_min_tmp, rt_hist->seqno_event->seqno,
+		                           seqno_rand, read_opt);
+
+		seqno_min_tmp = rt_hist->seqno_event->seqno + 1;
 
 		/* find_rt_table_change() did not run into a loop and printed the path */
 		if (res == 0)
@@ -768,14 +779,42 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 		      rt_hist->seqno_event->seqno, seqno_rand, read_opt);
 	}
 
-	rt_hist = get_rt_hist_by_seqno(orig_event, seqno_max - 1);
+	/**
+	 * if we have no routing table changes within the seqno range
+	 * the loop detection above won't be triggered
+	 **/
+	if (!loop_check) {
+		if (memcmp(curr_loop_magic, curr_node->loop_magic2, LOOP_MAGIC_LEN) == 0) {
+			rt_hist_tmp = get_rt_hist_by_node_seqno(src_node, dst_node, seqno_min);
+
+			if (rt_hist_tmp)
+				print_rt_path_at_seqno(src_node, dst_node, rt_hist_tmp->next_hop,
+				                       seqno_min, seqno_rand, read_opt);
+
+			/* no need to print the path twice */
+			if (seqno_min == seqno_max)
+				goto out;
+			else
+				goto loop;
+		}
+
+		memcpy(curr_node->loop_magic2, curr_loop_magic, sizeof(curr_node->loop_magic2));
+	}
+
+	seqno_tmp = seqno_max - 1;
+	if (seqno_min == seqno_max)
+		seqno_tmp = seqno_max;
+
+	rt_hist = get_rt_hist_by_seqno(orig_event, seqno_tmp);
 
 	if (rt_hist)
 		return find_rt_table_change(src_node, dst_node, rt_hist->next_hop,
-		                            seqno_min, seqno_max, seqno_rand, read_opt);
+		                            seqno_min_tmp, seqno_max, seqno_rand, read_opt);
 
 out:
 	return -1;
+loop:
+	return -2;
 }
 
 static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, char *filter_orig, int read_opt)
@@ -784,7 +823,7 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, char *
 	struct orig_event *orig_event;
 	struct hash_it_t *hashit = NULL;
 	struct rt_hist *rt_hist, *prev_rt_hist;
-	int last_seqno = -1, seqno_count = 0;
+	int last_seqno = -1, seqno_count = 0, res;
 	char check_orig[NAME_LEN];
 
 	printf("\nAnalyzing routing tables ");
@@ -880,19 +919,25 @@ static void loop_detection(char *loop_orig, int seqno_min, int seqno_max, char *
 						goto validate_path;
 					}
 
-					/*printf("\n=> checking orig %s in seqno range of: %i - %i ",
+					if (rt_hist->seqno_event->seqno == prev_rt_hist->seqno_event->seqno + 1)
+						goto validate_path;
+
+					/* printf("\n=> checking orig %s in seqno range of: %i - %i ",
 						get_name_by_macstr(rt_hist->seqno_event->orig->name, read_opt),
 						prev_rt_hist->seqno_event->seqno + 1,
 						rt_hist->seqno_event->seqno);
 
 					printf("(prev nexthop: %s)\n",
-						get_name_by_macstr(prev_rt_hist->next_hop->name, read_opt));*/
+						get_name_by_macstr(prev_rt_hist->next_hop->name, read_opt)); */
 
-					find_rt_table_change(bat_node, rt_hist->seqno_event->orig, prev_rt_hist->next_hop,
-					                     prev_rt_hist->seqno_event->seqno + 1, rt_hist->seqno_event->seqno,
-					                     seqno_count, read_opt);
+					res = find_rt_table_change(bat_node, rt_hist->seqno_event->orig,
+					                           prev_rt_hist->next_hop,
+					                           prev_rt_hist->seqno_event->seqno + 1,
+					                           rt_hist->seqno_event->seqno,
+					                           seqno_count, read_opt);
 
-					continue;
+					if (res != -2)
+						continue;
 				}
 
 validate_path:

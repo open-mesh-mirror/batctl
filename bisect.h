@@ -60,6 +60,7 @@ struct rt_hist {
 	struct seqno_event *seqno_event;
 	struct bat_node *next_hop;
 	char flags;
+	char loop_magic[LOOP_MAGIC_LEN];
 };
 
 struct rt_entry {

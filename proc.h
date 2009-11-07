@@ -1,4 +1,6 @@
-/* Copyright (C) 2009 B.A.T.M.A.N. contributors:
+/* 
+ * Copyright (C) 2009 B.A.T.M.A.N. contributors:
+ *
  * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or

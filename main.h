@@ -21,7 +21,7 @@
 
 
 
-#define SOURCE_VERSION "0.2-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#define SOURCE_VERSION "0.2"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 
 #define BAT_DEVICE "/dev/batman-adv"
 #define PROC_ROOT_PATH "/proc/net/batman-adv/"

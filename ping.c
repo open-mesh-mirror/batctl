@@ -72,7 +72,7 @@ int ping(int argc, char **argv)
 	fd_set read_socket;
 	int ret = EXIT_FAILURE, ping_fd = 0, res, optchar, found_args = 1;
 	int loop_count = -1, loop_interval = 1, timeout = 1;
-	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0;
+	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
 	char *dst_string, *mac_string;
 	double time_delta;
 	float min = 0.0, max = 0.0, avg = 0.0;
@@ -237,9 +237,14 @@ sleep:
 
 	}
 
+	if (packets_out == 0)
+		packets_loss = 0;
+	else
+		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
+
 	printf("--- %s ping statistics ---\n", dst_string);
 	printf("%d packets transmitted, %d received, %d%% packet loss\n",
-		packets_out, packets_in, (((packets_out - packets_in) * 100) / packets_out));
+		packets_out, packets_in, packets_loss);
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
 		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
 

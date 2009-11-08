@@ -45,7 +45,7 @@
 
 #define LEN_CHECK(buff_len, check_len, desc) \
 if ((size_t)(buff_len) < (check_len)) { \
-	printf("Warning - dropping received %s packet as it is smaller than expected (%zd): %zd\n", \
+	printf("Warning - dropping received %s packet as it is smaller than expected (%zu): %zu\n", \
 		desc, (check_len), (size_t)(buff_len)); \
 	return; \
 }
@@ -127,7 +127,7 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 
 		switch (icmphdr->type) {
 		case ICMP_ECHOREPLY:
-			printf("%s: ICMP echo reply, id %u, seq %u, length %zd\n",
+			printf("%s: ICMP echo reply, id %hu, seq %hu, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
 				(size_t)buff_len - (iphdr->ihl * 4));
@@ -142,12 +142,12 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
 
 				printf("%s: ICMP ", inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-				printf("%s udp port %u unreachable, length %zd\n",
+				printf("%s udp port %hu unreachable, length %zu\n",
 					inet_ntoa(*(struct in_addr *)&tmp_iphdr->daddr),
 					ntohs(tmp_udphdr->dest), (size_t)buff_len - (iphdr->ihl * 4));
 				break;
 			default:
-				printf("%s: ICMP unreachable %u, length %zd\n",
+				printf("%s: ICMP unreachable %hhu, length %zu\n",
 					inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 					icmphdr->code, (size_t)buff_len - (iphdr->ihl * 4));
 				break;
@@ -155,18 +155,18 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 
 			break;
 		case ICMP_ECHO:
-			printf("%s: ICMP echo request, id %u, seq %u, length %zd\n",
+			printf("%s: ICMP echo request, id %hu, seq %hu, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
 				(size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		case ICMP_TIME_EXCEEDED:
-			printf("%s: ICMP time exceeded in-transit, length %zd\n",
+			printf("%s: ICMP time exceeded in-transit, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				(size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		default:
-			printf("%s: ICMP type %u, length %zd\n",
+			printf("%s: ICMP type %hhu, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr), icmphdr->type,
 				(size_t)buff_len - (iphdr->ihl * 4));
 			break;
@@ -178,7 +178,7 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 
 		tcphdr = (struct tcphdr *)(packet_buff + (iphdr->ihl * 4));
 		printf("IP %s.%i > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr), ntohs(tcphdr->source));
-		printf("%s.%i: TCP, flags [%c%c%c%c%c%c], length %zd\n",
+		printf("%s.%i: TCP, flags [%c%c%c%c%c%c], length %zu\n",
 			inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(tcphdr->dest),
 			(tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
 			(tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
@@ -194,18 +194,18 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 		switch (ntohs(udphdr->dest)) {
 		case 67:
                         LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr), (size_t) 44, "DHCP");
-			printf("%s.67: BOOTP/DHCP, Request from %s, length %zd\n",
+			printf("%s.67: BOOTP/DHCP, Request from %s, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				ether_ntoa_long((struct ether_addr *)(((char *)udphdr) + sizeof(struct udphdr) + 28)),
 				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
 			break;
 		case 68:
-			printf("%s.68: BOOTP/DHCP, Reply, length %zd\n",
+			printf("%s.68: BOOTP/DHCP, Reply, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
 				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
 			break;
 		default:
-			printf("%s.%i: UDP, length %zd\n",
+			printf("%s.%i: UDP, length %zu\n",
 				inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(udphdr->dest),
 				(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct udphdr));
 			break;
@@ -236,7 +236,7 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
 
-	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c], length %zd\n",
+	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c], length %zu\n",
 	        get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	        ntohs(batman_packet->seqno), batman_packet->tq,
 	        batman_packet->ttl, batman_packet->version,
@@ -264,25 +264,25 @@ void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 
 	switch (icmp_packet->msg_type) {
 	case ECHO_REPLY:
-		printf("%s: ICMP echo reply, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+		printf("%s: ICMP echo reply, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->ttl, icmp_packet->version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case ECHO_REQUEST:
-		printf("%s: ICMP echo request, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+		printf("%s: ICMP echo request, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->ttl, icmp_packet->version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case TTL_EXCEEDED:
-		printf("%s: ICMP time exceeded in-transit, id %u, seq %u, ttl %2d, v %d, length %zd\n",
+		printf("%s: ICMP time exceeded in-transit, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->ttl, icmp_packet->version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	default:
-		printf("%s: ICMP type %u, length %zd\n",
+		printf("%s: ICMP type %hhu, length %zu\n",
 			name, icmp_packet->msg_type, (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	}
@@ -305,7 +305,7 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	printf("%s: UCAST, ttl %u, ",
+	printf("%s: UCAST, ttl %hu, ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_packet->dest, read_opt),
 	       unicast_packet->ttl);
 
@@ -321,7 +321,7 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
 		break;
 	default:
-		printf(" unknown payload ether type: %u\n", ntohs(ether_header->ether_type));
+		printf(" unknown payload ether type: %hu\n", ntohs(ether_header->ether_type));
 		break;
 	}
 }
@@ -343,7 +343,7 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	printf("BCAST, orig %s, seqno %u, ",
+	printf("BCAST, orig %s, seqno %hu, ",
 	       get_name_by_macaddr((struct ether_addr *)bcast_packet->orig, read_opt),
 	       ntohs(bcast_packet->seqno));
 
@@ -359,7 +359,7 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
 		break;
 	default:
-		printf(" unknown payload ether type: %u\n", ntohs(ether_header->ether_type));
+		printf(" unknown payload ether type: %hu\n", ntohs(ether_header->ether_type));
 		break;
 	}
 }
@@ -492,7 +492,7 @@ int tcpdump(int argc, char **argv)
 			}
 
 			if ((size_t)read_len < sizeof(struct ether_header)) {
-				printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
+				printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
 					sizeof(struct ether_header), read_len);
 				continue;
 			}
@@ -538,7 +538,7 @@ int tcpdump(int argc, char **argv)
 
 				break;
 			default:
-				printf("Warning - packet contains unknown ether type: %u\n", ether_type);
+				printf("Warning - packet contains unknown ether type: %hu\n", ether_type);
 				break;
 			}
 

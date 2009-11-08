@@ -148,7 +148,7 @@ int ping(int argc, char **argv)
 	icmp_packet_out.ttl = 50;
 	icmp_packet_out.seqno = 0;
 
-	printf("PING %s (%s) %zi(%zi) bytes of data\n", dst_string, mac_string,
+	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,
 		sizeof(icmp_packet_out), sizeof(icmp_packet_out) + 28);
 
 	while (!is_aborted) {
@@ -196,7 +196,7 @@ int ping(int argc, char **argv)
 		}
 
 		if ((size_t)read_len < sizeof(icmp_packet_in)) {
-			printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
+			printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
 				sizeof(icmp_packet_in), read_len);
 			goto sleep;
 		}
@@ -204,7 +204,7 @@ int ping(int argc, char **argv)
 		switch (icmp_packet_in.msg_type) {
 		case ECHO_REPLY:
 			time_delta = end_timer();
-			printf("%zd bytes from %s icmp_seq=%u ttl=%d time=%.2f ms\n",
+			printf("%zd bytes from %s icmp_seq=%hu ttl=%d time=%.2f ms\n",
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
 					icmp_packet_in.ttl, time_delta);
 
@@ -216,10 +216,10 @@ int ping(int argc, char **argv)
 			packets_in++;
 			break;
 		case DESTINATION_UNREACHABLE:
-			printf("From %s: Destination Host Unreachable (icmp_seq %u)\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Destination Host Unreachable (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case TTL_EXCEEDED:
-			printf("From %s: Time to live exceeded (icmp_seq %u)\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Time to live exceeded (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
@@ -243,7 +243,7 @@ sleep:
 		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
 
 	printf("--- %s ping statistics ---\n", dst_string);
-	printf("%d packets transmitted, %d received, %d%% packet loss\n",
+	printf("%u packets transmitted, %u received, %u%% packet loss\n",
 		packets_out, packets_in, packets_loss);
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
 		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));

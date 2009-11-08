@@ -114,7 +114,7 @@ int traceroute(int argc, char **argv)
 	icmp_packet_out.msg_type = ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
 
-	printf("traceroute to %s (%s), %d hops max, %zd byte packets\n",
+	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
@@ -139,7 +139,7 @@ int traceroute(int argc, char **argv)
 
 			if (res <= 0) {
 				if (i == 0)
-					printf("%2u: ", icmp_packet_out.ttl);
+					printf("%2hu: ", icmp_packet_out.ttl);
 
 				printf(" * ");
 				fflush(stdout);
@@ -154,7 +154,7 @@ int traceroute(int argc, char **argv)
 			}
 
 			if ((size_t)read_len < sizeof(icmp_packet_in)) {
-				printf("Warning - dropping received packet as it is smaller than expected (%zd): %zd\n",
+				printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
 					sizeof(icmp_packet_in), read_len);
 				continue;
 			}
@@ -176,10 +176,10 @@ int traceroute(int argc, char **argv)
 					bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
 
 				if (!bat_host)
-					printf("%2u: %s %.3f ms",
+					printf("%2hu: %s %.3f ms",
 						icmp_packet_out.ttl, return_mac, time_delta);
 				else
-					printf("%2u: %s (%s) %.3f ms",
+					printf("%2hu: %s (%s) %.3f ms",
 						icmp_packet_out.ttl, bat_host->name, return_mac, time_delta);
 
 				if (icmp_packet_in.msg_type == ECHO_REPLY)

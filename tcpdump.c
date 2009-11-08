@@ -547,8 +547,6 @@ int tcpdump(int argc, char **argv)
 
 	}
 
-	ret = EXIT_SUCCESS;
-
 out:
 	list_for_each_entry_safe(dump_if, dump_if_tmp, &dump_if_list, list) {
 		if (dump_if->raw_sock)

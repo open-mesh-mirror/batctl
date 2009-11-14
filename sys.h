@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
+ * Copyright (C) 2009 B.A.T.M.A.N. contributors:
  *
- * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
+ * Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -20,7 +20,10 @@
  */
 
 
+#define SYS_ROOT_PATH "/sys/module/batman_adv/"
+#define SYS_LOG_LEVEL "parameters/debug"
+#define SYS_LOG "log"
 
-#define SOURCE_VERSION "0.2.1-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 
-#define BAT_DEVICE "/dev/batman-adv"
+int log_print(int argc, char **argv);
+int handle_loglevel(int argc, char **argv);

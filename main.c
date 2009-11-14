@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -30,6 +30,7 @@
 
 #include "main.h"
 #include "proc.h"
+#include "sys.h"
 #include "ping.h"
 #include "traceroute.h"
 #include "tcpdump.h"
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
-		ret = handle_setting(argc - 1, argv + 1, PROC_LOG_LEVEL, log_level_usage);
+		ret = handle_loglevel(argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
 
@@ -116,15 +117,15 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
 
-		ret = handle_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
+		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
 
 	} else if ((strcmp(argv[1], "visformat") == 0) || (strcmp(argv[1], "vf") == 0)) {
 
-		ret = handle_setting(argc - 1, argv + 1, PROC_VIS_FORMAT, vis_format_usage);
+		ret = handle_proc_setting(argc - 1, argv + 1, PROC_VIS_FORMAT, vis_format_usage);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 
-		ret = handle_setting(argc - 1, argv + 1, PROC_AGGR, aggregation_usage);
+		ret = handle_proc_setting(argc - 1, argv + 1, PROC_AGGR, aggregation_usage);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 

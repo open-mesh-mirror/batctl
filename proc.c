@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner <lindner_marek@yahoo.de>
@@ -18,7 +18,6 @@
  * 02110-1301, USA
  *
  */
-
 
 
 #include <sys/time.h>
@@ -54,52 +53,19 @@ int interface(int argc, char **argv)
 	}
 
 	if (argc == 1)
-		return read_proc_file(PROC_INTERFACES, SINGLE_READ);
+		return read_file(PROC_ROOT_PATH, PROC_INTERFACES, SINGLE_READ);
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "none") == 0)
-			res = write_proc_file(PROC_INTERFACES, "");
+			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, "");
 		else
-			res = write_proc_file(PROC_INTERFACES, argv[i]);
+			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, argv[i]);
 
 		if (res != EXIT_SUCCESS)
 			return res;
 	}
 
 	return EXIT_SUCCESS;
-}
-
-static void log_usage(void)
-{
-	printf("Usage: batctl [options] log \n");
-	printf("options:\n");
-	printf(" \t -b batch mode - read the log file once and quit\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-}
-
-int log_print(int argc, char **argv)
-{
-	int optchar, read_opt = CONT_READ | USE_BAT_HOSTS | LOG_MODE;
-
-	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
-		switch (optchar) {
-		case 'b':
-			read_opt &= ~CONT_READ;
-			break;
-		case 'h':
-			log_usage();
-			return EXIT_SUCCESS;
-		case 'n':
-			read_opt &= ~USE_BAT_HOSTS;
-			break;
-		default:
-			log_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	return read_proc_file(PROC_LOG, read_opt);
 }
 
 void originators_usage(void)
@@ -132,13 +98,6 @@ void trans_global_usage(void)
 void orig_interval_usage(void)
 {
 	printf("Usage: batctl [options] interval \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void log_level_usage(void)
-{
-	printf("Usage: batctl [options] loglevel \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
@@ -178,10 +137,10 @@ int handle_table(int argc, char **argv, char *file_path, void table_usage(void))
 		}
 	}
 
-	return read_proc_file(file_path, read_opt);
+	return read_file(PROC_ROOT_PATH, file_path, read_opt);
 }
 
-int handle_setting(int argc, char **argv, char *file_path, void setting_usage(void))
+int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void))
 {
 	int optchar;
 
@@ -197,7 +156,7 @@ int handle_setting(int argc, char **argv, char *file_path, void setting_usage(vo
 	}
 
 	if (argc == 1)
-		return read_proc_file(file_path, SINGLE_READ);
+		return read_file(PROC_ROOT_PATH, file_path, SINGLE_READ);
 
-	return write_proc_file(file_path, argv[1]);
+	return write_file(PROC_ROOT_PATH, file_path, argv[1]);
 }

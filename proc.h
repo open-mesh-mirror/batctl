@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner <lindner_marek@yahoo.de>
@@ -21,11 +21,10 @@
 
 
 
+#define PROC_ROOT_PATH "/proc/net/batman-adv/"
 #define PROC_INTERFACES "interfaces"
 #define PROC_ORIGINATORS "originators"
 #define PROC_ORIG_INTERVAL "orig_interval"
-#define PROC_LOG_LEVEL "log_level"
-#define PROC_LOG "log"
 #define PROC_GATEWAYS "gateways"
 #define PROC_TRANSTABLE_LOCAL "transtable_local"
 #define PROC_TRANSTABLE_GLOBAL "transtable_global"
@@ -35,14 +34,12 @@
 
 
 int interface(int argc, char **argv);
-int log_print(int argc, char **argv);
 
 void originators_usage(void);
 void trans_local_usage(void);
 void trans_global_usage(void);
 void orig_interval_usage(void);
-void log_level_usage(void);
 void vis_format_usage(void);
 void aggregation_usage(void);
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
-int handle_setting(int argc, char **argv, char *file_path, void setting_usage(void));
+int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void));

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -32,8 +32,10 @@ double end_timer(void);
 char *ether_ntoa_long(const struct ether_addr *addr);
 char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
-int read_proc_file(char *path, int read_opt);
-int write_proc_file(char *path, char *value);
+int read_file(char *dir, char *path, int read_opt);
+int write_file(char *dir, char *path, char *value);
+
+extern char read_buff[10];
 
 enum {
 	SINGLE_READ = 0x00,
@@ -41,4 +43,5 @@ enum {
 	CLR_CONT_READ = 0x02,
 	USE_BAT_HOSTS = 0x04,
 	LOG_MODE = 0x08,
+	USE_READ_BUFF = 0x10,
 };

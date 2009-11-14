@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -38,6 +38,7 @@
 
 static struct timeval start_time;
 static char *host_name;
+char read_buff[10];
 
 void start_timer(void)
 {
@@ -98,42 +99,73 @@ char *get_name_by_macstr(char *mac_str, int read_opt)
 	return get_name_by_macaddr(mac_addr, read_opt);
 }
 
-static int check_proc_dir(void)
+static int check_proc_dir(char *dir)
 {
 	struct stat st;
 
-	if (stat("/proc", &st) != 0) {
+	if (stat("/proc/", &st) != 0) {
 		printf("Error - the folder '/proc' was not found on the system\n");
 		printf("Please make sure that the proc filesystem is properly mounted\n");
 		return EXIT_FAILURE;
 	}
 
-	if (stat(PROC_ROOT_PATH, &st) == 0)
-        	return EXIT_SUCCESS;
+	if (stat(dir, &st) == 0)
+		return EXIT_SUCCESS;
 
-	printf("Error - the folder '%s' was not found within the proc filesystem\n", PROC_ROOT_PATH);
+	printf("Error - the folder '%s' was not found within the proc filesystem\n", dir);
 	printf("Please make sure that the batman-adv kernel module is loaded\n");
 	return EXIT_FAILURE;
 }
 
-int read_proc_file(char *path, int read_opt)
+static int check_sys_dir(char *dir)
+{
+	struct stat st;
+
+	if (stat("/sys/", &st) != 0) {
+		printf("Error - the folder '/sys/' was not found on the system\n");
+		printf("Please make sure that the sys filesystem is properly mounted\n");
+		return EXIT_FAILURE;
+	}
+
+	if (stat(dir, &st) == 0)
+		return EXIT_SUCCESS;
+
+	printf("Error - the folder '%s' was not found within the sys filesystem\n", dir);
+	printf("Please make sure that the batman-adv kernel module is loaded\n");
+	return EXIT_FAILURE;
+}
+
+int read_file(char *dir, char *fname, int read_opt)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
 	int fd = 0, res = EXIT_FAILURE, fd_opts;
-	unsigned int bytes_written;
-	char full_path[500], buff[1500], *buff_ptr, *cr_ptr, *space_ptr, extra_char;
-	ssize_t read_len;
+	unsigned int bytes_written, read_len;
+	char full_path[500], *read_ptr, lbuff[1500], *buff_ptr, *cr_ptr, *space_ptr, extra_char;
+	ssize_t data_read_len;
 
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init();
 
-	if (check_proc_dir() != EXIT_SUCCESS)
-		goto out;
+	if (strstr(dir, "/proc/")) {
+		if (check_proc_dir(dir) != EXIT_SUCCESS)
+			goto out;
+	} else if (strstr(dir, "/sys/")) {
+		if (check_sys_dir(dir) != EXIT_SUCCESS)
+			goto out;
+	}
 
-	strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-	full_path[strlen(PROC_ROOT_PATH)] = '\0';
-	strncat(full_path, path, sizeof(full_path) - strlen(full_path));
+	strncpy(full_path, dir, strlen(dir));
+	full_path[strlen(dir)] = '\0';
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
+
+	if (read_opt & USE_READ_BUFF) {
+		read_ptr = read_buff;
+		read_len = sizeof(read_buff);
+	} else {
+		read_ptr = lbuff;
+		read_len = sizeof(lbuff);
+	}
 
 open:
 	fd = open(full_path, O_RDONLY);
@@ -152,9 +184,9 @@ open:
 
 read:
 	while (1) {
-		read_len = read(fd, buff, sizeof(buff));
+		data_read_len = read(fd, read_ptr, read_len);
 
-		if (read_len < 0) {
+		if (data_read_len < 0) {
 			/* file was empty */
 			if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 				break;
@@ -163,18 +195,21 @@ read:
 			goto out;
 		}
 
-		if (read_len == 0)
+		if (data_read_len == 0)
 			break;
 
-		buff[read_len] = '\0';
+		read_ptr[data_read_len] = '\0';
+
+		if (read_opt & USE_READ_BUFF)
+			break;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
-			printf("%s", buff);
+			printf("%s", read_ptr);
 			goto check_eof;
 		}
 
 		/* replace mac addresses with bat host names */
-		buff_ptr = buff;
+		buff_ptr = read_ptr;
 		bytes_written = 0;
 
 		while ((cr_ptr = strchr(buff_ptr, '\n')) != NULL) {
@@ -230,11 +265,11 @@ written:
 
 		}
 
-		if (bytes_written != (size_t)read_len)
+		if (bytes_written != (size_t)data_read_len)
 			printf("%s", buff_ptr);
 
 check_eof:
-		if (sizeof(buff) != (size_t)read_len)
+		if (read_len != (size_t)data_read_len)
 			break;
 	}
 
@@ -262,18 +297,23 @@ out:
 	return res;
 }
 
-int write_proc_file(char *path, char *value)
+int write_file(char *dir, char *fname, char *value)
 {
 	int fd = 0, res = EXIT_FAILURE;
 	char full_path[500];
 	ssize_t write_len;
 
-	if (check_proc_dir() != EXIT_SUCCESS)
-		goto out;
+	if (strstr(dir, "/proc/")) {
+		if (check_proc_dir(dir) != EXIT_SUCCESS)
+			goto out;
+	} else if (strstr(dir, "/sys/")) {
+		if (check_sys_dir(dir) != EXIT_SUCCESS)
+			goto out;
+	}
 
-	strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-	full_path[strlen(PROC_ROOT_PATH)] = '\0';
-	strncat(full_path, path, sizeof(full_path) - strlen(full_path));
+	strncpy(full_path, dir, strlen(dir));
+	full_path[strlen(dir)] = '\0';
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
 
 	fd = open(full_path, O_WRONLY);
 

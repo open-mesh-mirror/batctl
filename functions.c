@@ -161,10 +161,10 @@ int read_file(char *dir, char *fname, int read_opt)
 
 	if (read_opt & USE_READ_BUFF) {
 		read_ptr = read_buff;
-		read_len = sizeof(read_buff);
+		read_len = sizeof(read_buff)-1;
 	} else {
 		read_ptr = lbuff;
-		read_len = sizeof(lbuff);
+		read_len = sizeof(lbuff)-1;
 	}
 
 open:

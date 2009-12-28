@@ -103,17 +103,17 @@ int handle_loglevel(int argc, char **argv)
 	if (res != EXIT_SUCCESS)
 		goto out;
 
-	printf("[%c] %s (%d)\n", (read_buff[0] == '0') ? 'x' : ' ',
+	printf("[%c] %s (%d)\n", (line_ptr[0] == '0') ? 'x' : ' ',
 	       "all debug output disabled", 0);
-	printf("[%c] %s (%d)\n", (read_buff[0] == '1') ? 'x' : ' ',
+	printf("[%c] %s (%d)\n", (line_ptr[0] == '1') ? 'x' : ' ',
 	       "messages related to routing / flooding / broadcasting", 1);
-	printf("[%c] %s (%d)\n", (read_buff[0] == '2') ? 'x' : ' ',
+	printf("[%c] %s (%d)\n", (line_ptr[0] == '2') ? 'x' : ' ',
 	       "messages related to route or hna added / changed / deleted", 2);
-	printf("[%c] %s (%d)\n", (read_buff[0] == '3') ? 'x' : ' ',
+	printf("[%c] %s (%d)\n", (line_ptr[0] == '3') ? 'x' : ' ',
 	       "all debug messages", 3);
 
 out:
-	if (errno == EBADF)
+	if (errno == ENOENT)
 		printf("To increase the log level you need to compile the module with debugging enabled (see the README)\n");
 
 	return res;

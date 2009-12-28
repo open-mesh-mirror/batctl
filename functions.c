@@ -38,7 +38,7 @@
 
 static struct timeval start_time;
 static char *host_name;
-char read_buff[10];
+char *line_ptr = NULL;
 
 void start_timer(void)
 {
@@ -139,10 +139,11 @@ int read_file(char *dir, char *fname, int read_opt)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
-	int fd = 0, res = EXIT_FAILURE, fd_opts;
-	unsigned int bytes_written, read_len;
-	char full_path[500], *read_ptr, lbuff[1500], *buff_ptr, *cr_ptr, *space_ptr, extra_char;
-	ssize_t data_read_len;
+	int res = EXIT_FAILURE;
+	char full_path[500], *buff_ptr, *space_ptr, extra_char;
+	size_t len = 0;
+	ssize_t read;
+	FILE *fp = NULL;
 
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init();
@@ -159,118 +160,75 @@ int read_file(char *dir, char *fname, int read_opt)
 	full_path[strlen(dir)] = '\0';
 	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
 
-	if (read_opt & USE_READ_BUFF) {
-		read_ptr = read_buff;
-		read_len = sizeof(read_buff)-1;
-	} else {
-		read_ptr = lbuff;
-		read_len = sizeof(lbuff)-1;
-	}
-
 open:
-	fd = open(full_path, O_RDONLY);
+	fp = fopen(full_path, "r");
 
-	if (fd < 0) {
+	if (!fp) {
 		printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
 		goto out;
 	}
-
-	/* make fd socket non blocking to exit immediately if the file to read is empty */
-	fd_opts = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, fd_opts | O_NONBLOCK);
 
 	if (read_opt & CLR_CONT_READ)
 		system("clear");
 
 read:
-	while (1) {
-		data_read_len = read(fd, read_ptr, read_len);
+	while ((read = getline(&line_ptr, &len, fp)) != -1) {
 
-		if (data_read_len < 0) {
-			/* file was empty */
-			if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
-				break;
-
-			printf("Error - can't read from file '%s': %s\n", full_path, strerror(errno));
-			goto out;
-		}
-
-		if (data_read_len == 0)
-			break;
-
-		read_ptr[data_read_len] = '\0';
-
+		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
-			printf("%s", read_ptr);
-			goto check_eof;
+			printf("%s", line_ptr);
+			continue;
 		}
 
 		/* replace mac addresses with bat host names */
-		buff_ptr = read_ptr;
-		bytes_written = 0;
+		buff_ptr = line_ptr;
 
-		while ((cr_ptr = strchr(buff_ptr, '\n')) != NULL) {
+		while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
 
-			*cr_ptr = '\0';
+			*space_ptr = '\0';
+			extra_char = '\0';
 
-			while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
-
-				*space_ptr = '\0';
-				extra_char = '\0';
-
-				if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
-					extra_char = ',';
-					buff_ptr[ETH_STR_LEN] = '\0';
-				}
-
-				if (strlen(buff_ptr) != ETH_STR_LEN)
-					goto print_plain_buff;
-
-				mac_addr = ether_aton(buff_ptr);
-
-				if (!mac_addr)
-					goto print_plain_buff;
-
-				bat_host = bat_hosts_find_by_mac((char *)mac_addr);
-
-				if (!bat_host)
-					goto print_plain_buff;
-
-				if (read_opt & LOG_MODE)
-					printf("%s", bat_host->name);
-				else
-					/* keep table format */
-					printf("%17s", bat_host->name);
-
-				if (extra_char != '\0')
-					printf("%c", extra_char);
-
-				printf(" ");
-				goto written;
-
-print_plain_buff:
-				printf("%s ", buff_ptr);
-
-written:
-				bytes_written += strlen(buff_ptr) + 1;
-				buff_ptr = space_ptr + 1;
-
+			if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
+				extra_char = ',';
+				buff_ptr[ETH_STR_LEN] = '\0';
 			}
 
-			printf("%s\n", buff_ptr);
-			buff_ptr = cr_ptr + 1;
+			if (strlen(buff_ptr) != ETH_STR_LEN)
+				goto print_plain_buff;
 
+			mac_addr = ether_aton(buff_ptr);
+
+			if (!mac_addr)
+				goto print_plain_buff;
+
+			bat_host = bat_hosts_find_by_mac((char *)mac_addr);
+
+			if (!bat_host)
+				goto print_plain_buff;
+
+			if (read_opt & LOG_MODE)
+				printf("%s", bat_host->name);
+			else
+				/* keep table format */
+				printf("%17s", bat_host->name);
+
+			if (extra_char != '\0')
+				printf("%c", extra_char);
+
+			printf(" ");
+			goto written;
+
+print_plain_buff:
+			printf("%s ", buff_ptr);
+
+written:
+			buff_ptr = space_ptr + 1;
 		}
 
-		if (bytes_written != (size_t)data_read_len)
-			printf("%s", buff_ptr);
-
-check_eof:
-		if (read_len != (size_t)data_read_len)
-			break;
+		printf("%s", buff_ptr);
 	}
 
 	if (read_opt & CONT_READ) {
@@ -279,8 +237,8 @@ check_eof:
 	}
 
 	if (read_opt & CLR_CONT_READ) {
-		if (fd)
-			close(fd);
+		if (fp)
+			fclose(fp);
 		sleep(1);
 		goto open;
 	}
@@ -288,8 +246,8 @@ check_eof:
 	res = EXIT_SUCCESS;
 
 out:
-	if (fd)
-		close(fd);
+	if (fp)
+		fclose(fp);
 
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_free();

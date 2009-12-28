@@ -35,7 +35,7 @@ char *get_name_by_macstr(char *mac_str, int read_opt);
 int read_file(char *dir, char *path, int read_opt);
 int write_file(char *dir, char *path, char *value);
 
-extern char read_buff[10];
+extern char *line_ptr;
 
 enum {
 	SINGLE_READ = 0x00,

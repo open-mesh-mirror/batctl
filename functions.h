@@ -34,6 +34,7 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
 int read_file(char *dir, char *path, int read_opt);
 int write_file(char *dir, char *path, char *value);
+int check_proc_dir(char *dir);
 
 extern char *line_ptr;
 

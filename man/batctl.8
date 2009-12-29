@@ -63,8 +63,21 @@ Once started batctl will refresh the displayed local translation table every sec
 .IP "\fBtransglobal|tg\fP"
 Once started batctl will refresh the displayed global translation table every second. Use the "\-b" option to let batctl display the table only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
 .br
-.IP "\fBvisformat|vf	[format]\fP"
-If no parameter is given the current vis format settings are displayed otherwise the parameter is used to set the vis format.
+.IP "\fBvis dot\fP"
+Display the visualisation data in graphviz dot(1) format. If
+"\--numbers" or "\-n" batctl will not replace the mac addresses with
+bat-host names in the output. With "\--no-HNA" or "\-h" the HNA
+entries are not displayed, so the pure mesh topology can be seen. With
+"\--no-2nd" or "\-2" a dot cluster is not formed around primary and
+secondary addresses from the same device.
+.br
+.IP "\fBvis json\fP"
+Display the visualisation data in JSON format. If
+"\--numbers" or "\-n" batctl will not replace the mac addresses with
+bat-host names in the output. With "\--no-HNA" or "\-h" the HNA
+entries are not displayed, so the pure mesh topology can be seen. With
+"\--no-2nd" or "\-2" a dot cluster is not formed around primary and
+secondary addresses from the same device.
 .br
 .IP "\fBaggregation|ag	[0|1]\fP"
 If no parameter is given the current aggregation settings are displayed otherwise the parameter is used to enable or disable the packet aggregation.

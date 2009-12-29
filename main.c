@@ -35,6 +35,7 @@
 #include "traceroute.h"
 #include "tcpdump.h"
 #include "bisect.h"
+#include "vis.h"
 
 
 void print_usage(void) {
@@ -47,7 +48,7 @@ void print_usage(void) {
 	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
 	printf(" \ttranslocal|tl                   \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                  \tdisplay the global translation table\n");
-	printf(" \tvisformat|vf  [format]          \tdisplay or modify the vis output format\n");
+	printf(" \tvis [dot|JSON]                  \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag   [0|1]          \tdisplay or modify the packet aggregation setting\n");
 	printf("\n");
 	printf(" \tping|p        <destination>     \tping another batman adv host via layer 2\n");
@@ -74,7 +75,8 @@ int main(int argc, char **argv)
 	}
 
 	/* check if user is root */
-	if ((strcmp(argv[1], "bisect") != 0) && ((getuid()) || (getgid()))) {
+	if (((strcmp(argv[1], "bisect") != 0) && (strcmp(argv[1], "vis") != 0))
+	    && ((getuid()) || (getgid()))) {
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
@@ -119,9 +121,9 @@ int main(int argc, char **argv)
 
 		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
 
-	} else if ((strcmp(argv[1], "visformat") == 0) || (strcmp(argv[1], "vf") == 0)) {
+	} else if (strcmp(argv[1], "vis") == 0) {
 
-		ret = handle_proc_setting(argc - 1, argv + 1, PROC_VIS_FORMAT, vis_format_usage);
+		ret = vis(argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 

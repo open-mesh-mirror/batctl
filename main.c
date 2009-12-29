@@ -48,7 +48,8 @@ void print_usage(void) {
 	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
 	printf(" \ttranslocal|tl                   \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                  \tdisplay the global translation table\n");
-	printf(" \tvis [dot|JSON]                  \tdisplay the VIS data in dot or JSON format\n");
+	printf(" \tvis_server|vs [enable|disable]  \tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_data|vd [dot|JSON]          \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag   [0|1]          \tdisplay or modify the packet aggregation setting\n");
 	printf("\n");
 	printf(" \tping|p        <destination>     \tping another batman adv host via layer 2\n");
@@ -121,9 +122,13 @@ int main(int argc, char **argv)
 
 		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
 
-	} else if (strcmp(argv[1], "vis") == 0) {
+	} else if ((strcmp(argv[1], "vis_server") == 0) || (strcmp(argv[1], "vs") == 0)) {
 
-		ret = vis(argc - 1, argv + 1);
+		ret = handle_proc_setting(argc - 1, argv + 1, PROC_VIS_SERVER, vis_server_usage);
+
+	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
+
+		ret = vis_data(argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 

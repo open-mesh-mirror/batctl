@@ -102,9 +102,9 @@ void orig_interval_usage(void)
 	printf(" \t -h print this help\n");
 }
 
-void vis_format_usage(void)
+void vis_server_usage(void)
 {
-	printf("Usage: batctl [options] visformat \n");
+	printf("Usage: batctl [options] vis_server \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }

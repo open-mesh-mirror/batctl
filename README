@@ -11,15 +11,15 @@ Why do I need batctl ? B.A.T.M.A.N. advanced operates on layer 2 and thus all
 hosts participating in the virtual switch are completely transparent for all
 protocols above layer 2. Therefore the common diagnosis tools do not work as
 expected. To overcome these problems batctl was created. At the moment batctl
-contains ping, traceroute, tcpdump and interfaces to the kernel module 
+contains ping, traceroute, tcpdump and interfaces to the kernel module
 settings.
 
 
 How does it work ?
 ==================
 
-batctl uses the /dev/batman-adv device provided by the B.A.T.M.A.N. advanced 
-kernel module to inject custom icmp packets into the data flow. That's why 
+batctl uses the /dev/batman-adv device provided by the B.A.T.M.A.N. advanced
+kernel module to inject custom icmp packets into the data flow. That's why
 ping and traceroute work almost like their IP based counterparts. Tcpdump was
 designed because B.A.T.M.A.N. advanced encapsulates all traffic within batman
 packets, so that the normal tcpdump would not recognize the packets.
@@ -30,7 +30,7 @@ The bat-hosts file
 
 This file is simliar to the /etc/hosts file. You can write one MAC address and
 one host name per line. batctl will analyze the file to find the matching MAC
-address to your provided host name. Host names are much easier to remember 
+address to your provided host name. Host names are much easier to remember
 than MAC addresses.  ;)
 
 
@@ -39,9 +39,9 @@ batctl ping
 
 Sends a Layer 2 batman-adv ping to check round trip time and connectivity
 
-Usage: batctl ping [options] mac|bat-host 
+Usage: batctl ping [options] mac|bat-host
 options:
-         -c ping packet count 
+         -c ping packet count
          -h print this help
          -i interval in seconds
          -t timeout in seconds
@@ -60,10 +60,10 @@ rtt min/avg/max/mdev = 7.476/8.151/8.743/1.267 ms
 batctl traceroute
 ==================
 
-Traceroute sends 3 packets to each hop, awaits the answers and prints out the 
+Traceroute sends 3 packets to each hop, awaits the answers and prints out the
 response times.
 
-Usage: batctl traceroute [options] mac|bat-host 
+Usage: batctl traceroute [options] mac|bat-host
 
 Example:
 
@@ -121,15 +121,15 @@ batctl bisect
 =============
 
 Analyzes  the logfiles to build a small internal database of all sent sequence
-numbers and routing table changes. This database can be used to search for 
-routing loops (default action), to trace OGMs of  a  host  (use  "-t"  to 
-specify  the  mac address or bat-host name) throughout the network or to 
-display routing tables of the nodes (use "-r" to specify the mac address or 
+numbers and routing table changes. This database can be used to search for
+routing loops (default action), to trace OGMs of  a  host  (use  "-t"  to
+specify  the  mac address or bat-host name) throughout the network or to
+display routing tables of the nodes (use "-r" to specify the mac address or
 bat-host name). You can name a specific sequence number or a range  using the
-"-s"  option  to limit the output's range. Furthermore you can filter the 
-output by specifying an originator (use "-o" to specify the mac address or 
+"-s"  option  to limit the output's range. Furthermore you can filter the
+output by specifying an originator (use "-o" to specify the mac address or
 bat-host name) to only see data connected to  this  originator.  If  "-n"  was
-given batctl will not replace the mac addresses with bat-host names in the 
+given batctl will not replace the mac addresses with bat-host names in the
 output.
 
 Usage: batctl bisect [options] <file1> <file2> .. <fileN>
@@ -226,7 +226,7 @@ Usage: batctl originators|o
 Example:
 
 $ batctl originators
-  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops ... [B.A.T.M.A.N. adv 0.2-beta r1457, MainIF/MAC: eth0/fe:fe:00:00:01:01] 
+  Originator     (#/255)           Nexthop [outgoingIF]:   Potential nexthops ... [B.A.T.M.A.N. adv 0.2-beta r1457, MainIF/MAC: eth0/fe:fe:00:00:01:01]
 fe:fe:00:00:05:01  (223) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 96) fe:fe:00:00:02:01 (223)
 fe:fe:00:00:04:01  (233) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 (100) fe:fe:00:00:02:01 (233)
 fe:fe:00:00:02:01  (254) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:02:01 (254) fe:fe:00:00:03:01 (100)
@@ -241,12 +241,12 @@ batctl interface
 
 display or modify the interface settings
 
-Usage: batctl interface|if  [none|interface]          
+Usage: batctl interface|if  [none|interface]
 
 Example:
 
 $  batctl interface
-[  active] eth0 fe:fe:00:00:01:01 
+[  active] eth0 fe:fe:00:00:01:01
 
 batctl interval
 ===============
@@ -270,13 +270,13 @@ Usage: batctl log|l
 Example:
 
 $ batctl log
-r) 
-[       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:01:01 via prev OG: fe:fe:00:00:01:01 seqno 670, tq 245, TTL 49, V 8, IDF 1) 
-[       400] Drop packet: originator packet from myself (via neighbour) 
-[       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:02:01 via prev OG: fe:fe:00:00:02:01 seqno 545, tq 255, TTL 50, V 8, IDF 0) 
-[       400] updating last_seqno: old 544, new 545 
-[       400] bidirectional: orig = fe:fe:00:00:02:01 neigh = fe:fe:00:00:02:01 => own_bcast = 64, real recv = 64, local tq: 255, asym_penalty: 255, total tq: 255 
-[       400] update_originator(): Searching and updating originator entry of received packet 
+r)
+[       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:01:01 via prev OG: fe:fe:00:00:01:01 seqno 670, tq 245, TTL 49, V 8, IDF 1)
+[       400] Drop packet: originator packet from myself (via neighbour)
+[       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:02:01 via prev OG: fe:fe:00:00:02:01 seqno 545, tq 255, TTL 50, V 8, IDF 0)
+[       400] updating last_seqno: old 544, new 545
+[       400] bidirectional: orig = fe:fe:00:00:02:01 neigh = fe:fe:00:00:02:01 => own_bcast = 64, real recv = 64, local tq: 255, asym_penalty: 255, total tq: 255
+[       400] update_originator(): Searching and updating originator entry of received packet
 [       400] Updating existing last-hop neighbour of originator
 [...]
 
@@ -285,10 +285,10 @@ batctl loglevel
 
 display or modify the log level
 
-Usage: batctl |ll   [level] 
+Usage: batctl |ll   [level]
 
 Example:
-$  batctl loglevel 
+$  batctl loglevel
 [x] critical (0)
 [x] warnings (1)
 [x] notices (2)
@@ -307,9 +307,9 @@ batctl translocal
 
 display the local translation table
 
-Usage: batctl translocal|tl 
+Usage: batctl translocal|tl
 
-Example: 
+Example:
 
 $ batctl translocal
 Locally retrieved addresses (from bat0) announced via HNA:
@@ -320,32 +320,32 @@ batctl transglobal
 
 display the global translation table
 
-Usage: batctl transglobal|tg 
+Usage: batctl transglobal|tg
 
 Example:
 
 Globally announced HNAs received via the mesh (translation table):
- * 16:aa:c4:a2:00:00 via fe:fe:00:00:09:01 
- * 5a:32:f9:df:00:00 via fe:fe:00:00:03:01 
- * 32:ae:5a:00:00:00 via fe:fe:00:00:04:01 
- * 86:88:80:29:00:00 via fe:fe:00:00:08:01 
- * 9e:d8:72:f2:00:00 via fe:fe:00:00:02:01 
- * 76:84:68:49:00:00 via fe:fe:00:00:05:01 
- * 86:4b:b2:d2:00:00 via fe:fe:00:00:07:01 
- * ca:a1:5b:e5:00:00 via fe:fe:00:00:06:01 
+ * 16:aa:c4:a2:00:00 via fe:fe:00:00:09:01
+ * 5a:32:f9:df:00:00 via fe:fe:00:00:03:01
+ * 32:ae:5a:00:00:00 via fe:fe:00:00:04:01
+ * 86:88:80:29:00:00 via fe:fe:00:00:08:01
+ * 9e:d8:72:f2:00:00 via fe:fe:00:00:02:01
+ * 76:84:68:49:00:00 via fe:fe:00:00:05:01
+ * 86:4b:b2:d2:00:00 via fe:fe:00:00:07:01
+ * ca:a1:5b:e5:00:00 via fe:fe:00:00:06:01
 
-batctl visformat
+batctl vis_server
 ================
 
-display or modify the vis output format
+display or modify the status of the VIS server
 
-Usage: batctl visformat|vf  [format]
+Usage: batctl vis_server|vs  [enable|disable]
 
-Example: 
+Example:
 
-$ batctl visformat
-[x] dot_draw
-[ ] json
+$ batctl vis_server
+[x] client mode (server disabled)
+[ ] server mode (server enabled)
 
 
 

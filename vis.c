@@ -40,7 +40,7 @@ typedef void (*print_2nd_t)(char * orig, char * from);
 typedef void (*print_header_t)(void);
 typedef void (*print_footer_t)(void);
 
-struct funcs 
+struct funcs
 {
   print_tq_t print_tq;
   print_HNA_t print_HNA;
@@ -54,7 +54,7 @@ static bool with_HNA = true;
 static bool with_2nd = true;
 static bool with_names = true;
 
-static void 
+static void
 usage(void)
 {
   printf("batctl vis dot {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
@@ -62,25 +62,25 @@ usage(void)
   printf("batctl vis json {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
 }
 
-static void 
+static void
 dot_print_tq(char * orig, char * from, const long tq)
 {
   int int_part = TQ_MAX_VALUE / tq;
   int frac_part = (1000 * TQ_MAX_VALUE / tq) - (int_part * 1000);
-        
+
   printf("\t\"%s\" -> ",
          get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-  printf("\"%s\" [label=\"%d.%d\"]\n", 
+  printf("\"%s\" [label=\"%d.%d\"]\n",
          get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)),
          int_part, frac_part);
 }
 
-static void 
+static void
 dot_print_HNA(char * orig, char * from)
 {
         printf("\t\"%s\" -> ",
                get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-        printf("\"%s\" [label=\"HNA\"]\n", 
+        printf("\"%s\" [label=\"HNA\"]\n",
                get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
@@ -107,18 +107,18 @@ dot_print_2nd(char * orig, char * from)
 }
 
 static void
-dot_print_header(void) 
+dot_print_header(void)
 {
   printf("digraph {\n");
 }
 
 static void
-dot_print_footer(void) 
+dot_print_footer(void)
 {
   printf("}\n");
 }
 
-const struct funcs dot_funcs = 
+const struct funcs dot_funcs =
   { dot_print_tq,
     dot_print_HNA,
     dot_print_1st,
@@ -127,25 +127,25 @@ const struct funcs dot_funcs =
     dot_print_footer
 };
 
-static void 
+static void
 json_print_tq(char * orig, char * from, const long tq)
 {
   int int_part = TQ_MAX_VALUE / tq;
   int frac_part = (1000 * TQ_MAX_VALUE / tq) - (int_part * 1000);
-        
+
   printf("\t{ router : \"%s\", ",
          get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-  printf("neighbor : \"%s\", label : \"%d.%d\" }\n", 
+  printf("neighbor : \"%s\", label : \"%d.%d\" }\n",
          get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)),
          int_part, frac_part);
 }
 
-static void 
+static void
 json_print_HNA(char * orig, char * from)
 {
   printf("\t{ router : \"%s\", ",
          get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-  printf("gateway : \"%s\", label : \"HNA\" }\n", 
+  printf("gateway : \"%s\", label : \"HNA\" }\n",
          get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
@@ -166,7 +166,7 @@ json_print_2nd(char * orig, char * from)
          get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
-const struct funcs json_funcs = 
+const struct funcs json_funcs =
   { json_print_tq,
     json_print_HNA,
     json_print_1st,
@@ -176,21 +176,21 @@ const struct funcs json_funcs =
 };
 
 static FILE *
-open_vis(void) 
+open_vis(void)
 {
   char full_path[500];
-  
+
   if (check_proc_dir("/proc") != EXIT_SUCCESS)
     return NULL;
 
   strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
   full_path[strlen(PROC_ROOT_PATH)] = '\0';
-  strncat(full_path, "vis", sizeof(full_path) - strlen(full_path));
+  strncat(full_path, PROC_VIS_DATA, sizeof(full_path) - strlen(full_path));
 
   return fopen(full_path, "r");
 }
 
-static int 
+static int
 format(const struct funcs *funcs)
 {
   size_t len = 0;
@@ -204,15 +204,15 @@ format(const struct funcs *funcs)
   char * value;
   long tq;
   char * flag;
-  
-  FILE * fp = open_vis(); 
+
+  FILE * fp = open_vis();
 
   if (!fp)
     return EXIT_FAILURE;
-  
+
   if (funcs->print_header)
     funcs->print_header();
-  
+
   while ((read = getline(&line, &len, fp)) != -1) {
     /* First MAC address is the originator */
     orig = strtok_r(line, ",", &line_save_ptr);
@@ -220,7 +220,7 @@ format(const struct funcs *funcs)
     duplet_save_ptr = line_save_ptr;
     while ((duplet = strtok_r(NULL, ",", &duplet_save_ptr)) != NULL) {
       flag = strtok(duplet, " ");
-      if (!flag) 
+      if (!flag)
         continue;
       if (!strcmp(flag, "TQ")) {
         from = strtok(NULL, " ");
@@ -231,7 +231,7 @@ format(const struct funcs *funcs)
       }
       if (!strcmp(flag, "HNA")) {
         /* We have an HNA record */
-        if (!with_HNA) 
+        if (!with_HNA)
           continue;
         from = strtok(NULL, " ");
         funcs->print_HNA(orig, from);
@@ -248,17 +248,17 @@ format(const struct funcs *funcs)
       }
     }
   }
-  
+
   if (funcs->print_footer)
     funcs->print_footer();
-  
+
   if (line)
     free(line);
   return EXIT_SUCCESS;
 }
 
-int 
-vis(int argc, char *argv[])
+int
+vis_data(int argc, char *argv[])
 {
   bool dot = false;
   bool json = false;
@@ -268,22 +268,22 @@ vis(int argc, char *argv[])
     usage();
     return EXIT_FAILURE;
   }
-  
+
   /* Do we know the requested format? */
   if (strcmp(argv[1], "dot") == 0)
     dot=true;
   if (strcmp(argv[1], "json") == 0)
     json=true;
-  
+
   if (!dot && !json) {
     usage();
     return EXIT_FAILURE;
   }
-  
+
   /* Move over the output format */
   argc--;
   argv++;
-  
+
   while (1) {
     int option_index = 0;
     static struct option long_options[] = {
@@ -292,11 +292,11 @@ vis(int argc, char *argv[])
       {"numbers", 0, 0, 'n'},
       {0, 0, 0, 0}
     };
-    
+
     c = getopt_long(argc, argv, "h2n", long_options, &option_index);
     if (c == -1)
       break;
-    
+
     switch(c) {
       case 'h':
         with_HNA = false;
@@ -312,13 +312,13 @@ vis(int argc, char *argv[])
         return -1;
     }
   }
-  
+
   if (with_names)
 	  bat_hosts_init();
-  
-  if (dot) 
+
+  if (dot)
     return format(&dot_funcs);
-  
+
   if (json)
     return format(&json_funcs);
 

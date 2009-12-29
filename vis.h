@@ -17,5 +17,5 @@
  *
  */
 
-int vis(int argc, char * argv[]);
+int vis_data(int argc, char * argv[]);
 

@@ -75,9 +75,9 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
+	/* TODO: remove this generic check here and move it into the individual functions */
 	/* check if user is root */
-	if (((strcmp(argv[1], "bisect") != 0) && (strcmp(argv[1], "vis") != 0))
-	    && ((getuid()) || (getgid()))) {
+	if ((strcmp(argv[1], "bisect") != 0) && ((getuid()) || (getgid()))) {
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}

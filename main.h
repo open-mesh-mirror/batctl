@@ -21,6 +21,6 @@
 
 
 
-#define SOURCE_VERSION "0.2.1-beta"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#define SOURCE_VERSION "0.3.0-alpha"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 
 #define BAT_DEVICE "/dev/batman-adv"

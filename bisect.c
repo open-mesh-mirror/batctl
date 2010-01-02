@@ -197,7 +197,7 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 	int i, j;
 
 	if (!curr_bat_node) {
-		fprintf(stderr, "Routing table change without preceeding OGM - skipping");
+		fprintf(stderr, "Routing table change without preceding OGM - skipping");
 		goto err;
 	}
 
@@ -225,7 +225,7 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 		goto err;
 
 	if (list_empty(&orig_event->event_list)) {
-		fprintf(stderr, "Routing table change without any preceeding OGM of that originator - skipping");
+		fprintf(stderr, "Routing table change without any preceding OGM of that originator - skipping");
 		goto err;
 	}
 

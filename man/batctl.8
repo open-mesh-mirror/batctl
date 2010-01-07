@@ -99,18 +99,18 @@ displayed table every second. The "\-b" option causes the table to be
 displayed only once (useful for scripts). If "\-n" is given batctl
 will not replace the MAC addresses with bat\-host names in the output.
 .br
-.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+.IP "\fBvis dot\fP         [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
 Display the visualisation data in graphviz \fBdot\fP(1) format. If
 "\-\-numbers" or "\-n" is given batctl will not replace the MAC
 addresses with bat-host names in the output. With "\-\-no-HNA" or
-"\-h" the HNA entries are not displayed, so the pure mesh topology can
+"\-H" the HNA entries are not displayed, so the pure mesh topology can
 be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
 primary and secondary addresses from the same device.
 .br
-.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-h\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+.IP "\fBvis json\fP        [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
 Display the visualisation data in JSON format. If "\-\-numbers" or
 "\-n" is given batctl will not replace the MAC addresses with bat-host
-names in the output. With "\-\-no-HNA" or "\-h" the HNA entries are
+names in the output. With "\-\-no-HNA" or "\-H" the HNA entries are
 not displayed, so the pure mesh topology can be seen. With
 "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
 secondary addresses from the same device.

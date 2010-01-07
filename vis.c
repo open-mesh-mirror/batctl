@@ -55,9 +55,9 @@ static bool with_names = true;
 
 static void usage(void)
 {
-	printf("batctl vis dot {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
 	printf("or\n");
-	printf("batctl vis json {--no-HNA|-h} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
 }
 
 static void dot_print_tq(char *orig, char *from, const long tq)
@@ -271,18 +271,18 @@ int vis_data(int argc, char *argv[])
 	while (1) {
 		int option_index = 0;
 		static struct option long_options[] = {
-			{"no-HNA", 0, 0, 'h'},
+			{"no-HNA", 0, 0, 'H'},
 			{"no-2nd", 0, 0, '2'},
 			{"numbers", 0, 0, 'n'},
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "h2n", long_options, &option_index);
+		c = getopt_long(argc, argv, "hH2n", long_options, &option_index);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'h':
+		case 'H':
 			with_HNA = false;
 			break;
 		case '2':
@@ -291,6 +291,7 @@ int vis_data(int argc, char *argv[])
 		case 'n':
 			with_names = false;
 			break;
+		case 'h':
 		default:
 			usage();
 			return -1;

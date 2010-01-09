@@ -115,6 +115,12 @@ not displayed, so the pure mesh topology can be seen. With
 "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
 secondary addresses from the same device.
 .br
+.IP "\fBgw_mode|gw	[off|client|server]\fP"
+If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode.
+.br
+.IP "\fBgw_srv_list|gwl\fP"
+Once started batctl will refresh the displayed gateway server list every second. Use the "\-b" option to let batctl display the list only once (useful for scripts). If "\-n" was given batctl will not replace the mac addresses with bat\-host names in the output.
+.br
 .IP "\fBaggregation\fP|\fBag\fP [\fB1\fP|\fB0\fP]"
 If no parameter is given the current aggregation setting is displayed.
 Otherwise the parameter is used to enable or disable packet

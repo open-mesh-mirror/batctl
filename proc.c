@@ -95,6 +95,15 @@ void trans_global_usage(void)
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
 }
 
+void gw_srv_list_usage(void)
+{
+	printf("Usage: batctl [options] gw_srv_list \n");
+	printf("options:\n");
+	printf(" \t -b batch mode - read the gateway server list once and quit\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+}
+
 void orig_interval_usage(void)
 {
 	printf("Usage: batctl [options] interval \n");
@@ -112,6 +121,13 @@ void vis_server_usage(void)
 void aggregation_usage(void)
 {
 	printf("Usage: batctl [options] aggregation \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void gw_mode_usage(void)
+{
+	printf("Usage: batctl [options] gw_mode [mode]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }

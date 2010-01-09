@@ -24,12 +24,14 @@
 #define DEBUG_ORIGINATORS "originators"
 #define DEBUG_TRANSTABLE_LOCAL "transtable_local"
 #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+#define DEBUG_GATEWAYS "gateways"
 #define DEBUG_VIS_DATA "vis_data"
 #define DEBUG_LOG "log"
 
 void originators_usage(void);
 void trans_local_usage(void);
 void trans_global_usage(void);
+void gateways_usage(void);
 int handle_debug_table(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void table_usage(void));
 int log_print(char *mesh_iface, int argc, char **argv);

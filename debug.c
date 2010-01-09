@@ -61,6 +61,15 @@ void trans_global_usage(void)
 	printf(" \t -w [interval] watch mode - refresh the global translation table continuously\n");
 }
 
+void gateways_usage(void)
+{
+	printf("Usage: batctl [options] gateways \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w [interval] watch mode - refresh the gateway server list continuously\n");
+}
+
 int handle_debug_table(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void table_usage(void))
 {

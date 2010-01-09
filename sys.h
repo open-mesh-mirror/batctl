@@ -25,6 +25,7 @@
 #define SYS_LOG "log"
 #define SYS_AGGR "aggregated_ogms"
 #define SYS_BONDING "bonding"
+#define SYS_GW_MODE "gw_mode"
 #define SYS_VIS_MODE "vis_mode"
 #define SYS_ORIG_INTERVAL "orig_interval"
 #define SYS_IFACE_PATH "/sys/class/net"
@@ -38,6 +39,7 @@ extern const char *sysfs_param_server[];
 void aggregation_usage(void);
 void bonding_usage(void);
 void fragmentation_usage(void);
+void gw_mode_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
 int interface(char *mesh_iface, int argc, char **argv);

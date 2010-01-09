@@ -48,6 +48,8 @@ void print_usage(void) {
 	printf(" \tinterval|it     [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
 	printf(" \tloglevel|ll     [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                             \tread the log produced by the kernel module\n");
+	printf(" \tgw_mode|gw      [mode]            \tdisplay or modify the gateway mode\n");
+	printf(" \tgateways|gwl                      \tdisplay the gateway server list\n");
 	printf(" \ttranslocal|tl                     \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                    \tdisplay the global translation table\n");
 	printf(" \tvis_mode|vm     [mode]            \tdisplay or modify the status of the VIS server\n");
@@ -155,6 +157,16 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 
 		ret = vis_data(mesh_iface, argc - 1, argv + 1);
+
+	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
+
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_GW_MODE, gw_mode_usage, sysfs_param_server);
+
+	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
+
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_GATEWAYS, gateways_usage);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 

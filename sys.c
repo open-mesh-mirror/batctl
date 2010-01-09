@@ -239,6 +239,13 @@ void bonding_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void gw_mode_usage(void)
+{
+	printf("Usage: batctl [options] gw_mode [mode]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
 void vis_mode_usage(void)
 {
 	printf("Usage: batctl [options] vis_mode [mode]\n");

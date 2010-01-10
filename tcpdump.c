@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>
@@ -221,6 +221,34 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 	}
 }
 
+void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
+{
+	struct vlanhdr *vlanhdr;
+
+	vlanhdr = (struct vlanhdr *)packet_buff;
+	LEN_CHECK((size_t)buff_len, sizeof(struct vlanhdr), "VLAN");
+
+	if (!time_printed)
+		print_time();
+
+	vlanhdr->vid = ntohs(vlanhdr->vid);
+	printf("vlan %u, p %u, ", vlanhdr->vid, vlanhdr->vid >> 12);
+
+	switch (ntohs(vlanhdr->ether_type)) {
+	case ETH_P_ARP:
+		dump_arp(packet_buff + sizeof(struct vlanhdr),
+			 buff_len - sizeof(struct vlanhdr), 1);
+		break;
+	case ETH_P_IP:
+		dump_ip(packet_buff + sizeof(struct vlanhdr),
+			buff_len - sizeof(struct vlanhdr), 1);
+		break;
+	default:
+		printf(" unknown payload ether type: 0x%04x\n", ntohs(vlanhdr->ether_type));
+		break;
+	}
+}
+
 void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 {
 	struct ether_header *ether_header;
@@ -320,8 +348,12 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
 			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
 		break;
+	case ETH_P_8021Q:
+		dump_vlan(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
+			  buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
+		break;
 	default:
-		printf(" unknown payload ether type: %hu\n", ntohs(ether_header->ether_type));
+		printf(" unknown payload ether type: 0x%04x\n", ntohs(ether_header->ether_type));
 		break;
 	}
 }
@@ -358,8 +390,12 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
 			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
 		break;
+	case ETH_P_8021Q:
+		dump_vlan(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
+			  buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		break;
 	default:
-		printf(" unknown payload ether type: %hu\n", ntohs(ether_header->ether_type));
+		printf(" unknown payload ether type: 0x%04x\n", ntohs(ether_header->ether_type));
 		break;
 	}
 }
@@ -510,6 +546,11 @@ int tcpdump(int argc, char **argv)
 					dump_ip(packet_buff + sizeof(struct ether_header),
 						read_len - sizeof(struct ether_header), 0);
 				break;
+			case ETH_P_8021Q:
+				if (dump_level & DUMP_TYPE_NONBAT)
+					dump_vlan(packet_buff + sizeof(struct ether_header),
+						read_len - sizeof(struct ether_header), 0);
+				break;
 			case ETH_P_BATMAN:
 				batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
 
@@ -538,7 +579,7 @@ int tcpdump(int argc, char **argv)
 
 				break;
 			default:
-				printf("Warning - packet contains unknown ether type: %hu\n", ether_type);
+				printf("Warning - packet contains unknown ether type: 0x%04x\n", ether_type);
 				break;
 			}
 

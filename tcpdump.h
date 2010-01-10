@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -36,5 +36,10 @@ struct dump_if {
 	int32_t raw_sock;
 	struct sockaddr_ll addr;
 };
+
+struct vlanhdr {
+	unsigned short vid;
+	u_int16_t ether_type;
+} __attribute__ ((packed));
 
 int tcpdump(int argc, char **argv);

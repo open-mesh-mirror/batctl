@@ -264,12 +264,13 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
 
-	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c], length %zu\n",
+	printf("OGM via neigh %s, seqno %d, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
 	        get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	        ntohs(batman_packet->seqno), batman_packet->tq,
 	        batman_packet->ttl, batman_packet->version,
-	        (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
 	        (batman_packet->flags & DIRECTLINK ? 'D' : '.'),
+	        (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
+	        (batman_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
 	        (size_t)buff_len - sizeof(struct ether_header));
 }
 

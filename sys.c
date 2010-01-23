@@ -36,27 +36,27 @@ static void log_usage(void)
 	printf("Usage: batctl [options] log [logfile]\n");
 	printf("Note: if no logfile was specified stdin is read");
 	printf("options:\n");
-	printf(" \t -b batch mode - read the log file once and quit\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - read the log file continuously\n");
 }
 
 int log_print(int argc, char **argv)
 {
-	int optchar, read_opt = CONT_READ | USE_BAT_HOSTS | LOG_MODE;
+	int optchar, read_opt = USE_BAT_HOSTS | LOG_MODE;
 	int found_args = 1;
 
-	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
 		switch (optchar) {
-		case 'b':
-			read_opt &= ~CONT_READ;
-			found_args += 1;
-			break;
 		case 'h':
 			log_usage();
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
+			found_args += 1;
+			break;
+		case 'w':
+			read_opt |= CONT_READ;
 			found_args += 1;
 			break;
 		default:

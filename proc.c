@@ -72,36 +72,36 @@ void originators_usage(void)
 {
 	printf("Usage: batctl [options] originators \n");
 	printf("options:\n");
-	printf(" \t -b batch mode - read the originator table once and quit\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the originator table continuously\n");
 }
 
 void trans_local_usage(void)
 {
 	printf("Usage: batctl [options] translocal \n");
 	printf("options:\n");
-	printf(" \t -b batch mode - read the local translation table once and quit\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the local translation table continuously\n");
 }
 
 void trans_global_usage(void)
 {
 	printf("Usage: batctl [options] transglobal \n");
 	printf("options:\n");
-	printf(" \t -b batch mode - read the global translation table once and quit\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the global translation table continuously\n");
 }
 
 void gw_srv_list_usage(void)
 {
 	printf("Usage: batctl [options] gw_srv_list \n");
 	printf("options:\n");
-	printf(" \t -b batch mode - read the gateway server list once and quit\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the gateway server list continuously\n");
 }
 
 void orig_interval_usage(void)
@@ -134,18 +134,18 @@ void gw_mode_usage(void)
 
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void))
 {
-	int optchar, read_opt = CLR_CONT_READ | USE_BAT_HOSTS;
+	int optchar, read_opt = USE_BAT_HOSTS;
 
-	while ((optchar = getopt(argc, argv, "bhn")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
 		switch (optchar) {
-		case 'b':
-			read_opt &= ~CLR_CONT_READ;
-			break;
 		case 'h':
 			table_usage();
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
+			break;
+		case 'w':
+			read_opt |= CLR_CONT_READ;
 			break;
 		default:
 			table_usage();

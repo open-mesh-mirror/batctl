@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2009 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -63,10 +63,12 @@ static int choose_mac(void *data, int32_t size)
 static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 {
 	FILE *fd;
+	char *line_ptr = NULL;
 	char name[HOST_NAME_MAX_LEN], mac_str[18];
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
 	struct hashtable_t *swaphash;
+	size_t len = 0;
 
 	name[0] = mac_str[0] = '\0';
 
@@ -74,11 +76,19 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 	if (!fd)
 		return;
 
-	while (fscanf(fd,"%[^ \t]%s\n", mac_str, name) != EOF) {
+	while (getline(&line_ptr, &len, fd) != -1) {
+		/* ignore empty lines and comments */
+		if ((line_ptr[0] == '\n') || (line_ptr[0] == '#'))
+			continue;
+
+		if (sscanf(line_ptr, "%[^ \t]%s\n", mac_str, name) != 2) {
+			fprintf(stderr, "Warning - unrecognized bat-host definition: %s", line_ptr);
+			continue;
+		}
 
 		mac_addr = ether_aton(mac_str);
 		if (!mac_addr) {
-			printf("Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
+			fprintf(stderr, "Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
 			continue;
 		}
 
@@ -86,7 +96,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 
 		/* mac entry already exists - we found a new name for it */
 		if (bat_host) {
-			printf("Warning - mac already known (changing name from '%s' to '%s'): %s\n",
+			fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
 					bat_host->name, name, mac_str);
 			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
 			continue;
@@ -96,7 +106,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 
 		/* name entry already exists - we found a new mac address for it */
 		if (bat_host) {
-			printf("Warning - name already known (changing mac from '%s' to '%s'): %s\n",
+			fprintf(stderr, "Warning - name already known (changing mac from '%s' to '%s'): %s\n",
 					ether_ntoa(&bat_host->mac_addr), mac_str, name);
 			hash_remove(*hash, bat_host);
 			free(bat_host);
@@ -105,7 +115,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 		bat_host = malloc(sizeof(struct bat_host));
 
 		if (!bat_host) {
-			printf("Error - could not allocate memory: %s\n", strerror(errno));
+			fprintf(stderr, "Error - could not allocate memory: %s\n", strerror(errno));
 			goto out;
 		}
 
@@ -118,16 +128,17 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 			swaphash = hash_resize((*hash), (*hash)->size * 2);
 
 			if (swaphash == NULL)
-				printf("Warning - couldn't resize bat hosts hash table\n");
+				fprintf(stderr, "Warning - couldn't resize bat hosts hash table\n");
 			else
 				*hash = swaphash;
 		}
-
 	}
 
 out:
 	if (fd)
 		fclose(fd);
+	if (line_ptr)
+		free(line_ptr);
 	return;
 }
 

@@ -35,6 +35,7 @@
 #include "functions.h"
 #include "bat-hosts.h"
 
+#define BATMAN_ADV_TAG "batman-adv:"
 
 static struct timeval start_time;
 static char *host_name;
@@ -177,6 +178,12 @@ read:
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
+
+		if (read_opt & LOG_MODE) {
+			/* omit log lines which don't start with the correct tag */
+			if (strncmp(line_ptr, BATMAN_ADV_TAG, strlen(BATMAN_ADV_TAG)) != 0)
+				continue;
+		}
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
 			printf("%s", line_ptr);

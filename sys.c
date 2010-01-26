@@ -68,7 +68,7 @@ int log_print(int argc, char **argv)
 	if (argc > found_args)
 		return read_file("", argv[found_args], read_opt);
 	else
-		return read_file("", "/dev/stdin", read_opt);
+		return read_file("", "/proc/self/fd/0", read_opt);
 }
 
 static void log_level_usage(void)

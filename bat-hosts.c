@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -144,9 +145,11 @@ out:
 
 void bat_hosts_init(void)
 {
-	unsigned int i;
+	unsigned int i, j, parse;
 	char confdir[CONF_DIR_LEN];
 	char *homedir;
+	size_t locations = sizeof(bat_hosts_path) / sizeof(char *);
+	char *normalized[locations];
 
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
@@ -157,7 +160,7 @@ void bat_hosts_init(void)
 
 	homedir = getenv("HOME");
 
-	for (i = 0; i < sizeof(bat_hosts_path) / sizeof(char *); i++) {
+	for (i = 0; i < locations; i++) {
 		strcpy(confdir, "");
 
 		if (strlen(bat_hosts_path[i]) >= 2
@@ -170,7 +173,29 @@ void bat_hosts_init(void)
 			confdir[CONF_DIR_LEN - 1] = '\0';
 		}
 
-		parse_hosts_file(&host_hash, confdir);
+		normalized[i] = realpath(confdir, NULL);
+		if (normalized[i] == NULL)
+			continue;
+
+		/* check for duplicates: don't parse the same file twice */
+		parse = 1;
+		for (j = 0; j < i; j++) {
+			if (normalized[j] == NULL)
+				continue;
+
+			if (strncmp(normalized[i], normalized[j], CONF_DIR_LEN) == 0) {
+				parse = 0;
+				break;
+			}
+		}
+
+		if (parse && (normalized[i] != NULL))
+			parse_hosts_file(&host_hash, normalized[i]);
+	}
+
+	for (i = 0; i < locations; i++) {
+		if (normalized[i])
+			free(normalized[i]);
 	}
 }
 

@@ -81,7 +81,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 		if ((line_ptr[0] == '\n') || (line_ptr[0] == '#'))
 			continue;
 
-		if (sscanf(line_ptr, "%[^ \t]%s\n", mac_str, name) != 2) {
+		if (sscanf(line_ptr, "%17[^ \t]%49s\n", mac_str, name) != 2) {
 			fprintf(stderr, "Warning - unrecognized bat-host definition: %s", line_ptr);
 			continue;
 		}

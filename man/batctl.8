@@ -126,14 +126,15 @@ If no parameter is given the current aggregation setting is displayed.
 Otherwise the parameter is used to enable or disable packet
 aggregation.
 .br
-.IP "\fBping\fP|\fBp\fP [\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
+.IP "\fBping\fP|\fBp\fP [\fB\-c \fP\fIcount\fP][\fB\-i \fP\fIinterval\fP][\fB\-t \fP\fItime\fP][\fB\-R\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
 Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
 find the bat\-host name if the given parameter was not a MAC
 address. The "\-c" option tells batctl how man pings should be sent
 before the program exits. Without the "\-c" option batctl will continue
 pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t"
 you can set the default interval between pings and the timeout time
-for replies, both in seconds.
+for replies, both in seconds. When run with "\-R", the route taken by
+the ping messages will be recorded.
 .br
 .IP "\fBtraceroute\fP|\fBtr\fP  [\fB\-n\fP] \fIMAC_address\fP|\fIbat\-host_name\fP"
 Layer 2 traceroute to a MAC address or bat\-host name. batctl will try

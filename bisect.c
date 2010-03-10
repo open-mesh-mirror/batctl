@@ -1513,7 +1513,7 @@ int bisect(int argc, char **argv)
 	node_hash = hash_new(64, compare_name, choose_name);
 
 	if (!node_hash) {
-		printf("Error - couldn't not create node hash table\n");
+		printf("Error - could not create node hash table\n");
 		goto err;
 	}
 

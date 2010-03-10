@@ -20,6 +20,7 @@
  */
 
 
+#define _GNU_SOURCE
 #include <netinet/ether.h>
 #include <sys/types.h>
 #include <sys/stat.h>

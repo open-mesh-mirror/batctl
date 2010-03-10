@@ -98,6 +98,10 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 
 		/* mac entry already exists - we found a new name for it */
 		if (bat_host) {
+			/* if the mac addresses and the names are the same we can safely ignore the entry */
+			if (strcmp(bat_host->name, name) == 0)
+				continue;
+
 			fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
 					bat_host->name, name, mac_str);
 			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);

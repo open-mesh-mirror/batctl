@@ -158,7 +158,7 @@ void bat_hosts_init(void)
 	 */
 	normalized = malloc(locations * PATH_MAX);
 	if (!normalized) {
-		printf("Warning - couldn't not get memory for bat-hosts file parsing\n");
+		printf("Warning - could not get memory for bat-hosts file parsing\n");
 		return;
 	}
 
@@ -166,7 +166,7 @@ void bat_hosts_init(void)
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
 	if (!host_hash) {
-		printf("Warning - couldn't not create bat hosts hash table\n");
+		printf("Warning - could not create bat hosts hash table\n");
 		return;
 	}
 

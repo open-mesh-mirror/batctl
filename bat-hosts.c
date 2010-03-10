@@ -150,8 +150,19 @@ void bat_hosts_init(void)
 	char confdir[CONF_DIR_LEN];
 	char *homedir;
 	size_t locations = sizeof(bat_hosts_path) / sizeof(char *);
-	char *normalized[locations];
+	char *normalized;
 
+	/***
+	 * realpath could allocate the memory for us but some embedded libc
+	 * implementations seem to expect a buffer as second argument
+	 */
+	normalized = malloc(locations * PATH_MAX);
+	if (!normalized) {
+		printf("Warning - couldn't not get memory for bat-hosts file parsing\n");
+		return;
+	}
+
+	memset(normalized, 0, locations * PATH_MAX);
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
 	if (!host_hash) {
@@ -174,30 +185,23 @@ void bat_hosts_init(void)
 			confdir[CONF_DIR_LEN - 1] = '\0';
 		}
 
-		normalized[i] = realpath(confdir, NULL);
-		if (normalized[i] == NULL)
+		if (!realpath(confdir, normalized + (i * PATH_MAX)))
 			continue;
 
 		/* check for duplicates: don't parse the same file twice */
 		parse = 1;
 		for (j = 0; j < i; j++) {
-			if (normalized[j] == NULL)
-				continue;
-
-			if (strncmp(normalized[i], normalized[j], CONF_DIR_LEN) == 0) {
+			if (strncmp(normalized + (i * PATH_MAX), normalized + (j * PATH_MAX), CONF_DIR_LEN) == 0) {
 				parse = 0;
 				break;
 			}
 		}
 
-		if (parse && (normalized[i] != NULL))
-			parse_hosts_file(&host_hash, normalized[i]);
+		if (parse)
+			parse_hosts_file(&host_hash, normalized + (i * PATH_MAX));
 	}
 
-	for (i = 0; i < locations; i++) {
-		if (normalized[i])
-			free(normalized[i]);
-	}
+	free(normalized);
 }
 
 struct bat_host *bat_hosts_find_by_name(char *name)

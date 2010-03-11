@@ -68,33 +68,6 @@ int interface(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-void originators_usage(void)
-{
-	printf("Usage: batctl [options] originators \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the originator table continuously\n");
-}
-
-void trans_local_usage(void)
-{
-	printf("Usage: batctl [options] translocal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the local translation table continuously\n");
-}
-
-void trans_global_usage(void)
-{
-	printf("Usage: batctl [options] transglobal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the global translation table continuously\n");
-}
-
 void gw_srv_list_usage(void)
 {
 	printf("Usage: batctl [options] gw_srv_list \n");
@@ -114,13 +87,6 @@ void orig_interval_usage(void)
 void vis_server_usage(void)
 {
 	printf("Usage: batctl [options] vis_server \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void aggregation_usage(void)
-{
-	printf("Usage: batctl [options] aggregation \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }

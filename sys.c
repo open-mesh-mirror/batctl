@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 B.A.T.M.A.N. contributors:
+ * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner <lindner_marek@yahoo.de>
  *
@@ -94,11 +94,11 @@ int handle_loglevel(int argc, char **argv)
 	}
 
 	if (argc != 1) {
-		res = write_file(SYS_ROOT_PATH, SYS_LOG_LEVEL, argv[1]);
+		res = write_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, argv[1]);
 		goto out;
 	}
 
-	res = read_file(SYS_ROOT_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF);
+	res = read_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF);
 
 	if (res != EXIT_SUCCESS)
 		goto out;
@@ -117,4 +117,121 @@ out:
 		printf("To increase the log level you need to compile the module with debugging enabled (see the README)\n");
 
 	return res;
+}
+
+void originators_usage(void)
+{
+	printf("Usage: batctl [options] originators \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the originator table continuously\n");
+}
+
+void trans_local_usage(void)
+{
+	printf("Usage: batctl [options] translocal \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the local translation table continuously\n");
+}
+
+void trans_global_usage(void)
+{
+	printf("Usage: batctl [options] transglobal \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the global translation table continuously\n");
+}
+
+int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void))
+{
+	int optchar, read_opt = USE_BAT_HOSTS;
+
+	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
+		switch (optchar) {
+		case 'h':
+			table_usage();
+			return EXIT_SUCCESS;
+		case 'n':
+			read_opt &= ~USE_BAT_HOSTS;
+			break;
+		case 'w':
+			read_opt |= CLR_CONT_READ;
+			break;
+		default:
+			table_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	return read_file(SYS_BATIF_PATH, file_path, read_opt);
+}
+
+void aggregation_usage(void)
+{
+	printf("Usage: batctl [options] aggregation \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
+{
+	int optchar, res;
+	char *space_ptr, *comma_char, *cmds = NULL;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			setting_usage();
+			return EXIT_SUCCESS;
+		default:
+			setting_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (argc == 1)
+		return read_file(SYS_BATIF_PATH, file_path, SINGLE_READ);
+
+	res = read_file(SYS_BATIF_PATH, file_path, SEARCH_ARGS);
+	if (res != EXIT_SUCCESS)
+		return res;
+
+	while ((space_ptr = strchr(line_ptr, ' ')) != NULL) {
+		*space_ptr = '\0';
+
+		if (strncmp(line_ptr, SEARCH_ARGS_TAG, strlen(SEARCH_ARGS_TAG)) == 0) {
+			cmds = space_ptr + 1;
+			goto next;
+		}
+
+		comma_char = NULL;
+		if (line_ptr[strlen(line_ptr) - 1] == ',') {
+			comma_char = line_ptr + strlen(line_ptr) - 1;
+			*comma_char = '\0';
+		}
+
+		if (strcmp(line_ptr, argv[1]) == 0)
+			goto write_file;
+
+		*space_ptr = ' ';
+		if (comma_char)
+			*comma_char = ',';
+
+next:
+		line_ptr = space_ptr + 1;
+	}
+
+	if (!cmds)
+		goto write_file;
+
+	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
+	printf("The following values are allowed: %s", cmds);
+	return EXIT_FAILURE;
+
+write_file:
+	return write_file(SYS_BATIF_PATH, file_path, argv[1]);
 }

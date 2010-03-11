@@ -177,6 +177,13 @@ void aggregation_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void bonding_usage(void)
+{
+	printf("Usage: batctl [options] bonding \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
 int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
 {
 	int optchar, res;

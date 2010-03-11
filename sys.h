@@ -28,6 +28,7 @@
 #define SYS_TRANSTABLE_LOCAL "transtable_local"
 #define SYS_TRANSTABLE_GLOBAL "transtable_global"
 #define SYS_AGGR "aggregate_ogm"
+#define SYS_BONDING "bonding"
 
 void originators_usage(void);
 void trans_local_usage(void);

@@ -264,6 +264,13 @@ void aggregation_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void bonding_usage(void)
+{
+	printf("Usage: batctl [options] bonding [0|1]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
 void vis_mode_usage(void)
 {
 	printf("Usage: batctl [options] vis_mode [mode]\n");

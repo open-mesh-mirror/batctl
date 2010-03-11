@@ -25,6 +25,7 @@
 #define SYS_LOG_LEVEL "parameters/debug"
 #define SYS_LOG "log"
 #define SYS_AGGR "aggregated_ogms"
+#define SYS_BONDING "bonding"
 #define SYS_VIS_MODE "vis_mode"
 #define SYS_ORIG_INTERVAL "orig_interval"
 #define SYS_IFACE_PATH "/sys/class/net"
@@ -35,6 +36,7 @@ extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
 
 void aggregation_usage(void);
+void bonding_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
 int log_print(int argc, char **argv);

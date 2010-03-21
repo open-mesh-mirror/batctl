@@ -50,7 +50,7 @@ void print_usage(void) {
 	printf(" \tgw_srv_list|gwl                  \tdisplay the gateway server list\n");
 	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                   \tdisplay the global translation table\n");
-	printf(" \tvis_server|vs  [enable|disable]  \tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_server|vs  [enabled|disabled]\tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd    [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag [0|1]             \tdisplay or modify the packet aggregation setting\n");
 	printf(" \tbonding|b      [0|1]             \tdisplay or modify the bonding mode setting\n");

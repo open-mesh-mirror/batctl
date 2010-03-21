@@ -47,10 +47,10 @@ void print_usage(void) {
 	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                            \tread the log produced by the kernel module\n");
 	printf(" \tgw_mode|gw     [mode]            \tdisplay or modify the gateway mode\n");
-	printf(" \tgw_srv_list|gwl                  \tdisplay the gateway server list\n");
+	printf(" \tgateways|gwl                     \tdisplay the gateway server list\n");
 	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                   \tdisplay the global translation table\n");
-	printf(" \tvis_server|vs  [enabled|disabled]\tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_mode|vm    [mode]            \tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd    [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag [0|1]             \tdisplay or modify the packet aggregation setting\n");
 	printf(" \tbonding|b      [0|1]             \tdisplay or modify the bonding mode setting\n");
@@ -125,9 +125,9 @@ int main(int argc, char **argv)
 
 		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
 
-	} else if ((strcmp(argv[1], "vis_server") == 0) || (strcmp(argv[1], "vs") == 0)) {
+	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 
-		ret = handle_proc_setting(argc - 1, argv + 1, PROC_VIS_SERVER, vis_server_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_VIS_MODE, vis_mode_usage);
 
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 
@@ -135,11 +135,11 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
-		ret = handle_proc_setting(argc - 1, argv + 1, PROC_GW_MODE, gw_mode_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_GW_MODE, gw_mode_usage);
 
-	} else if ((strcmp(argv[1], "gw_srv_list") == 0) || (strcmp(argv[1], "gwl") == 0)) {
+	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
 
-		ret = handle_table(argc - 1, argv + 1, PROC_GW_SRV_LIST, gw_srv_list_usage);
+		ret = handle_sys_table(argc - 1, argv + 1, SYS_GATEWAYS, gateways_usage);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 

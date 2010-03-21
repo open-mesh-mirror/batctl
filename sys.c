@@ -73,7 +73,7 @@ int log_print(int argc, char **argv)
 
 static void log_level_usage(void)
 {
-	printf("Usage: batctl [options] loglevel \n");
+	printf("Usage: batctl [options] loglevel [level]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
@@ -94,7 +94,7 @@ int handle_loglevel(int argc, char **argv)
 	}
 
 	if (argc != 1) {
-		res = write_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, argv[1]);
+		res = write_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, argv[1], NULL);
 		goto out;
 	}
 
@@ -146,6 +146,15 @@ void trans_global_usage(void)
 	printf(" \t -w watch mode - refresh the global translation table continuously\n");
 }
 
+void gateways_usage(void)
+{
+	printf("Usage: batctl [options] gateways \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w watch mode - refresh the gateway server list continuously\n");
+}
+
 int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void))
 {
 	int optchar, read_opt = USE_BAT_HOSTS;
@@ -172,14 +181,28 @@ int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(vo
 
 void aggregation_usage(void)
 {
-	printf("Usage: batctl [options] aggregation \n");
+	printf("Usage: batctl [options] aggregation [0|1]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
 
 void bonding_usage(void)
 {
-	printf("Usage: batctl [options] bonding \n");
+	printf("Usage: batctl [options] bonding [0|1]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void gw_mode_usage(void)
+{
+	printf("Usage: batctl [options] gw_mode [mode]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void vis_mode_usage(void)
+{
+	printf("Usage: batctl [options] vis_mode [mode]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
@@ -240,5 +263,5 @@ next:
 	return EXIT_FAILURE;
 
 write_file:
-	return write_file(SYS_BATIF_PATH, file_path, argv[1]);
+	return write_file(SYS_BATIF_PATH, file_path, argv[1], argc > 2 ? argv[2] : NULL);
 }

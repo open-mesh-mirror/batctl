@@ -22,16 +22,9 @@
 #define PROC_ROOT_PATH "/proc/net/batman-adv/"
 #define PROC_INTERFACES "interfaces"
 #define PROC_ORIG_INTERVAL "orig_interval"
-#define PROC_VIS_SERVER "vis_server"
-#define PROC_VIS_DATA "vis_data"
-#define PROC_GW_MODE "gateway_mode"
-#define PROC_GW_SRV_LIST "gateway_srv_list"
 
 int interface(int argc, char **argv);
 
 void orig_interval_usage(void);
-void vis_server_usage(void);
-void gw_mode_usage(void);
-void gw_srv_list_usage(void);
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
 int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void));

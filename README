@@ -339,7 +339,7 @@ batctl vis_server
 
 display or modify the status of the VIS server
 
-Usage: batctl vis_server|vs  [enable|disable]
+Usage: batctl vis_server|vs  [enabled|disabled]
 
 Example:
 

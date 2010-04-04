@@ -67,7 +67,7 @@ static void dot_print_tq(char *orig, char *from, const long tq)
 
 	printf("\t\"%s\" -> ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("\"%s\" [label=\"%d.%d\"]\n",
+	printf("\"%s\" [label=\"%d.%03d\"]\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)),
 	       int_part, frac_part);
 }
@@ -125,7 +125,7 @@ static void json_print_tq(char *orig, char *from, const long tq)
 
 	printf("\t{ router : \"%s\", ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("neighbor : \"%s\", label : \"%d.%d\" }\n",
+	printf("neighbor : \"%s\", label : \"%d.%03d\" }\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)),
 	       int_part, frac_part);
 }

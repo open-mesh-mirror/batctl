@@ -53,10 +53,8 @@ protocol.
 .br
 .TP
 .I \fBcommands:
-.IP "\fBinterface\fP|\fBif\fP     [\fBnone\fP|\fBinterface\fP]"
-If no parameter is given the current interface settings are displayed
-otherwise the parameter(s) are added as new interfaces. Use the "none"
-keyword to deactivate all interfaces.
+.IP "\fBinterface\fP|\fBif\fP     [\fBadd\fP|\fBdel iface(s)\fP]"
+If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed. In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to add or delete.
 .br
 .IP "\fBoriginators\fP|\fBo\fP    [\fB\-b\fP][\fB\-n\fP]"
 Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.

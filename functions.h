@@ -48,4 +48,5 @@ enum {
 	LOG_MODE = 0x08,
 	USE_READ_BUFF = 0x10,
 	SEARCH_ARGS = 0x20,
+	SILENCE_ERRORS = 0x40,
 };

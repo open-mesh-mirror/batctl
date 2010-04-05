@@ -34,6 +34,9 @@
 #define SYS_VIS_MODE "vis_mode"
 #define SYS_VIS_DATA "vis_data"
 #define SYS_ORIG_INTERVAL "orig_interval"
+#define SYS_IFACE_PATH "/sys/class/net"
+#define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+#define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 
 void originators_usage(void);
 void trans_local_usage(void);
@@ -45,6 +48,7 @@ void gateways_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
 int log_print(int argc, char **argv);
+int interface(int argc, char **argv);
 int handle_loglevel(int argc, char **argv);
 int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void));
 int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void));

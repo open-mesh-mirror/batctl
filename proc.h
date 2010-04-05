@@ -21,10 +21,8 @@
 
 #define PROC_ROOT_PATH "/proc/net/batman-adv/"
 #define PROC_INTERFACES "interfaces"
-#define PROC_ORIG_INTERVAL "orig_interval"
 
 int interface(int argc, char **argv);
 
-void orig_interval_usage(void);
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
 int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void));

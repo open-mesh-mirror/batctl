@@ -207,6 +207,13 @@ void vis_mode_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void orig_interval_usage(void)
+{
+	printf("Usage: batctl [options] interval \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
 int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
 {
 	int optchar, res;

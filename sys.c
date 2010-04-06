@@ -340,6 +340,7 @@ void orig_interval_usage(void)
 int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
 {
 	int optchar, res;
+	char space_char;
 	char *space_ptr, *comma_char, *cmds = NULL;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
@@ -360,15 +361,19 @@ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usag
 	if (res != EXIT_SUCCESS)
 		return res;
 
-	while ((space_ptr = strchr(line_ptr, ' ')) != NULL) {
+	while ((space_ptr = strchr_anyof(line_ptr, " \n")) != NULL) {
+		space_char = *space_ptr;
 		*space_ptr = '\0';
+		comma_char = NULL;
 
 		if (strncmp(line_ptr, SEARCH_ARGS_TAG, strlen(SEARCH_ARGS_TAG)) == 0) {
 			cmds = space_ptr + 1;
 			goto next;
 		}
 
-		comma_char = NULL;
+		if (strlen(line_ptr) == 0)
+			goto next;
+
 		if (line_ptr[strlen(line_ptr) - 1] == ',') {
 			comma_char = line_ptr + strlen(line_ptr) - 1;
 			*comma_char = '\0';
@@ -377,11 +382,11 @@ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usag
 		if (strcmp(line_ptr, argv[1]) == 0)
 			goto write_file;
 
-		*space_ptr = ' ';
+next:
+		*space_ptr = space_char;
 		if (comma_char)
 			*comma_char = ',';
 
-next:
 		line_ptr = space_ptr + 1;
 	}
 

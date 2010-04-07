@@ -43,7 +43,7 @@ void print_usage(void) {
 	printf("commands:\n");
 	printf(" \tinterface|if   [none|interface]  \tdisplay or modify the interface settings\n");
 	printf(" \toriginators|o                    \tdisplay the originator table\n");
-	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval in ms\n");
+	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
 	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                            \tread the log produced by the kernel module\n");
 	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
 
-		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_ORIG_INTERVAL, orig_interval_usage);
 
 	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 

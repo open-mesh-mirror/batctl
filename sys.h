@@ -30,12 +30,14 @@
 #define SYS_AGGR "aggregate_ogm"
 #define SYS_VIS_MODE "vis_mode"
 #define SYS_VIS_DATA "vis_data"
+#define SYS_ORIG_INTERVAL "orig_interval"
 
 void originators_usage(void);
 void trans_local_usage(void);
 void trans_global_usage(void);
 void aggregation_usage(void);
 void vis_mode_usage(void);
+void orig_interval_usage(void);
 int log_print(int argc, char **argv);
 int handle_loglevel(int argc, char **argv);
 int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void));

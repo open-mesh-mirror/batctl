@@ -68,13 +68,6 @@ int interface(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-void orig_interval_usage(void)
-{
-	printf("Usage: batctl [options] interval \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void))
 {
 	int optchar, read_opt = USE_BAT_HOSTS;

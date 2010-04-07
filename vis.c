@@ -31,7 +31,7 @@
 #include "vis.h"
 #include "functions.h"
 #include "bat-hosts.h"
-#include "proc.h"
+#include "sys.h"
 
 #define TQ_MAX_VALUE 255
 
@@ -170,9 +170,9 @@ static FILE *open_vis(void)
 	if (check_proc_dir("/proc") != EXIT_SUCCESS)
 		return NULL;
 
-	strncpy(full_path, PROC_ROOT_PATH, strlen(PROC_ROOT_PATH));
-	full_path[strlen(PROC_ROOT_PATH)] = '\0';
-	strncat(full_path, PROC_VIS_DATA,
+	strncpy(full_path, SYS_BATIF_PATH, strlen(SYS_BATIF_PATH));
+	full_path[strlen(SYS_BATIF_PATH)] = '\0';
+	strncat(full_path, SYS_VIS_DATA,
 		sizeof(full_path) - strlen(full_path));
 
 	return fopen(full_path, "r");

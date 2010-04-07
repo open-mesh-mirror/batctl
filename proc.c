@@ -57,9 +57,9 @@ int interface(int argc, char **argv)
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "none") == 0)
-			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, "");
+			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, "", NULL);
 		else
-			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, argv[i]);
+			res = write_file(PROC_ROOT_PATH, PROC_INTERFACES, argv[i], NULL);
 
 		if (res != EXIT_SUCCESS)
 			return res;
@@ -71,13 +71,6 @@ int interface(int argc, char **argv)
 void orig_interval_usage(void)
 {
 	printf("Usage: batctl [options] interval \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void vis_server_usage(void)
-{
-	printf("Usage: batctl [options] vis_server \n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
@@ -124,5 +117,5 @@ int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usa
 	if (argc == 1)
 		return read_file(PROC_ROOT_PATH, file_path, SINGLE_READ);
 
-	return write_file(PROC_ROOT_PATH, file_path, argv[1]);
+	return write_file(PROC_ROOT_PATH, file_path, argv[1], NULL);
 }

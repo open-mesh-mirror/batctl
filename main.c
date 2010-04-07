@@ -41,16 +41,16 @@
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
 	printf("commands:\n");
-	printf(" \tinterface|if  [none|interface]  \tdisplay or modify the interface settings\n");
-	printf(" \toriginators|o                   \tdisplay the originator table\n");
-	printf(" \tinterval|it   [orig_interval]   \tdisplay or modify the originator interval in ms\n");
-	printf(" \tloglevel|ll   [level]           \tdisplay or modify the log level\n");
-	printf(" \tlog|l                           \tread the log produced by the kernel module\n");
-	printf(" \ttranslocal|tl                   \tdisplay the local translation table\n");
-	printf(" \ttransglobal|tg                  \tdisplay the global translation table\n");
-	printf(" \tvis_server|vs [enabled|disabled]\tdisplay or modify the status of the VIS server\n");
-	printf(" \tvis_data|vd [dot|JSON]          \tdisplay the VIS data in dot or JSON format\n");
-	printf(" \taggregation|ag   [0|1]          \tdisplay or modify the packet aggregation setting\n");
+	printf(" \tinterface|if   [none|interface]  \tdisplay or modify the interface settings\n");
+	printf(" \toriginators|o                    \tdisplay the originator table\n");
+	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval in ms\n");
+	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");
+	printf(" \tlog|l                            \tread the log produced by the kernel module\n");
+	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
+	printf(" \ttransglobal|tg                   \tdisplay the global translation table\n");
+	printf(" \tvis_mode|vm    [mode]            \tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_data|vd    [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
+	printf(" \taggregation|ag [0|1]             \tdisplay or modify the packet aggregation setting\n");
 	printf("\n");
 	printf(" \tping|p        <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr <destination>     \ttraceroute another batman adv host via layer 2\n");
@@ -122,9 +122,9 @@ int main(int argc, char **argv)
 
 		ret = handle_proc_setting(argc - 1, argv + 1, PROC_ORIG_INTERVAL, orig_interval_usage);
 
-	} else if ((strcmp(argv[1], "vis_server") == 0) || (strcmp(argv[1], "vs") == 0)) {
+	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 
-		ret = handle_proc_setting(argc - 1, argv + 1, PROC_VIS_SERVER, vis_server_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_VIS_MODE, vis_mode_usage);
 
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 

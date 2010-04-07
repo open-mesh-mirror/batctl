@@ -268,7 +268,7 @@ out:
 	return res;
 }
 
-int write_file(char *dir, char *fname, char *value)
+int write_file(char *dir, char *fname, char *arg1, char *arg2)
 {
 	int fd = 0, res = EXIT_FAILURE;
 	char full_path[500];
@@ -293,7 +293,10 @@ int write_file(char *dir, char *fname, char *value)
 		goto out;
 	}
 
-	write_len = write(fd, value, strlen(value) + 1);
+	if (arg2)
+		write_len = dprintf(fd, "%s %s", arg1, arg2);
+	else
+		write_len = write(fd, arg1, strlen(arg1) + 1);
 
 	if (write_len < 0) {
 		printf("Error - can't write to file '%s': %s\n", full_path, strerror(errno));

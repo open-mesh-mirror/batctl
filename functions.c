@@ -311,3 +311,21 @@ out:
 		close(fd);
 	return res;
 }
+
+char *strchr_anyof(const char *s, const char *n)
+{
+	char *cur, *first = NULL;
+	size_t i, len;
+
+	if (s == NULL || n == NULL)
+		return first;
+
+	len = strlen(n);
+	for (i = 0; i < len; i++) {
+		cur = strchr(s, n[i]);
+		if (cur != NULL && (cur < first || first == NULL))
+			first = cur;
+	}
+
+	return first;
+}

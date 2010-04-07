@@ -23,23 +23,13 @@
 
 #define PROC_ROOT_PATH "/proc/net/batman-adv/"
 #define PROC_INTERFACES "interfaces"
-#define PROC_ORIGINATORS "originators"
 #define PROC_ORIG_INTERVAL "orig_interval"
-#define PROC_GATEWAYS "gateways"
-#define PROC_TRANSTABLE_LOCAL "transtable_local"
-#define PROC_TRANSTABLE_GLOBAL "transtable_global"
 #define PROC_VIS_SERVER "vis_server"
 #define PROC_VIS_DATA "vis_data"
-#define PROC_AGGR "aggregate_ogm"
-
 
 int interface(int argc, char **argv);
 
-void originators_usage(void);
-void trans_local_usage(void);
-void trans_global_usage(void);
 void orig_interval_usage(void);
 void vis_server_usage(void);
-void aggregation_usage(void);
 int handle_table(int argc, char **argv, char *file_path, void table_usage(void));
 int handle_proc_setting(int argc, char **argv, char *file_path, void setting_usage(void));

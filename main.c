@@ -29,7 +29,6 @@
 #include <string.h>
 
 #include "main.h"
-#include "proc.h"
 #include "sys.h"
 #include "ping.h"
 #include "traceroute.h"
@@ -41,7 +40,7 @@
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
 	printf("commands:\n");
-	printf(" \tinterface|if   [none|interface]  \tdisplay or modify the interface settings\n");
+	printf(" \tinterface|if   [add|del iface(s)]\tdisplay or modify the interface settings\n");
 	printf(" \toriginators|o                    \tdisplay the originator table\n");
 	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
 	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");

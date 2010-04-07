@@ -164,7 +164,8 @@ open:
 	fp = fopen(full_path, "r");
 
 	if (!fp) {
-		printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
+		if (!(read_opt & SILENCE_ERRORS))
+			printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
 		goto out;
 	}
 

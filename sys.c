@@ -25,11 +25,134 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "main.h"
 #include "sys.h"
 #include "functions.h"
 
+#define PATH_BUFF_LEN 200
+
+static void interface_usage(void)
+{
+	printf("Usage: batctl interface [options] [add|del iface(s)] \n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+static int print_interfaces(void)
+{
+	DIR *iface_base_dir;
+	struct dirent *iface_dir;
+	char *path_buff;
+	int res;
+
+	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		printf("Error - could not allocate path buffer: out of memory ?\n");
+		goto err;
+	}
+
+	iface_base_dir = opendir(SYS_IFACE_PATH);
+	if (!iface_base_dir) {
+		printf("Error - the directory '%s' could not be read: %s\n",
+		       SYS_IFACE_PATH, strerror(errno));
+		printf("Is the batman-adv module loaded and sysfs mounted ?\n");
+		goto err_buff;
+	}
+
+	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
+		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS);
+		if (res != EXIT_SUCCESS)
+			continue;
+
+		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+			line_ptr[strlen(line_ptr) - 1] = '\0';
+
+		if (strcmp(line_ptr, "status: none") == 0)
+			goto free_line;
+
+		free(line_ptr);
+		line_ptr = NULL;
+
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
+		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS);
+		if (res != EXIT_SUCCESS) {
+			printf("<error reading status>\n");
+			continue;
+		}
+
+		printf("%s: %s", iface_dir->d_name, line_ptr);
+
+free_line:
+		free(line_ptr);
+		line_ptr = NULL;
+	}
+
+	free(path_buff);
+	closedir(iface_base_dir);
+	return EXIT_SUCCESS;
+
+err_buff:
+	free(path_buff);
+err:
+	return EXIT_FAILURE;
+}
+
+int interface(int argc, char **argv)
+{
+	char *path_buff;
+	int i, res, optchar;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			interface_usage();
+			return EXIT_SUCCESS;
+		default:
+			interface_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (argc == 1)
+		return print_interfaces();
+
+	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
+	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
+		printf("Error - unknown argument specified: %s\n", argv[1]);
+		interface_usage();
+		goto err;
+	}
+
+	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		printf("Error - could not allocate path buffer: out of memory ?\n");
+		goto err;
+	}
+
+	for (i = 2; i < argc; i++) {
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
+
+		if (argv[1][0] == 'a')
+			res = write_file("", path_buff, "bat0", NULL);
+		else
+			res = write_file("", path_buff, "none", NULL);
+
+		if (res != EXIT_SUCCESS)
+			goto err_buff;
+	}
+
+	free(path_buff);
+	return EXIT_SUCCESS;
+
+err_buff:
+	free(path_buff);
+err:
+	return EXIT_FAILURE;
+}
 
 static void log_usage(void)
 {

@@ -376,9 +376,9 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	printf("BCAST, orig %s, seqno %hu, ",
+	printf("BCAST, orig %s, seqno %u, ",
 	       get_name_by_macaddr((struct ether_addr *)bcast_packet->orig, read_opt),
-	       ntohs(bcast_packet->seqno));
+	       ntohl(bcast_packet->seqno));
 
 	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct bcast_packet));
 

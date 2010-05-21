@@ -26,7 +26,6 @@
 
 #define ETH_STR_LEN 17
 #define BATMAN_ADV_TAG "batman-adv:"
-#define SEARCH_ARGS_TAG "commands:"
 
 /* return time delta from start to end in milliseconds */
 void start_timer(void);
@@ -48,6 +47,5 @@ enum {
 	USE_BAT_HOSTS = 0x04,
 	LOG_MODE = 0x08,
 	USE_READ_BUFF = 0x10,
-	SEARCH_ARGS = 0x20,
-	SILENCE_ERRORS = 0x40,
+	SILENCE_ERRORS = 0x20,
 };

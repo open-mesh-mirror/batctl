@@ -34,6 +34,21 @@
 
 #define PATH_BUFF_LEN 200
 
+const char *sysfs_param_enable[] = {
+	"enable",
+	"disable",
+	"1",
+	"0",
+	0,
+};
+
+const char *sysfs_param_server[] = {
+	"off",
+	"client",
+	"server",
+	0,
+};
+
 static void interface_usage(void)
 {
 	printf("Usage: batctl interface [options] [add|del iface(s)] \n");
@@ -263,11 +278,12 @@ void orig_interval_usage(void)
 	printf(" \t -h print this help\n");
 }
 
-int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void))
+int handle_sys_setting(int argc, char **argv,
+		       char *file_path, void setting_usage(void),
+		       const char *sysfs_param[])
 {
-	int optchar, res;
-	char space_char;
-	char *space_ptr, *comma_char, *cmds = NULL;
+	int optchar;
+	const char **ptr;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -283,44 +299,26 @@ int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usag
 	if (argc == 1)
 		return read_file(SYS_BATIF_PATH, file_path, SINGLE_READ);
 
-	res = read_file(SYS_BATIF_PATH, file_path, SEARCH_ARGS);
-	if (res != EXIT_SUCCESS)
-		return res;
-
-	while ((space_ptr = strchr_anyof(line_ptr, " \n")) != NULL) {
-		space_char = *space_ptr;
-		*space_ptr = '\0';
-		comma_char = NULL;
-
-		if (strncmp(line_ptr, SEARCH_ARGS_TAG, strlen(SEARCH_ARGS_TAG)) == 0) {
-			cmds = space_ptr + 1;
-			goto next;
-		}
-
-		if (strlen(line_ptr) == 0)
-			goto next;
-
-		if (line_ptr[strlen(line_ptr) - 1] == ',') {
-			comma_char = line_ptr + strlen(line_ptr) - 1;
-			*comma_char = '\0';
-		}
-
-		if (strcmp(line_ptr, argv[1]) == 0)
-			goto write_file;
-
-next:
-		*space_ptr = space_char;
-		if (comma_char)
-			*comma_char = ',';
-
-		line_ptr = space_ptr + 1;
-	}
-
-	if (!cmds)
+	if (!sysfs_param)
 		goto write_file;
 
+	ptr = sysfs_param;
+	while (*ptr) {
+		if (strcmp(*ptr, argv[1]) == 0)
+			goto write_file;
+
+		ptr++;
+	}
+
 	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
-	printf("The following values are allowed: %s", cmds);
+	printf("The following values are allowed:\n");
+
+	ptr = sysfs_param;
+	while (*ptr) {
+		printf(" * %s\n", *ptr);
+		ptr++;
+	}
+
 	return EXIT_FAILURE;
 
 write_file:

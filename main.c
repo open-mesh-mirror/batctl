@@ -120,11 +120,11 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_ORIG_INTERVAL, orig_interval_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_ORIG_INTERVAL, orig_interval_usage, NULL);
 
 	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_VIS_MODE, vis_mode_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_VIS_MODE, vis_mode_usage, sysfs_param_server);
 
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_AGGR, aggregation_usage);
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_AGGR, aggregation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 

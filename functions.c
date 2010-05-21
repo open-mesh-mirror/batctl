@@ -174,14 +174,6 @@ open:
 
 read:
 	while ((read = getline(&line_ptr, &len, fp)) != -1) {
-		if (read_opt & SEARCH_ARGS) {
-			/* omit log lines which don't start with the correct tag */
-			if (strncmp(line_ptr, SEARCH_ARGS_TAG, strlen(SEARCH_ARGS_TAG)) == 0)
-				break;
-
-			continue;
-		}
-
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;

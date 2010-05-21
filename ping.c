@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <string.h>
+#include <math.h>
 
 #include "main.h"
 #include "ping.h"
@@ -76,7 +77,7 @@ int ping(int argc, char **argv)
 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
 	char *dst_string, *mac_string, *rr_string;
 	double time_delta;
-	float min = 0.0, max = 0.0, avg = 0.0;
+	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
 	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
 	size_t packet_len;
 
@@ -260,6 +261,7 @@ int ping(int argc, char **argv)
 			if (time_delta > max)
 				max = time_delta;
 			avg += time_delta;
+			mdev += time_delta * time_delta;
 			packets_in++;
 			break;
 		case DESTINATION_UNREACHABLE:
@@ -289,11 +291,24 @@ sleep:
 	else
 		packets_loss = ((packets_out - packets_in) * 100) / packets_out;
 
+	if (packets_in) {
+		avg /= packets_in;
+		mdev /= packets_in;
+		mdev = mdev - avg * avg;
+		if (mdev > 0.0)
+			mdev = sqrt(mdev);
+		else
+			mdev = 0.0;
+	} else {
+		avg = 0.0;
+		mdev = 0.0;
+	}
+
 	printf("--- %s ping statistics ---\n", dst_string);
 	printf("%u packets transmitted, %u received, %u%% packet loss\n",
 		packets_out, packets_in, packets_loss);
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
-		min, (packets_in ? (avg / packets_in) : 0.000), max, (max - min));
+		min, avg, max, mdev);
 
 	ret = EXIT_SUCCESS;
 

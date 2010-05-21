@@ -31,7 +31,8 @@
 #include "vis.h"
 #include "functions.h"
 #include "bat-hosts.h"
-#include "sys.h"
+#include "debug.h"
+#include "debugfs.h"
 
 #define TQ_MAX_VALUE 255
 
@@ -57,9 +58,9 @@ static bool with_names = true;
 
 static void usage(void)
 {
-	printf("batctl vis dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis_data dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
 	printf("or\n");
-	printf("batctl vis json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis_data json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
 }
 
 static void dot_print_tq(char *orig, char *from, const long tq)
@@ -165,15 +166,16 @@ const struct funcs json_funcs = { json_print_tq,
 
 static FILE *open_vis(void)
 {
-	char full_path[500];
+	char full_path[MAX_PATH+1];
+	char *debugfs_mnt;
 
-	if (check_proc_dir("/proc") != EXIT_SUCCESS)
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt) {
+		printf("Error - can't mount or find debugfs\n");
 		return NULL;
+	}
 
-	strncpy(full_path, SYS_BATIF_PATH, strlen(SYS_BATIF_PATH));
-	full_path[strlen(SYS_BATIF_PATH)] = '\0';
-	strncat(full_path, SYS_VIS_DATA,
-		sizeof(full_path) - strlen(full_path));
+	debugfs_make_path(DEBUG_BATIF_PATH "/" DEBUG_VIS_DATA, full_path, sizeof(full_path));
 
 	return fopen(full_path, "r");
 }

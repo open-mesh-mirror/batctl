@@ -20,21 +20,13 @@
  */
 
 
-#define SYS_MODULE_PATH "/sys/module/batman_adv/"
-#define SYS_BATIF_PATH "/sys/class/net/bat0/mesh/"
-#define SYS_LOG_LEVEL "parameters/debug"
-#define SYS_LOG "log"
-#define SYS_AGGR "aggregate_ogm"
-#define SYS_VIS_MODE "vis_mode"
-#define SYS_ORIG_INTERVAL "orig_interval"
-#define SYS_IFACE_PATH "/sys/class/net"
-#define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
-#define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+#define DEBUG_BATIF_PATH "batman_adv/bat0"
+#define DEBUG_ORIGINATORS "originators"
+#define DEBUG_TRANSTABLE_LOCAL "transtable_local"
+#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+#define DEBUG_VIS_DATA "vis_data"
 
-void aggregation_usage(void);
-void vis_mode_usage(void);
-void orig_interval_usage(void);
-int log_print(int argc, char **argv);
-int interface(int argc, char **argv);
-int handle_loglevel(int argc, char **argv);
-int handle_sys_setting(int argc, char **argv, char *file_path, void setting_usage(void));
+void originators_usage(void);
+void trans_local_usage(void);
+void trans_global_usage(void);
+int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(void));

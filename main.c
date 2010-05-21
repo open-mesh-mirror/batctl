@@ -30,6 +30,7 @@
 
 #include "main.h"
 #include "sys.h"
+#include "debug.h"
 #include "ping.h"
 #include "traceroute.h"
 #include "tcpdump.h"
@@ -99,15 +100,15 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "originators") == 0) || (strcmp(argv[1], "o") == 0)) {
 
-		ret = handle_sys_table(argc - 1, argv + 1, SYS_ORIGINATORS, originators_usage);
+		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_ORIGINATORS, originators_usage);
 
 	} else if ((strcmp(argv[1], "translocal") == 0) || (strcmp(argv[1], "tl") == 0)) {
 
-		ret = handle_sys_table(argc - 1, argv + 1, SYS_TRANSTABLE_LOCAL, trans_local_usage);
+		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_LOCAL, trans_local_usage);
 
 	} else if ((strcmp(argv[1], "transglobal") == 0) || (strcmp(argv[1], "tg") == 0)) {
 
-		ret = handle_sys_table(argc - 1, argv + 1, SYS_TRANSTABLE_GLOBAL, trans_global_usage);
+		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 

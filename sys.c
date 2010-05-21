@@ -242,57 +242,6 @@ out:
 	return res;
 }
 
-void originators_usage(void)
-{
-	printf("Usage: batctl [options] originators \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the originator table continuously\n");
-}
-
-void trans_local_usage(void)
-{
-	printf("Usage: batctl [options] translocal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the local translation table continuously\n");
-}
-
-void trans_global_usage(void)
-{
-	printf("Usage: batctl [options] transglobal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - refresh the global translation table continuously\n");
-}
-
-int handle_sys_table(int argc, char **argv, char *file_path, void table_usage(void))
-{
-	int optchar, read_opt = USE_BAT_HOSTS;
-
-	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
-		switch (optchar) {
-		case 'h':
-			table_usage();
-			return EXIT_SUCCESS;
-		case 'n':
-			read_opt &= ~USE_BAT_HOSTS;
-			break;
-		case 'w':
-			read_opt |= CLR_CONT_READ;
-			break;
-		default:
-			table_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	return read_file(SYS_BATIF_PATH, file_path, read_opt);
-}
-
 void aggregation_usage(void)
 {
 	printf("Usage: batctl [options] aggregation [0|1]\n");

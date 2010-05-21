@@ -36,6 +36,7 @@
 #include "functions.h"
 #include "packet.h"
 #include "bat-hosts.h"
+#include "debugfs.h"
 
 
 char is_aborted = 0;
@@ -77,6 +78,8 @@ int ping(int argc, char **argv)
 	char *dst_string, *mac_string;
 	double time_delta;
 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
+	char *debugfs_mnt;
+	char icmp_socket[MAX_PATH+1];
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:")) != -1) {
 		switch (optchar) {
@@ -133,11 +136,19 @@ int ping(int argc, char **argv)
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
 
-	ping_fd = open(BAT_DEVICE, O_RDWR);
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt) {
+		printf("Error - can't mount or find debugfs\n");
+		goto out;
+	}
+
+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
+
+	ping_fd = open(icmp_socket, O_RDWR);
 
 	if (ping_fd < 0) {
-		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
-				BAT_DEVICE, strerror(errno));
+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
+				icmp_socket, strerror(errno));
 		printf("Check whether the module is loaded and active.\n");
 		goto out;
 	}
@@ -162,7 +173,7 @@ int ping(int argc, char **argv)
 		icmp_packet_out.seqno = htons(++seq_counter);
 
 		if (write(ping_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
-			printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
+			printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 			goto sleep;
 		}
 
@@ -192,7 +203,7 @@ int ping(int argc, char **argv)
 		read_len = read(ping_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
 
 		if (read_len < 0) {
-			printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
+			printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 			goto sleep;
 		}
 

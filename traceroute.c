@@ -34,6 +34,7 @@
 #include "functions.h"
 #include "packet.h"
 #include "bat-hosts.h"
+#include "debugfs.h"
 
 
 #define TTL_MAX 50
@@ -59,6 +60,8 @@ int traceroute(int argc, char **argv)
 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta;
+	char *debugfs_mnt;
+	char icmp_socket[MAX_PATH+1];
 
 	while ((optchar = getopt(argc, argv, "hn")) != -1) {
 		switch (optchar) {
@@ -99,11 +102,19 @@ int traceroute(int argc, char **argv)
 
 	mac_string = ether_ntoa_long(dst_mac);
 
-	trace_fd = open(BAT_DEVICE, O_RDWR);
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt) {
+		printf("Error - can't mount or find debugfs\n");
+		goto out;
+	}
+
+	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
+
+	trace_fd = open(icmp_socket, O_RDWR);
 
 	if (trace_fd < 0) {
-		printf("Error - can't open a connection to the batman adv kernel module via the device '%s': %s\n",
-				BAT_DEVICE, strerror(errno));
+		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
+				icmp_socket, strerror(errno));
 		printf("Check whether the module is loaded and active.\n");
 		goto out;
 	}
@@ -123,7 +134,7 @@ int traceroute(int argc, char **argv)
 			icmp_packet_out.seqno = htons(++seq_counter);
 
 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
-				printf("Error - can't write to batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
+				printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 				continue;
 			}
 
@@ -149,7 +160,7 @@ int traceroute(int argc, char **argv)
 			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
 
 			if (read_len < 0) {
-				printf("Error - can't read from batman adv kernel file '%s': %s\n", BAT_DEVICE, strerror(errno));
+				printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 				continue;
 			}
 

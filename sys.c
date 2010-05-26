@@ -86,7 +86,7 @@ static int print_interfaces(void)
 		if (line_ptr[strlen(line_ptr) - 1] == '\n')
 			line_ptr[strlen(line_ptr) - 1] = '\0';
 
-		if (strcmp(line_ptr, "status: none") == 0)
+		if (strcmp(line_ptr, "none") == 0)
 			goto free_line;
 
 		free(line_ptr);

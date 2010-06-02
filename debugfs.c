@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <linux/magic.h>
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -117,7 +117,7 @@ int check_proc_dir(char *dir)
 	return EXIT_FAILURE;
 }
 
-static int check_sys_dir(char *dir)
+int check_sys_dir(char *dir)
 {
 	struct stat st;
 

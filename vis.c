@@ -167,7 +167,7 @@ static FILE *open_vis(void)
 {
 	char full_path[500];
 
-	if (check_proc_dir("/proc") != EXIT_SUCCESS)
+	if (check_sys_dir("/sys") != EXIT_SUCCESS)
 		return NULL;
 
 	strncpy(full_path, SYS_BATIF_PATH, strlen(SYS_BATIF_PATH));

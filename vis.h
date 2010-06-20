@@ -1,4 +1,6 @@
-/* Copyright (C) 2009 B.A.T.M.A.N. contributors:
+/* 
+ * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
+ *
  * Andrew Lunn <andrew@lunn.ch>
  *
  * This program is free software; you can redistribute it and/or

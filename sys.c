@@ -39,14 +39,14 @@ const char *sysfs_param_enable[] = {
 	"disable",
 	"1",
 	"0",
-	0,
+	NULL,
 };
 
 const char *sysfs_param_server[] = {
 	"off",
 	"client",
 	"server",
-	0,
+	NULL,
 };
 
 static void interface_usage(void)

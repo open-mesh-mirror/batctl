@@ -38,7 +38,7 @@ static char debugfs_mountpoint[MAX_PATH+1];
 static const char *debugfs_known_mountpoints[] = {
 	"/sys/kernel/debug/",
 	"/debug/",
-	0,
+	NULL,
 };
 
 /* use this to force a umount */

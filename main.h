@@ -21,6 +21,6 @@
 
 
 
-#define SOURCE_VERSION "0.3.0-alpha"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
+#define SOURCE_VERSION "devel"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 
 #define SOCKET_PATH "batman_adv/bat0/socket"

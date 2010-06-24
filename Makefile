@@ -47,23 +47,27 @@ PACKAGE_NAME = batctl
 BINARY_NAME = batctl
 SOURCE_VERSION_HEADER = main.h
 
-REVISION = $(shell if [ -d .svn ]; then \
-					if which svn > /dev/null; then \
-						svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'; \
-					else \
-						echo "[unknown]"; \
-					fi ; \
+REVISION= $(shell	if [ -d .svn ]; then \
+				if which svn > /dev/null; then \
+					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
 				else \
-					if [ -d ~/.svk ]; then \
-						if which svk > /dev/null; then \
-							echo $$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
-						else \
-							echo "[unknown]"; \
-						fi; \
-					fi; \
-				fi)
+					echo "[unknown]"; \
+				fi; \
+			elif [ -d .git ]; then \
+				if which git > /dev/null; then \
+					echo $$(git describe --always --dirty 2> /dev/null); \
+				else \
+					echo "[unknown]"; \
+				fi; \
+			elif [ -d ~/.svk ]; then \
+				if which svk > /dev/null; then \
+					echo rv$$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
+				else \
+					echo "[unknown]"; \
+				fi; \
+			fi)
 
-REVISION_VERSION =\"\ rv$(REVISION)\"
+REVISION_VERSION =\"\ $(REVISION)\"
 
 BAT_VERSION = $(shell grep "^\#define SOURCE_VERSION " $(SOURCE_VERSION_HEADER) | sed -e '1p' -n | awk -F '"' '{print $$2}' | awk '{print $$1}')
 FILE_NAME = $(PACKAGE_NAME)_$(BAT_VERSION)-rv$(REVISION)_$@

@@ -169,46 +169,6 @@ err:
 	return EXIT_FAILURE;
 }
 
-static void log_usage(void)
-{
-	printf("Usage: batctl [options] log [logfile]\n");
-	printf("Note: if no logfile was specified stdin is read");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w watch mode - read the log file continuously\n");
-}
-
-int log_print(int argc, char **argv)
-{
-	int optchar, read_opt = USE_BAT_HOSTS | LOG_MODE;
-	int found_args = 1;
-
-	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
-		switch (optchar) {
-		case 'h':
-			log_usage();
-			return EXIT_SUCCESS;
-		case 'n':
-			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
-			break;
-		case 'w':
-			read_opt |= CONT_READ;
-			found_args += 1;
-			break;
-		default:
-			log_usage();
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (argc > found_args)
-		return read_file("", argv[found_args], read_opt);
-	else
-		return read_file("", "/proc/self/fd/0", read_opt);
-}
-
 static void log_level_usage(void)
 {
 	printf("Usage: batctl [options] loglevel [level]\n");
@@ -232,11 +192,11 @@ int handle_loglevel(int argc, char **argv)
 	}
 
 	if (argc != 1) {
-		res = write_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, argv[1], NULL);
+		res = write_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, argv[1], NULL);
 		goto out;
 	}
 
-	res = read_file(SYS_MODULE_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF);
+	res = read_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF);
 
 	if (res != EXIT_SUCCESS)
 		goto out;

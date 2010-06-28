@@ -20,9 +20,8 @@
  */
 
 
-#define SYS_MODULE_PATH "/sys/module/batman_adv/"
 #define SYS_BATIF_PATH "/sys/class/net/bat0/mesh/"
-#define SYS_LOG_LEVEL "parameters/debug"
+#define SYS_LOG_LEVEL "log_level"
 #define SYS_LOG "log"
 #define SYS_AGGR "aggregated_ogms"
 #define SYS_BONDING "bonding"
@@ -39,7 +38,6 @@ void aggregation_usage(void);
 void bonding_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
-int log_print(int argc, char **argv);
 int interface(int argc, char **argv);
 int handle_loglevel(int argc, char **argv);
 int handle_sys_setting(int argc, char **argv, char *file_path,

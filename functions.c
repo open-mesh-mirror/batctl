@@ -99,24 +99,6 @@ char *get_name_by_macstr(char *mac_str, int read_opt)
 	return get_name_by_macaddr(mac_addr, read_opt);
 }
 
-static int check_proc_dir(char *dir)
-{
-	struct stat st;
-
-	if (stat("/proc/", &st) != 0) {
-		printf("Error - the folder '/proc' was not found on the system\n");
-		printf("Please make sure that the proc filesystem is properly mounted\n");
-		return EXIT_FAILURE;
-	}
-
-	if (stat(dir, &st) == 0)
-		return EXIT_SUCCESS;
-
-	printf("Error - the folder '%s' was not found within the proc filesystem\n", dir);
-	printf("Please make sure that the batman-adv kernel module is loaded\n");
-	return EXIT_FAILURE;
-}
-
 static int check_sys_dir(char *dir)
 {
 	struct stat st;
@@ -148,10 +130,7 @@ int read_file(char *dir, char *fname, int read_opt)
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init();
 
-	if (strstr(dir, "/proc/")) {
-		if (check_proc_dir(dir) != EXIT_SUCCESS)
-			goto out;
-	} else if (strstr(dir, "/sys/")) {
+	if (strstr(dir, "/sys/")) {
 		if (check_sys_dir(dir) != EXIT_SUCCESS)
 			goto out;
 	}
@@ -177,12 +156,6 @@ read:
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
-
-		if (read_opt & LOG_MODE) {
-			/* omit log lines which don't start with the correct tag */
-			if (strncmp(line_ptr, BATMAN_ADV_TAG, strlen(BATMAN_ADV_TAG)) != 0)
-				continue;
-		}
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
 			printf("%s", line_ptr);
@@ -267,10 +240,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 	char full_path[500];
 	ssize_t write_len;
 
-	if (strstr(dir, "/proc/")) {
-		if (check_proc_dir(dir) != EXIT_SUCCESS)
-			goto out;
-	} else if (strstr(dir, "/sys/")) {
+	if (strstr(dir, "/sys/")) {
 		if (check_sys_dir(dir) != EXIT_SUCCESS)
 			goto out;
 	}

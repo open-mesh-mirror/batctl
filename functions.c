@@ -117,7 +117,8 @@ static int check_sys_dir(char *dir)
 	return EXIT_FAILURE;
 }
 
-int read_file(char *dir, char *fname, int read_opt, float orig_timeout)
+int read_file(char *dir, char *fname, int read_opt,
+	      float orig_timeout, float watch_interval)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
@@ -218,14 +219,14 @@ written:
 	}
 
 	if (read_opt & CONT_READ) {
-		sleep(1);
+		usleep(1000000 * watch_interval);
 		goto read;
 	}
 
 	if (read_opt & CLR_CONT_READ) {
 		if (fp)
 			fclose(fp);
-		sleep(1);
+		usleep(1000000 * watch_interval);
 		goto open;
 	}
 

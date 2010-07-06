@@ -117,11 +117,12 @@ static int check_sys_dir(char *dir)
 	return EXIT_FAILURE;
 }
 
-int read_file(char *dir, char *fname, int read_opt)
+int read_file(char *dir, char *fname, int read_opt, float orig_timeout)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
 	int res = EXIT_FAILURE;
+	float last_seen;
 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
 	size_t len = 0;
 	ssize_t read;
@@ -156,6 +157,12 @@ read:
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
+
+		/* skip timed out originators */
+		if (read_opt & NO_OLD_ORIGS)
+			if (sscanf(line_ptr, "%*s %f", &last_seen)
+			    && (last_seen > orig_timeout))
+				continue;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
 			printf("%s", line_ptr);

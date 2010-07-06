@@ -33,7 +33,7 @@ double end_timer(void);
 char *ether_ntoa_long(const struct ether_addr *addr);
 char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
-int read_file(char *dir, char *path, int read_opt);
+int read_file(char *dir, char *path, int read_opt, float orig_timeout);
 int write_file(char *dir, char *fname, char *arg1, char *arg2);
 
 extern char *line_ptr;
@@ -46,4 +46,5 @@ enum {
 	LOG_MODE = 0x08,
 	USE_READ_BUFF = 0x10,
 	SILENCE_ERRORS = 0x20,
+	NO_OLD_ORIGS = 0x40,
 };

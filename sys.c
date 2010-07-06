@@ -79,7 +79,7 @@ static int print_interfaces(void)
 
 	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS);
+		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS, 0);
 		if (res != EXIT_SUCCESS)
 			continue;
 
@@ -93,7 +93,7 @@ static int print_interfaces(void)
 		line_ptr = NULL;
 
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS);
+		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS, 0);
 		if (res != EXIT_SUCCESS) {
 			printf("<error reading status>\n");
 			continue;
@@ -196,7 +196,7 @@ int handle_loglevel(int argc, char **argv)
 		goto out;
 	}
 
-	res = read_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF);
+	res = read_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF, 0);
 
 	if (res != EXIT_SUCCESS)
 		goto out;
@@ -264,7 +264,7 @@ int handle_sys_setting(int argc, char **argv,
 	}
 
 	if (argc == 1)
-		return read_file(SYS_BATIF_PATH, file_path, SINGLE_READ);
+		return read_file(SYS_BATIF_PATH, file_path, SINGLE_READ, 0);
 
 	if (!sysfs_param)
 		goto write_file;

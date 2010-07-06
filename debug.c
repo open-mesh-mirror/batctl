@@ -40,6 +40,7 @@ void originators_usage(void)
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
 	printf(" \t -w watch mode - refresh the originator table continuously\n");
+	printf(" \t -t timeout interval - don't print originators not seen for x.y seconds \n");
 }
 
 void trans_local_usage(void)
@@ -65,8 +66,9 @@ int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(
 	int optchar, read_opt = USE_BAT_HOSTS;
 	char full_path[MAX_PATH+1];
 	char *debugfs_mnt;
+	float orig_timeout;
 
-	while ((optchar = getopt(argc, argv, "hnw")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnwt:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			table_usage();
@@ -77,6 +79,21 @@ int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(
 		case 'w':
 			read_opt |= CLR_CONT_READ;
 			break;
+		case 't':
+			if (table_usage != originators_usage) {
+				table_usage();
+				return EXIT_FAILURE;
+			}
+
+			read_opt |= NO_OLD_ORIGS;
+			if (!sscanf(optarg, "%f", &orig_timeout)) {
+				printf("Error - provided argument of -t is not a number\n");
+				return EXIT_FAILURE;
+			}
+			break;
+		case '?':
+			if (optopt == 't' && table_usage == originators_usage)
+				return EXIT_FAILURE;
 		default:
 			table_usage();
 			return EXIT_FAILURE;
@@ -90,7 +107,7 @@ int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(
 	}
 
 	debugfs_make_path(DEBUG_BATIF_PATH "/", full_path, sizeof(full_path));
-	return read_file(full_path, file_path, read_opt);
+	return read_file(full_path, file_path, read_opt, orig_timeout);
 }
 
 static void log_usage(void)
@@ -128,7 +145,7 @@ int log_print(int argc, char **argv)
 	}
 
 	debugfs_make_path(DEBUG_BATIF_PATH "/", full_path, sizeof(full_path));
-	res = read_file(full_path, DEBUG_LOG, read_opt);
+	res = read_file(full_path, DEBUG_LOG, read_opt, 0);
 
 	if ((res != EXIT_SUCCESS) && (errno == ENOENT))
 		printf("To read the debug log you need to compile the module with debugging enabled (see the README)\n");

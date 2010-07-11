@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
  *
- * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
+ * Andreas Langer <an.langer@gmx.de>, Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -41,22 +41,23 @@
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
 	printf("commands:\n");
-	printf(" \tinterface|if   [add|del iface(s)]\tdisplay or modify the interface settings\n");
-	printf(" \toriginators|o                    \tdisplay the originator table\n");
-	printf(" \tinterval|it    [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
-	printf(" \tloglevel|ll    [level]           \tdisplay or modify the log level\n");
-	printf(" \tlog|l                            \tread the log produced by the kernel module\n");
-	printf(" \ttranslocal|tl                    \tdisplay the local translation table\n");
-	printf(" \ttransglobal|tg                   \tdisplay the global translation table\n");
-	printf(" \tvis_mode|vm    [mode]            \tdisplay or modify the status of the VIS server\n");
-	printf(" \tvis_data|vd    [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
-	printf(" \taggregation|ag [0|1]             \tdisplay or modify the packet aggregation setting\n");
-	printf(" \tbonding|b      [0|1]             \tdisplay or modify the bonding mode setting\n");
+	printf(" \tinterface|if    [add|del iface(s)]\tdisplay or modify the interface settings\n");
+	printf(" \toriginators|o                     \tdisplay the originator table\n");
+	printf(" \tinterval|it     [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
+	printf(" \tloglevel|ll     [level]           \tdisplay or modify the log level\n");
+	printf(" \tlog|l                             \tread the log produced by the kernel module\n");
+	printf(" \ttranslocal|tl                     \tdisplay the local translation table\n");
+	printf(" \ttransglobal|tg                    \tdisplay the global translation table\n");
+	printf(" \tvis_mode|vm     [mode]            \tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_data|vd     [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
+	printf(" \taggregation|ag  [0|1]             \tdisplay or modify the packet aggregation setting\n");
+	printf(" \tbonding|b       [0|1]             \tdisplay or modify the bonding mode setting\n");
+	printf(" \tfragmentation|f [0|1]             \tdisplay or modify the fragmentation mode setting\n");
 	printf("\n");
-	printf(" \tping|p         <destination>     \tping another batman adv host via layer 2\n");
-	printf(" \ttraceroute|tr  <destination>     \ttraceroute another batman adv host via layer 2\n");
-	printf(" \ttcpdump|td     <interface>       \ttcpdump layer 2 traffic on the given interface\n");
-	printf(" \tbisect         <file1> .. <fileN>\tanalyze given log files for routing stability\n");
+	printf(" \tping|p          <destination>     \tping another batman adv host via layer 2\n");
+	printf(" \ttraceroute|tr   <destination>     \ttraceroute another batman adv host via layer 2\n");
+	printf(" \ttcpdump|td      <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+	printf(" \tbisect          <file1> .. <fileN>\tanalyze given log files for routing stability\n");
 	printf("options:\n");
 	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
 	printf(" \t-v print version\n");
@@ -138,6 +139,10 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "bonding") == 0) || (strcmp(argv[1], "b") == 0)) {
 
 		ret = handle_sys_setting(argc - 1, argv + 1, SYS_BONDING, bonding_usage, sysfs_param_enable);
+
+	} else if ((strcmp(argv[1], "fragmentation") == 0) || (strcmp(argv[1], "f") == 0)) {
+
+		ret = handle_sys_setting(argc - 1, argv + 1, SYS_FRAG, fragmentation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 

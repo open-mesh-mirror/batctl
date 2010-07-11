@@ -30,12 +30,14 @@
 #define SYS_IFACE_PATH "/sys/class/net"
 #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+#define SYS_FRAG "fragmentation"
 
 extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
 
 void aggregation_usage(void);
 void bonding_usage(void);
+void fragmentation_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
 int interface(int argc, char **argv);

@@ -50,8 +50,12 @@ if ((size_t)(buff_len) < (check_len)) { \
 	return; \
 }
 
+static unsigned short dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
+		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_NONBAT;
 
-void tcpdump_usage(void)
+static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
+
+static void tcpdump_usage(void)
 {
 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
 	printf("options:\n");
@@ -67,7 +71,7 @@ void tcpdump_usage(void)
 	printf(" \t\t%d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
 
-void print_time(void)
+static int print_time(void)
 {
 	struct timeval tv;
 	struct tm *tm;
@@ -76,16 +80,17 @@ void print_time(void)
 	tm = localtime(&tv.tv_sec);
 
 	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	return 1;
 }
 
-void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
+static void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 {
 	struct ether_arp *arphdr;
 
 	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
 
 	if (!time_printed)
-		print_time();
+		time_printed = print_time();
 
 	arphdr = (struct ether_arp *)packet_buff;
 
@@ -105,7 +110,7 @@ void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 	}
 }
 
-void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
+static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 {
 	struct iphdr *iphdr, *tmp_iphdr;
 	struct tcphdr *tcphdr;
@@ -116,7 +121,7 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
 
 	if (!time_printed)
-		print_time();
+		time_printed = print_time();
 
 	switch (iphdr->protocol) {
 	case IPPROTO_ICMP:
@@ -221,35 +226,26 @@ void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
 	}
 }
 
-void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int time_printed)
+static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct vlanhdr *vlanhdr;
 
-	vlanhdr = (struct vlanhdr *)packet_buff;
-	LEN_CHECK((size_t)buff_len, sizeof(struct vlanhdr), "VLAN");
+	vlanhdr = (struct vlanhdr *)(packet_buff + sizeof(struct ether_header));
+	LEN_CHECK((size_t)buff_len, sizeof(struct ether_header) + sizeof(struct vlanhdr), "VLAN");
 
 	if (!time_printed)
-		print_time();
+		time_printed = print_time();
 
 	vlanhdr->vid = ntohs(vlanhdr->vid);
 	printf("vlan %u, p %u, ", vlanhdr->vid, vlanhdr->vid >> 12);
 
-	switch (ntohs(vlanhdr->ether_type)) {
-	case ETH_P_ARP:
-		dump_arp(packet_buff + sizeof(struct vlanhdr),
-			 buff_len - sizeof(struct vlanhdr), 1);
-		break;
-	case ETH_P_IP:
-		dump_ip(packet_buff + sizeof(struct vlanhdr),
-			buff_len - sizeof(struct vlanhdr), 1);
-		break;
-	default:
-		printf(" unknown payload ether type: 0x%04x\n", ntohs(vlanhdr->ether_type));
-		break;
-	}
+	/* overwrite vlan tags */
+	memmove(packet_buff + 4, packet_buff, 2 * ETH_ALEN);
+
+	parse_eth_hdr(packet_buff + 4, buff_len - 4, read_opt, time_printed);
 }
 
-void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
+static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct batman_packet *batman_packet;
@@ -259,7 +255,8 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 	ether_header = (struct ether_header *)packet_buff;
 	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
 
-	print_time();
+	if (!time_printed)
+		time_printed = print_time();
 
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
@@ -274,7 +271,7 @@ void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
 	        (size_t)buff_len - sizeof(struct ether_header));
 }
 
-void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
+static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct icmp_packet *icmp_packet;
@@ -285,7 +282,8 @@ void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 	ether_header = (struct ether_header *)packet_buff;
 	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
 
-	print_time();
+	if (!time_printed)
+		time_printed = print_time();
 
 	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
 
@@ -317,7 +315,7 @@ void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 	}
 }
 
-void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
+static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct unicast_packet *unicast_packet;
@@ -329,7 +327,8 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	ether_header = (struct ether_header *)packet_buff;
 	unicast_packet = (struct unicast_packet *)(packet_buff + sizeof(struct ether_header));
 
-	print_time();
+	if (!time_printed)
+		time_printed = print_time();
 
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
@@ -338,28 +337,12 @@ void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	       get_name_by_macaddr((struct ether_addr *)unicast_packet->dest, read_opt),
 	       unicast_packet->ttl);
 
-	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct unicast_packet));
-
-	switch (ntohs(ether_header->ether_type)) {
-	case ETH_P_ARP:
-		dump_arp(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
-			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
-		break;
-	case ETH_P_IP:
-		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
-			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
-		break;
-	case ETH_P_8021Q:
-		dump_vlan(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct unicast_packet),
-			  buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct unicast_packet), 1);
-		break;
-	default:
-		printf(" unknown payload ether type: 0x%04x\n", ntohs(ether_header->ether_type));
-		break;
-	}
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_packet),
+		      buff_len - ETH_HLEN - sizeof(struct unicast_packet),
+		      read_opt, time_printed);
 }
 
-void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt)
+static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct bcast_packet *bcast_packet;
@@ -371,7 +354,8 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	ether_header = (struct ether_header *)packet_buff;
 	bcast_packet = (struct bcast_packet *)(packet_buff + sizeof(struct ether_header));
 
-	print_time();
+	if (!time_printed)
+		time_printed = print_time();
 
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
@@ -380,23 +364,66 @@ void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_op
 	       get_name_by_macaddr((struct ether_addr *)bcast_packet->orig, read_opt),
 	       ntohl(bcast_packet->seqno));
 
-	ether_header = (struct ether_header *)(packet_buff + sizeof(struct ether_header) + sizeof(struct bcast_packet));
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct bcast_packet),
+		      buff_len - ETH_HLEN - sizeof(struct bcast_packet),
+		      read_opt, time_printed);
+}
 
-	switch (ntohs(ether_header->ether_type)) {
+static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+{
+	struct batman_packet *batman_packet;
+	struct ether_header *eth_hdr;
+
+	eth_hdr = (struct ether_header *)packet_buff;
+
+	switch (ntohs(eth_hdr->ether_type)) {
 	case ETH_P_ARP:
-		dump_arp(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
-			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		if (dump_level & DUMP_TYPE_NONBAT)
+			dump_arp(packet_buff + sizeof(struct ether_header),
+				buff_len - sizeof(struct ether_header), time_printed);
 		break;
 	case ETH_P_IP:
-		dump_ip(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
-			buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		if (dump_level & DUMP_TYPE_NONBAT)
+			dump_ip(packet_buff + sizeof(struct ether_header),
+				buff_len - sizeof(struct ether_header), time_printed);
 		break;
 	case ETH_P_8021Q:
-		dump_vlan(packet_buff + (2 * sizeof(struct ether_header)) + sizeof(struct bcast_packet),
-			  buff_len - (2 * sizeof(struct ether_header)) - sizeof(struct bcast_packet), 1);
+		if (dump_level & DUMP_TYPE_NONBAT)
+			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
+	case ETH_P_BATMAN:
+		batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
+
+		switch (batman_packet->packet_type) {
+		case BAT_PACKET:
+			if (dump_level & DUMP_TYPE_BATOGM)
+				dump_batman_ogm(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BAT_ICMP:
+			if (dump_level & DUMP_TYPE_BATICMP)
+				dump_batman_icmp(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BAT_UNICAST:
+			if (dump_level & DUMP_TYPE_BATUCAST)
+				dump_batman_ucast(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BAT_BCAST:
+			if (dump_level & DUMP_TYPE_BATBCAST)
+				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BAT_VIS:
+			if (dump_level & DUMP_TYPE_BATVIS)
+				printf("Warning - batman vis packet received: function not implemented yet\n");
+			break;
+		default:
+			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_packet->packet_type);
+			break;
+		}
+
+		break;
+
 	default:
-		printf(" unknown payload ether type: 0x%04x\n", ntohs(ether_header->ether_type));
+		printf("Warning - packet contains unknown ether type: 0x%04x\n", ntohs(eth_hdr->ether_type));
 		break;
 	}
 }
@@ -406,14 +433,11 @@ int tcpdump(int argc, char **argv)
 	struct ifreq req;
 	struct timeval tv;
 	struct dump_if *dump_if, *dump_if_tmp;
-	struct batman_packet *batman_packet;
 	struct list_head_first dump_if_list;
 	fd_set wait_sockets, tmp_wait_sockets;
 	ssize_t read_len;
-	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, ether_type, tmp;
+	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
 	int read_opt = USE_BAT_HOSTS;
-	unsigned char dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP |
-		DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_NONBAT;
 	unsigned char packet_buff[2000];
 
 	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
@@ -534,56 +558,7 @@ int tcpdump(int argc, char **argv)
 				continue;
 			}
 
-			ether_type = ntohs(((struct ether_header *)packet_buff)->ether_type);
-
-			switch (ether_type) {
-			case ETH_P_ARP:
-				if (dump_level & DUMP_TYPE_NONBAT)
-					dump_arp(packet_buff + sizeof(struct ether_header),
-						read_len - sizeof(struct ether_header), 0);
-				break;
-			case ETH_P_IP:
-				if (dump_level & DUMP_TYPE_NONBAT)
-					dump_ip(packet_buff + sizeof(struct ether_header),
-						read_len - sizeof(struct ether_header), 0);
-				break;
-			case ETH_P_8021Q:
-				if (dump_level & DUMP_TYPE_NONBAT)
-					dump_vlan(packet_buff + sizeof(struct ether_header),
-						read_len - sizeof(struct ether_header), 0);
-				break;
-			case ETH_P_BATMAN:
-				batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
-
-				switch (batman_packet->packet_type) {
-				case BAT_PACKET:
-					if (dump_level & DUMP_TYPE_BATOGM)
-						dump_batman_ogm(packet_buff, read_len, read_opt);
-					break;
-				case BAT_ICMP:
-					if (dump_level & DUMP_TYPE_BATICMP)
-						dump_batman_icmp(packet_buff, read_len, read_opt);
-					break;
-				case BAT_UNICAST:
-					if (dump_level & DUMP_TYPE_BATUCAST)
-						dump_batman_ucast(packet_buff, read_len, read_opt);
-					break;
-				case BAT_BCAST:
-					if (dump_level & DUMP_TYPE_BATBCAST)
-						dump_batman_bcast(packet_buff, read_len, read_opt);
-					break;
-				case BAT_VIS:
-					if (dump_level & DUMP_TYPE_BATVIS)
-						printf("Warning - batman vis packet received: function not implemented yet\n");
-					break;
-				}
-
-				break;
-			default:
-				printf("Warning - packet contains unknown ether type: 0x%04x\n", ether_type);
-				break;
-			}
-
+			parse_eth_hdr(packet_buff, read_len, read_opt, 0);
 			fflush(stdout);
 		}
 

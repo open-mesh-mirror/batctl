@@ -28,7 +28,8 @@
 #define DUMP_TYPE_BATUCAST 4
 #define DUMP_TYPE_BATBCAST 8
 #define DUMP_TYPE_BATVIS 16
-#define DUMP_TYPE_NONBAT 32
+#define DUMP_TYPE_BATFRAG 32
+#define DUMP_TYPE_NONBAT 64
 
 struct dump_if {
 	struct list_head list;

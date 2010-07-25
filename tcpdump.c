@@ -385,7 +385,7 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 		time_printed = print_time();
 
 	printf("BAT %s > ",
-	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
+	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->orig, read_opt));
 
 	printf("%s: FRAG, seq %hu, ttl %hu, flags [%c], ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->dest, read_opt),
@@ -409,15 +409,15 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 
 	switch (ntohs(eth_hdr->ether_type)) {
 	case ETH_P_ARP:
-		if (dump_level & DUMP_TYPE_NONBAT)
+		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
 			dump_arp(packet_buff + ETH_HLEN, buff_len - ETH_HLEN, time_printed);
 		break;
 	case ETH_P_IP:
-		if (dump_level & DUMP_TYPE_NONBAT)
+		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
 			dump_ip(packet_buff + ETH_HLEN, buff_len - ETH_HLEN, time_printed);
 		break;
 	case ETH_P_8021Q:
-		if (dump_level & DUMP_TYPE_NONBAT)
+		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
 	case ETH_P_BATMAN:

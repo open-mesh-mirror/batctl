@@ -70,7 +70,8 @@ void gateways_usage(void)
 	printf(" \t -w [interval] watch mode - refresh the gateway server list continuously\n");
 }
 
-int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(void))
+int handle_debug_table(char *mesh_iface, int argc, char **argv,
+		       char *file_path, void table_usage(void))
 {
 	int optchar, read_opt = USE_BAT_HOSTS;
 	char full_path[MAX_PATH+1];
@@ -114,7 +115,7 @@ int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(
 		case '?':
 			if (optopt == 't')
 				printf("Error - argument -t needs a number\n");
-			
+
 			else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
@@ -135,7 +136,7 @@ int handle_debug_table(int argc, char **argv, char *file_path, void table_usage(
 		return EXIT_FAILURE;
 	}
 
-	debugfs_make_path(DEBUG_BATIF_PATH "/", full_path, sizeof(full_path));
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
 	return read_file(full_path, file_path, read_opt, orig_timeout, watch_interval);
 }
 
@@ -147,7 +148,7 @@ static void log_usage(void)
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
 }
 
-int log_print(int argc, char **argv)
+int log_print(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
 	char full_path[MAX_PATH+1];
@@ -173,7 +174,7 @@ int log_print(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	debugfs_make_path(DEBUG_BATIF_PATH "/", full_path, sizeof(full_path));
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
 	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0);
 
 	if ((res != EXIT_SUCCESS) && (errno == ENOENT))

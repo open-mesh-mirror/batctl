@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
  *
  * Andrew Lunn <andrew@lunn.ch>
@@ -164,7 +164,7 @@ const struct funcs json_funcs = { json_print_tq,
 	NULL
 };
 
-static FILE *open_vis(void)
+static FILE *open_vis(char *mesh_iface)
 {
 	char full_path[MAX_PATH+1];
 	char *debugfs_mnt;
@@ -175,12 +175,12 @@ static FILE *open_vis(void)
 		return NULL;
 	}
 
-	debugfs_make_path(DEBUG_BATIF_PATH "/" DEBUG_VIS_DATA, full_path, sizeof(full_path));
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" DEBUG_VIS_DATA, mesh_iface, full_path, sizeof(full_path));
 
 	return fopen(full_path, "r");
 }
 
-static int format(const struct funcs *funcs)
+static int format(char *mesh_iface, const struct funcs *funcs)
 {
 	size_t len = 0;
 	ssize_t read;
@@ -194,7 +194,7 @@ static int format(const struct funcs *funcs)
 	long tq;
 	char *flag;
 
-	FILE *fp = open_vis();
+	FILE *fp = open_vis(mesh_iface);
 
 	if (!fp)
 		return EXIT_FAILURE;
@@ -246,7 +246,7 @@ static int format(const struct funcs *funcs)
 	return EXIT_SUCCESS;
 }
 
-int vis_data(int argc, char *argv[])
+int vis_data(char *mesh_iface, int argc, char *argv[])
 {
 	bool dot = false;
 	bool json = false;
@@ -306,10 +306,10 @@ int vis_data(int argc, char *argv[])
 		bat_hosts_init();
 
 	if (dot)
-		return format(&dot_funcs);
+		return format(mesh_iface, &dot_funcs);
 
 	if (json)
-		return format(&json_funcs);
+		return format(mesh_iface, &json_funcs);
 
 	return EXIT_FAILURE;
 }

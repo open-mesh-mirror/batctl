@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
  *
  * Andrew Lunn <andrew@lunn.ch>
@@ -19,5 +19,5 @@
  *
  */
 
-int vis_data(int argc, char * argv[]);
+int vis_data(char *mesh_iface, int argc, char * argv[]);
 

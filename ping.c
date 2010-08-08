@@ -65,7 +65,7 @@ void sig_handler(int sig)
 	}
 }
 
-int ping(int argc, char **argv)
+int ping(char *mesh_iface, int argc, char **argv)
 {
 	struct icmp_packet_rr icmp_packet_out, icmp_packet_in;
 	struct timeval tv;
@@ -149,7 +149,7 @@ int ping(int argc, char **argv)
 		goto out;
 	}
 
-	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
+	debugfs_make_path(SOCKET_PATH_FMT, mesh_iface, icmp_socket, sizeof(icmp_socket));
 
 	ping_fd = open(icmp_socket, O_RDWR);
 

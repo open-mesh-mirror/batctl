@@ -36,7 +36,9 @@
 #include "tcpdump.h"
 #include "bisect.h"
 #include "vis.h"
+#include <err.h>
 
+char mesh_dfl_iface[] = "bat0";
 
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
@@ -61,6 +63,7 @@ void print_usage(void) {
 	printf(" \ttcpdump|td      <interface>       \ttcpdump layer 2 traffic on the given interface\n");
 	printf(" \tbisect          <file1> .. <fileN>\tanalyze given log files for routing stability\n");
 	printf("options:\n");
+	printf(" \t-m mesh interface (default 'bat0')\n");
 	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
 	printf(" \t-v print version\n");
 }
@@ -68,11 +71,27 @@ void print_usage(void) {
 int main(int argc, char **argv)
 {
 	int ret = EXIT_FAILURE;
+	char *mesh_iface = mesh_dfl_iface;
 
-	if ((argc < 2) || (strcmp(argv[1], "-h") == 0)) {
-		print_usage();
-		exit(EXIT_FAILURE);
+	if ((argc > 1) && (strcmp(argv[1], "-m") == 0)) {
+		if (argc < 3) {
+			printf("Error - the option '-m' needs a parameter\n");
+			goto err;
+		}
+
+		mesh_iface = argv[2];
+
+		argv += 2;
+		argc -= 2;
 	}
+
+	if (argc < 2) {
+		printf("Error - no command specified\n");
+		goto err;
+	}
+
+	if (strcmp(argv[1], "-h") == 0)
+		goto err;
 
 	if (strcmp(argv[1], "-v") == 0) {
 		printf("batctl %s%s\n", SOURCE_VERSION, (strlen(REVISION_VERSION) > 3 ? REVISION_VERSION : ""));
@@ -88,11 +107,11 @@ int main(int argc, char **argv)
 
 	if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
 
-		ret = ping(argc - 1, argv + 1);
+		ret = ping(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
 
-		ret = traceroute(argc - 1, argv + 1);
+		ret = traceroute(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
 
@@ -100,67 +119,82 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
 
-		ret = interface(argc - 1, argv + 1);
+		ret = interface(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "originators") == 0) || (strcmp(argv[1], "o") == 0)) {
 
-		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_ORIGINATORS, originators_usage);
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_ORIGINATORS, originators_usage);
 
 	} else if ((strcmp(argv[1], "translocal") == 0) || (strcmp(argv[1], "tl") == 0)) {
 
-		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_LOCAL, trans_local_usage);
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_TRANSTABLE_LOCAL, trans_local_usage);
 
 	} else if ((strcmp(argv[1], "transglobal") == 0) || (strcmp(argv[1], "tg") == 0)) {
 
-		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
-		ret = handle_loglevel(argc - 1, argv + 1);
+		ret = handle_loglevel(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
 
-		ret = log_print(argc - 1, argv + 1);
+		ret = log_print(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_ORIG_INTERVAL, orig_interval_usage, NULL);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_ORIG_INTERVAL, orig_interval_usage, NULL);
 
 	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_VIS_MODE, vis_mode_usage, sysfs_param_server);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_VIS_MODE, vis_mode_usage, sysfs_param_server);
 
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 
-		ret = vis_data(argc - 1, argv + 1);
+		ret = vis_data(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_GW_MODE, gw_mode_usage, sysfs_param_server);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_GW_MODE, gw_mode_usage, sysfs_param_server);
 
 	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
 
-		ret = handle_debug_table(argc - 1, argv + 1, DEBUG_GATEWAYS, gateways_usage);
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_GATEWAYS, gateways_usage);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_AGGR, aggregation_usage, sysfs_param_enable);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_AGGR, aggregation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "bonding") == 0) || (strcmp(argv[1], "b") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_BONDING, bonding_usage, sysfs_param_enable);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_BONDING, bonding_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "fragmentation") == 0) || (strcmp(argv[1], "f") == 0)) {
 
-		ret = handle_sys_setting(argc - 1, argv + 1, SYS_FRAG, fragmentation_usage, sysfs_param_enable);
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_FRAG, fragmentation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 
 		ret = bisect(argc - 1, argv + 1);
 
 	} else {
+		printf("Error - no command specified\n");
 		print_usage();
 	}
 
 	return ret;
+
+err:
+	print_usage();
+	exit(EXIT_FAILURE);
 }

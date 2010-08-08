@@ -20,7 +20,7 @@
  */
 
 
-#define SYS_BATIF_PATH "/sys/class/net/bat0/mesh/"
+#define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL "log_level"
 #define SYS_LOG "log"
 #define SYS_AGGR "aggregated_ogms"
@@ -42,8 +42,8 @@ void fragmentation_usage(void);
 void gw_mode_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);
-int interface(int argc, char **argv);
-int handle_loglevel(int argc, char **argv);
-int handle_sys_setting(int argc, char **argv, char *file_path,
-		       void setting_usage(void),
+int interface(char *mesh_iface, int argc, char **argv);
+int handle_loglevel(char *mesh_iface, int argc, char **argv);
+int handle_sys_setting(char *mesh_iface, int argc, char **argv,
+		       char *file_path, void setting_usage(void),
 		       const char *sysfs_param[]);

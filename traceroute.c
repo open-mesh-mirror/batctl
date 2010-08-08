@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
@@ -48,7 +48,7 @@ void traceroute_usage(void)
 	printf(" \t -n don't convert addresses to bat-host names\n");
 }
 
-int traceroute(int argc, char **argv)
+int traceroute(char *mesh_iface, int argc, char **argv)
 {
 	struct icmp_packet icmp_packet_out, icmp_packet_in;
 	struct bat_host *bat_host;
@@ -108,7 +108,7 @@ int traceroute(int argc, char **argv)
 		goto out;
 	}
 
-	debugfs_make_path(SOCKET_PATH, icmp_socket, sizeof(icmp_socket));
+	debugfs_make_path(SOCKET_PATH_FMT, mesh_iface, icmp_socket, sizeof(icmp_socket));
 
 	trace_fd = open(icmp_socket, O_RDWR);
 

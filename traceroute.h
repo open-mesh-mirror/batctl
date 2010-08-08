@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner <lindner_marek@yahoo.de>
@@ -21,4 +21,4 @@
 
 
 
-int traceroute(int argc, char **argv);
+int traceroute(char *mesh_iface, int argc, char **argv);

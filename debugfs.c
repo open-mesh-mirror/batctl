@@ -42,7 +42,7 @@ static const char *debugfs_known_mountpoints[] = {
 };
 
 /* construct a full path to a debugfs element */
-int debugfs_make_path(const char *element, char *buffer, int size)
+int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
 {
 	int len;
 
@@ -51,11 +51,11 @@ int debugfs_make_path(const char *element, char *buffer, int size)
 		return -1;
 	}
 
-	len = strlen(debugfs_mountpoint) + strlen(element) + 1;
+	len = strlen(debugfs_mountpoint) + strlen(fmt) + 1;
 	if (len >= size)
 		return len+1;
 
-	snprintf(buffer, size-1, "%s/%s", debugfs_mountpoint, element);
+	snprintf(buffer, size-1, fmt, debugfs_mountpoint, mesh_iface);
 	return 0;
 }
 

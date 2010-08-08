@@ -23,4 +23,4 @@
 
 #define SOURCE_VERSION "next"
 
-#define SOCKET_PATH "batman_adv/bat0/socket"
+#define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"

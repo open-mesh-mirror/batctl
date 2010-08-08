@@ -56,7 +56,7 @@ static void interface_usage(void)
 	printf(" \t -h print this help\n");
 }
 
-static int print_interfaces(void)
+static int print_interfaces(char *mesh_iface)
 {
 	DIR *iface_base_dir;
 	struct dirent *iface_dir;
@@ -89,6 +89,9 @@ static int print_interfaces(void)
 		if (strcmp(line_ptr, "none") == 0)
 			goto free_line;
 
+		if (strcmp(line_ptr, mesh_iface) != 0)
+			goto free_line;
+
 		free(line_ptr);
 		line_ptr = NULL;
 
@@ -116,7 +119,7 @@ err:
 	return EXIT_FAILURE;
 }
 
-int interface(int argc, char **argv)
+int interface(char *mesh_iface, int argc, char **argv)
 {
 	char *path_buff;
 	int i, res, optchar;
@@ -133,7 +136,7 @@ int interface(int argc, char **argv)
 	}
 
 	if (argc == 1)
-		return print_interfaces();
+		return print_interfaces(mesh_iface);
 
 	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
 	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
@@ -152,7 +155,7 @@ int interface(int argc, char **argv)
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
 
 		if (argv[1][0] == 'a')
-			res = write_file("", path_buff, "bat0", NULL);
+			res = write_file("", path_buff, mesh_iface, NULL);
 		else
 			res = write_file("", path_buff, "none", NULL);
 
@@ -176,9 +179,10 @@ static void log_level_usage(void)
 	printf(" \t -h print this help\n");
 }
 
-int handle_loglevel(int argc, char **argv)
+int handle_loglevel(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res;
+	char *path_buff;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -191,12 +195,15 @@ int handle_loglevel(int argc, char **argv)
 		}
 	}
 
+	path_buff = malloc(PATH_BUFF_LEN);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+
 	if (argc != 1) {
-		res = write_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, argv[1], NULL);
+		res = write_file(path_buff, SYS_LOG_LEVEL, argv[1], NULL);
 		goto out;
 	}
 
-	res = read_file(SYS_BATIF_PATH, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF, 0, 0);
+	res = read_file(path_buff, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF, 0, 0);
 
 	if (res != EXIT_SUCCESS)
 		goto out;
@@ -214,6 +221,7 @@ out:
 	if (errno == ENOENT)
 		printf("To increase the log level you need to compile the module with debugging enabled (see the README)\n");
 
+	free(path_buff);
 	return res;
 }
 
@@ -252,11 +260,12 @@ void fragmentation_usage(void)
 	printf(" \t -h print this help\n");
 }
 
-int handle_sys_setting(int argc, char **argv,
+int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void setting_usage(void),
 		       const char *sysfs_param[])
 {
-	int optchar;
+	int optchar, res = EXIT_FAILURE;
+	char *path_buff;
 	const char **ptr;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
@@ -270,8 +279,13 @@ int handle_sys_setting(int argc, char **argv,
 		}
 	}
 
-	if (argc == 1)
-		return read_file(SYS_BATIF_PATH, file_path, SINGLE_READ, 0, 0);
+	path_buff = malloc(PATH_BUFF_LEN);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+
+	if (argc == 1) {
+		res = read_file(path_buff, file_path, SINGLE_READ, 0, 0);
+		goto out;
+	}
 
 	if (!sysfs_param)
 		goto write_file;
@@ -293,8 +307,12 @@ int handle_sys_setting(int argc, char **argv,
 		ptr++;
 	}
 
-	return EXIT_FAILURE;
+	goto out;
 
 write_file:
-	return write_file(SYS_BATIF_PATH, file_path, argv[1], argc > 2 ? argv[2] : NULL);
+	res = write_file(path_buff, file_path, argv[1], argc > 2 ? argv[2] : NULL);
+
+out:
+	free(path_buff);
+	return res;
 }

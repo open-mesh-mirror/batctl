@@ -38,6 +38,7 @@
 
 
 #define TTL_MAX 50
+#define NUM_PACKETS 3
 
 
 void traceroute_usage(void)
@@ -59,7 +60,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
 	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
-	double time_delta;
+	double time_delta[NUM_PACKETS];
 	char *debugfs_mnt;
 	char icmp_socket[MAX_PATH+1];
 
@@ -129,8 +130,10 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
+		return_mac = NULL;
+		bat_host = NULL;
 
-		for (i = 0; i < 3; i++) {
+		for (i = 0; i < NUM_PACKETS; i++) {
 			icmp_packet_out.seqno = htons(++seq_counter);
 
 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
@@ -149,11 +152,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 			res = select(trace_fd + 1, &read_socket, NULL, NULL, &tv);
 
 			if (res <= 0) {
-				if (i == 0)
-					printf("%2hu: ", icmp_packet_out.ttl);
-
-				printf(" * ");
-				fflush(stdout);
+				time_delta[i] = 0.0;
 				continue;
 			}
 
@@ -172,34 +171,22 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 
 			switch (icmp_packet_in.msg_type) {
 			case ECHO_REPLY:
+				dst_reached = 1;
+				/* fall through */
 			case TTL_EXCEEDED:
-				time_delta = end_timer();
+				time_delta[i] = end_timer();
 
-				if (i > 0) {
-					printf("  %.3f ms", time_delta);
-					break;
+				if (!return_mac) {
+					return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
+
+					if (read_opt & USE_BAT_HOSTS)
+						bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
 				}
-
-				return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
-
-				bat_host = NULL;
-				if (read_opt & USE_BAT_HOSTS)
-					bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
-
-				if (!bat_host)
-					printf("%2hu: %s %.3f ms",
-						icmp_packet_out.ttl, return_mac, time_delta);
-				else
-					printf("%2hu: %s (%s) %.3f ms",
-						icmp_packet_out.ttl, bat_host->name, return_mac, time_delta);
-
-				if (icmp_packet_in.msg_type == ECHO_REPLY)
-					dst_reached = 1;
 
 				break;
 			case DESTINATION_UNREACHABLE:
 				printf("%s: Destination Host Unreachable\n", dst_string);
-				break;
+				goto out;
 			case PARAMETER_PROBLEM:
 				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
 						icmp_packet_in.ttl, COMPAT_VERSION);
@@ -209,6 +196,18 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
 				break;
 			}
+		}
+
+		if (!bat_host)
+			printf("%2hu: %s", icmp_packet_out.ttl, (return_mac ? return_mac : "*"));
+		else
+			printf("%2hu: %s (%s)",	icmp_packet_out.ttl, bat_host->name, return_mac);
+
+		for (i = 0; i < NUM_PACKETS; i++) {
+			if (time_delta[i])
+				printf("  %.3f ms", time_delta[i]);
+			else
+				printf("   *");
 		}
 
 		printf("\n");

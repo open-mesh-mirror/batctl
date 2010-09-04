@@ -41,14 +41,6 @@ static const char *debugfs_known_mountpoints[] = {
 	NULL,
 };
 
-/* use this to force a umount */
-void debugfs_force_cleanup(void)
-{
-	debugfs_find_mountpoint();
-	debugfs_premounted = 0;
-	debugfs_umount();
-}
-
 /* construct a full path to a debugfs element */
 int debugfs_make_path(const char *element, char *buffer, int size)
 {
@@ -161,27 +153,6 @@ char *debugfs_mount(const char *mountpoint)
 	debugfs_found = 1;
 
 	return debugfs_mountpoint;
-}
-
-/* umount the debugfs */
-
-int debugfs_umount(void)
-{
-	char umountcmd[128];
-	int ret;
-
-	/* if it was already mounted, leave it */
-	if (debugfs_premounted)
-		return 0;
-
-	/* make sure it's a valid mount point */
-	ret = debugfs_valid_mountpoint(debugfs_mountpoint);
-	if (ret)
-		return ret;
-
-	snprintf(umountcmd, sizeof(umountcmd),
-		 "/bin/umount %s", debugfs_mountpoint);
-	return system(umountcmd);
 }
 
 int debugfs_write(const char *entry, const char *value)

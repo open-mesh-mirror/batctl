@@ -21,6 +21,6 @@
 
 
 
-#define SOURCE_VERSION "maint"
+#define SOURCE_VERSION "2010.1.0"
 
 #define SOCKET_PATH "batman_adv/bat0/socket"

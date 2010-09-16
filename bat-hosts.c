@@ -181,6 +181,9 @@ void bat_hosts_init(void)
 
 		if (strlen(bat_hosts_path[i]) >= 2
 		    && bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
+			if (!homedir)
+				continue;
+
 			strncpy(confdir, homedir, CONF_DIR_LEN);
 			confdir[CONF_DIR_LEN - 1] = '\0';
 			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir));

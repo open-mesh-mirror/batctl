@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
  *
- * Andreas Langer <a.langer@q-dsl.de>, Marek Lindner <lindner_marek@yahoo.de>
+ * Andreas Langer <an.langer@gmx.de>, Marek Lindner <lindner_marek@yahoo.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public

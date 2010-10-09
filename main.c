@@ -52,6 +52,7 @@ void print_usage(void) {
 	printf(" \tgateways|gwl                      \tdisplay the gateway server list\n");
 	printf(" \ttranslocal|tl                     \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                    \tdisplay the global translation table\n");
+	printf(" \tsoftif_neigh|sn                   \tdisplay the soft-interface neighbor table\n");
 	printf(" \tvis_mode|vm     [mode]            \tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd     [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag  [0|1]             \tdisplay or modify the packet aggregation setting\n");
@@ -135,6 +136,11 @@ int main(int argc, char **argv)
 
 		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
 					 DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
+
+	} else if ((strcmp(argv[1], "softif_neigh") == 0) || (strcmp(argv[1], "sn") == 0)) {
+
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_SOFTIF_NEIGH, softif_neigh_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 

@@ -183,7 +183,6 @@ static FILE *open_vis(char *mesh_iface)
 static int format(char *mesh_iface, const struct funcs *funcs)
 {
 	size_t len = 0;
-	ssize_t read;
 	char *line = NULL;
 	char *orig, *from;
 	char *duplet;
@@ -202,7 +201,7 @@ static int format(char *mesh_iface, const struct funcs *funcs)
 	if (funcs->print_header)
 		funcs->print_header();
 
-	while ((read = getline(&line, &len, fp)) != -1) {
+	while (getline(&line, &len, fp) != -1) {
 		/* First MAC address is the originator */
 		orig = strtok_r(line, ",", &line_save_ptr);
 

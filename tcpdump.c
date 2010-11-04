@@ -91,7 +91,7 @@ static void dump_arp(unsigned char *packet_buff, ssize_t buff_len, int time_prin
 	LEN_CHECK((size_t)buff_len, sizeof(struct ether_arp), "ARP");
 
 	if (!time_printed)
-		time_printed = print_time();
+		print_time();
 
 	arphdr = (struct ether_arp *)packet_buff;
 
@@ -122,7 +122,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_print
 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
 
 	if (!time_printed)
-		time_printed = print_time();
+		print_time();
 
 	switch (iphdr->protocol) {
 	case IPPROTO_ICMP:
@@ -257,7 +257,7 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
-		time_printed = print_time();
+		print_time();
 
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
@@ -275,17 +275,15 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 
 static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct icmp_packet *icmp_packet;
 	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
 
-	ether_header = (struct ether_header *)packet_buff;
 	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
-		time_printed = print_time();
+		print_time();
 
 	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
 
@@ -373,13 +371,11 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int 
 
 static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct unicast_frag_packet *unicast_frag_packet;
 
 	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct unicast_frag_packet), "BAT FRAG");
 	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
 
-	ether_header = (struct ether_header *)packet_buff;
 	unicast_frag_packet = (struct unicast_frag_packet *)(packet_buff + ETH_HLEN);
 
 	if (!time_printed)

@@ -199,9 +199,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		}
 
 		if (!bat_host)
-			printf("%2hu: %s", icmp_packet_out.ttl, (return_mac ? return_mac : "*"));
+			printf("%2hhu: %s", icmp_packet_out.ttl, (return_mac ? return_mac : "*"));
 		else
-			printf("%2hu: %s (%s)",	icmp_packet_out.ttl, bat_host->name, return_mac);
+			printf("%2hhu: %s (%s)", icmp_packet_out.ttl, bat_host->name, return_mac);
 
 		for (i = 0; i < NUM_PACKETS; i++) {
 			if (time_delta[i])

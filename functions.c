@@ -126,7 +126,6 @@ int read_file(char *dir, char *fname, int read_opt,
 	float last_seen;
 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
 	size_t len = 0;
-	ssize_t read;
 	FILE *fp = NULL;
 
 	if (read_opt & USE_BAT_HOSTS)
@@ -154,7 +153,7 @@ open:
 		system("clear");
 
 read:
-	while ((read = getline(&line_ptr, &len, fp)) != -1) {
+	while (getline(&line_ptr, &len, fp) != -1) {
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;

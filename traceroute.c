@@ -135,6 +135,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 
 		for (i = 0; i < NUM_PACKETS; i++) {
 			icmp_packet_out.seqno = htons(++seq_counter);
+			time_delta[i] = 0.0;
 
 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
 				printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
@@ -151,10 +152,8 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 
 			res = select(trace_fd + 1, &read_socket, NULL, NULL, &tv);
 
-			if (res <= 0) {
-				time_delta[i] = 0.0;
+			if (res <= 0)
 				continue;
-			}
 
 			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
 

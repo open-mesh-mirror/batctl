@@ -466,7 +466,7 @@ err:
 static int parse_log_file(char *file_path)
 {
 	FILE *fd;
-	char line_buff[MAX_LINE], *start_ptr, *tok_ptr;
+	char line_buff[MAX_LINE], *start_ptr, *start_ptr_safe, *tok_ptr;
 	char *neigh, *iface_addr, *orig, *prev_sender, rt_flag;
 	int line_count = 0, tq, ttl, seqno, i, res, max;
 
@@ -483,12 +483,12 @@ static int parse_log_file(char *file_path)
 		line_count++;
 
 		if (strstr(start_ptr, "Received BATMAN packet via NB")) {
-			tok_ptr = strtok(start_ptr, " ");
+			strtok_r(start_ptr, " ", &start_ptr_safe);
 			neigh = iface_addr = orig = prev_sender = NULL;
 			seqno = tq = ttl = -1;
 
 			for (i = 0; i < 21; i++) {
-				tok_ptr = strtok(NULL, " ");
+				tok_ptr = strtok_r(NULL, " ", &start_ptr_safe);
 				if (!tok_ptr)
 					break;
 
@@ -547,11 +547,11 @@ static int parse_log_file(char *file_path)
 				max = 3;
 			}
 
-			tok_ptr = strtok(start_ptr, " ");
+			strtok_r(start_ptr, " ", &start_ptr_safe);
 			orig = neigh = prev_sender = NULL;
 
 			for (i = 0; i < max; i++) {
-				tok_ptr = strtok(NULL, " ");
+				tok_ptr = strtok_r(NULL, " ", &start_ptr_safe);
 				if (!tok_ptr)
 					break;
 

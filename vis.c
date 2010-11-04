@@ -186,7 +186,7 @@ static int format(char *mesh_iface, const struct funcs *funcs)
 	char *line = NULL;
 	char *orig, *from;
 	char *duplet;
-	char *line_save_ptr;
+	char *line_save_ptr, *component_save_ptr;
 	char *duplet_save_ptr;
 	char *endptr;
 	char *value;
@@ -207,12 +207,12 @@ static int format(char *mesh_iface, const struct funcs *funcs)
 
 		duplet_save_ptr = line_save_ptr;
 		while ((duplet = strtok_r(NULL, ",", &duplet_save_ptr)) != NULL) {
-			flag = strtok(duplet, " ");
+			flag = strtok_r(duplet, " ", &component_save_ptr);
 			if (!flag)
 				continue;
 			if (!strcmp(flag, "TQ")) {
-				from = strtok(NULL, " ");
-				value = strtok(NULL, " ");
+				from = strtok_r(NULL, " ", &component_save_ptr);
+				value = strtok_r(NULL, " ", &component_save_ptr);
 				tq = strtoul(value, &endptr, 0);
 				funcs->print_tq(orig, from, tq);
 				continue;
@@ -221,13 +221,13 @@ static int format(char *mesh_iface, const struct funcs *funcs)
 				/* We have an HNA record */
 				if (!with_HNA)
 					continue;
-				from = strtok(NULL, " ");
+				from = strtok_r(NULL, " ", &component_save_ptr);
 				funcs->print_HNA(orig, from);
 				continue;
 			}
 			if (!strcmp(flag, "SEC") && with_2nd) {
 				/* We found a secondary interface MAC address. */
-				from = strtok(NULL, " ");
+				from = strtok_r(NULL, " ", &component_save_ptr);
 				funcs->print_2nd(orig, from);
 			}
 			if (!strcmp(flag, "PRIMARY") && with_2nd) {

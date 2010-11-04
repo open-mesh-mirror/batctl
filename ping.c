@@ -180,6 +180,9 @@ int ping(char *mesh_iface, int argc, char **argv)
 		packet_len, packet_len + 28);
 
 	while (!is_aborted) {
+		tv.tv_sec = timeout;
+		tv.tv_usec = 0;
+
 		if (loop_count == 0)
 			break;
 
@@ -194,9 +197,6 @@ int ping(char *mesh_iface, int argc, char **argv)
 		}
 
 		start_timer();
-
-		tv.tv_sec = timeout;
-		tv.tv_usec = 0;
 
 		FD_ZERO(&read_socket);
 		FD_SET(ping_fd, &read_socket);

@@ -26,12 +26,20 @@
 #define SYS_AGGR "aggregated_ogms"
 #define SYS_BONDING "bonding"
 #define SYS_GW_MODE "gw_mode"
+#define SYS_GW_SEL "gw_sel_class"
+#define SYS_GW_BW "gw_bandwidth"
 #define SYS_VIS_MODE "vis_mode"
 #define SYS_ORIG_INTERVAL "orig_interval"
 #define SYS_IFACE_PATH "/sys/class/net"
 #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_FRAG "fragmentation"
+
+enum gw_modes {
+	GW_MODE_OFF,
+	GW_MODE_CLIENT,
+	GW_MODE_SERVER,
+};
 
 extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
@@ -47,3 +55,4 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv);
 int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void setting_usage(void),
 		       const char *sysfs_param[]);
+int handle_gw_setting(char *mesh_iface, int argc, char **argv);

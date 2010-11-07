@@ -241,7 +241,7 @@ void bonding_usage(void)
 
 void gw_mode_usage(void)
 {
-	printf("Usage: batctl [options] gw_mode [mode]\n");
+	printf("Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
@@ -318,6 +318,121 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 
 write_file:
 	res = write_file(path_buff, file_path, argv[1], argc > 2 ? argv[2] : NULL);
+
+out:
+	free(path_buff);
+	return res;
+}
+
+int handle_gw_setting(char *mesh_iface, int argc, char **argv)
+{
+	int optchar, res = EXIT_FAILURE;
+	char *path_buff, gw_mode;
+	const char **ptr;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			gw_mode_usage();
+			return EXIT_SUCCESS;
+		default:
+			gw_mode_usage();
+			return EXIT_FAILURE;
+		}
+	}
+
+	path_buff = malloc(PATH_BUFF_LEN);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+
+	if (argc == 1) {
+		res = read_file(path_buff, SYS_GW_MODE, SINGLE_READ | USE_READ_BUFF, 0, 0);
+
+		if (res != EXIT_SUCCESS)
+			goto out;
+
+		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+			line_ptr[strlen(line_ptr) - 1] = '\0';
+
+		if (strcmp(line_ptr, "client") == 0)
+			gw_mode = GW_MODE_CLIENT;
+		else if (strcmp(line_ptr, "server") == 0)
+			gw_mode = GW_MODE_SERVER;
+		else
+			gw_mode = GW_MODE_OFF;
+
+		free(line_ptr);
+		line_ptr = NULL;
+
+		switch (gw_mode) {
+		case GW_MODE_CLIENT:
+			res = read_file(path_buff, SYS_GW_SEL, SINGLE_READ | USE_READ_BUFF, 0, 0);
+			break;
+		case GW_MODE_SERVER:
+			res = read_file(path_buff, SYS_GW_BW, SINGLE_READ | USE_READ_BUFF, 0, 0);
+			break;
+		default:
+			printf("off\n");
+			goto out;
+		}
+
+		if (res != EXIT_SUCCESS)
+			goto out;
+
+		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+			line_ptr[strlen(line_ptr) - 1] = '\0';
+
+		switch (gw_mode) {
+		case GW_MODE_CLIENT:
+			printf("client (selection class: %s)\n", line_ptr);
+			break;
+		case GW_MODE_SERVER:
+			printf("server (announced bw: %s)\n", line_ptr);
+			break;
+		default:
+			goto out;
+		}
+
+		free(line_ptr);
+		line_ptr = NULL;
+		goto out;
+	}
+
+	if (strcmp(argv[1], "client") == 0)
+		gw_mode = GW_MODE_CLIENT;
+	else if (strcmp(argv[1], "server") == 0)
+		gw_mode = GW_MODE_SERVER;
+	else if (strcmp(argv[1], "off") == 0)
+		gw_mode = GW_MODE_OFF;
+	else
+		goto opt_err;
+
+	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
+	if (res != EXIT_SUCCESS)
+		goto out;
+
+	if (argc == 2)
+		goto out;
+
+	switch (gw_mode) {
+	case GW_MODE_CLIENT:
+		res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+		break;
+	case GW_MODE_SERVER:
+		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+		break;
+	default:
+		goto out;
+	}
+
+opt_err:
+	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
+	printf("The following values are allowed:\n");
+
+	ptr = sysfs_param_server;
+	while (*ptr) {
+		printf(" * %s\n", *ptr);
+		ptr++;
+	}
 
 out:
 	free(path_buff);

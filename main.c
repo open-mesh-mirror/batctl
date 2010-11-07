@@ -166,8 +166,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_GW_MODE, gw_mode_usage, sysfs_param_server);
+		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
 

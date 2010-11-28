@@ -177,9 +177,17 @@ read:
 			*space_ptr = '\0';
 			extra_char = '\0';
 
-			if ((strlen(buff_ptr) == ETH_STR_LEN + 1) && (buff_ptr[ETH_STR_LEN] == ',')) {
-				extra_char = ',';
-				buff_ptr[ETH_STR_LEN] = '\0';
+			if (strlen(buff_ptr) == ETH_STR_LEN + 1) {
+				extra_char = buff_ptr[ETH_STR_LEN]; 
+				switch (extra_char) {
+				case ',':
+				case ')':
+					buff_ptr[ETH_STR_LEN] = '\0';
+					break;
+				default:
+					extra_char = '\0';
+					break;
+				}
 			}
 
 			if (strlen(buff_ptr) != ETH_STR_LEN)

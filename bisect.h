@@ -76,7 +76,7 @@ struct seqno_event {
 	struct bat_node *orig;
 	struct bat_node *neigh;
 	struct bat_node *prev_sender;
-	int seqno;
+	long long seqno;
 	int tq;
 	int ttl;
 	struct rt_hist *rt_hist;
@@ -91,7 +91,7 @@ struct seqno_trace_neigh {
 
 struct seqno_trace {
 	struct list_head list;
-	int seqno;
+	long long seqno;
 	char print;
 	struct seqno_trace_neigh seqno_trace_neigh;
 };

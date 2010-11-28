@@ -201,16 +201,16 @@ read:
 				/* keep table format */
 				printf("%17s", bat_host->name);
 
+			goto written;
+
+print_plain_buff:
+			printf("%s", buff_ptr);
+
+written:
 			if (extra_char != '\0')
 				printf("%c", extra_char);
 
 			printf(" ");
-			goto written;
-
-print_plain_buff:
-			printf("%s ", buff_ptr);
-
-written:
 			buff_ptr = space_ptr + 1;
 		}
 

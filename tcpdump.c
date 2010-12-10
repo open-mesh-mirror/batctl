@@ -497,7 +497,7 @@ int tcpdump(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	bat_hosts_init();
+	bat_hosts_init(read_opt);
 
 	/* init interfaces list */
 	INIT_LIST_HEAD_FIRST(dump_if_list);

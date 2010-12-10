@@ -1520,7 +1520,7 @@ int bisect(int argc, char **argv)
 		goto err;
 	}
 
-	bat_hosts_init();
+	bat_hosts_init(read_opt);
 	num_parsed_files = 0;
 
 	if ((rt_orig_ptr) && (trace_orig_ptr)) {

@@ -32,6 +32,7 @@
 #include "main.h"
 #include "bat-hosts.h"
 #include "hash.h"
+#include "functions.h"
 
 
 static struct hashtable_t *host_hash = NULL;
@@ -62,7 +63,7 @@ static int choose_mac(void *data, int32_t size)
 	return (hash % size);
 }
 
-static void parse_hosts_file(struct hashtable_t **hash, const char path[])
+static void parse_hosts_file(struct hashtable_t **hash, const char path[], int read_opt)
 {
 	FILE *fd;
 	char *line_ptr = NULL;
@@ -84,13 +85,15 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 			continue;
 
 		if (sscanf(line_ptr, "%17[^ \t]%49s\n", mac_str, name) != 2) {
-			fprintf(stderr, "Warning - unrecognized bat-host definition: %s", line_ptr);
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Warning - unrecognized bat-host definition: %s", line_ptr);
 			continue;
 		}
 
 		mac_addr = ether_aton(mac_str);
 		if (!mac_addr) {
-			fprintf(stderr, "Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
 			continue;
 		}
 
@@ -102,7 +105,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 			if (strcmp(bat_host->name, name) == 0)
 				continue;
 
-			fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
 					bat_host->name, name, mac_str);
 			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
 			continue;
@@ -112,7 +116,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 
 		/* name entry already exists - we found a new mac address for it */
 		if (bat_host) {
-			fprintf(stderr, "Warning - name already known (changing mac from '%s' to '%s'): %s\n",
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Warning - name already known (changing mac from '%s' to '%s'): %s\n",
 					ether_ntoa(&bat_host->mac_addr), mac_str, name);
 			hash_remove(*hash, bat_host);
 			free(bat_host);
@@ -121,7 +126,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 		bat_host = malloc(sizeof(struct bat_host));
 
 		if (!bat_host) {
-			fprintf(stderr, "Error - could not allocate memory: %s\n", strerror(errno));
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Error - could not allocate memory: %s\n", strerror(errno));
 			goto out;
 		}
 
@@ -133,10 +139,10 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[])
 		if ((*hash)->elements * 4 > (*hash)->size) {
 			swaphash = hash_resize((*hash), (*hash)->size * 2);
 
-			if (swaphash == NULL)
-				fprintf(stderr, "Warning - couldn't resize bat hosts hash table\n");
-			else
+			if (swaphash)
 				*hash = swaphash;
+			else if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr, "Warning - couldn't resize bat hosts hash table\n");
 		}
 	}
 
@@ -148,7 +154,7 @@ out:
 	return;
 }
 
-void bat_hosts_init(void)
+void bat_hosts_init(int read_opt)
 {
 	unsigned int i, j, parse;
 	char confdir[CONF_DIR_LEN];
@@ -162,7 +168,8 @@ void bat_hosts_init(void)
 	 */
 	normalized = malloc(locations * PATH_MAX);
 	if (!normalized) {
-		printf("Warning - could not get memory for bat-hosts file parsing\n");
+		if (read_opt & USE_BAT_HOSTS)
+			printf("Warning - could not get memory for bat-hosts file parsing\n");
 		return;
 	}
 
@@ -170,7 +177,8 @@ void bat_hosts_init(void)
 	host_hash = hash_new(64, compare_mac, choose_mac);
 
 	if (!host_hash) {
-		printf("Warning - could not create bat hosts hash table\n");
+		if (read_opt & USE_BAT_HOSTS)
+			printf("Warning - could not create bat hosts hash table\n");
 		return;
 	}
 
@@ -205,7 +213,7 @@ void bat_hosts_init(void)
 		}
 
 		if (parse)
-			parse_hosts_file(&host_hash, normalized + (i * PATH_MAX));
+			parse_hosts_file(&host_hash, normalized + (i * PATH_MAX), read_opt);
 	}
 
 	free(normalized);

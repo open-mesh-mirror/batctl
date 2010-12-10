@@ -124,7 +124,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	}
 
 	dst_string = argv[found_args];
-	bat_hosts_init();
+	bat_hosts_init(0);
 	bat_host = bat_hosts_find_by_name(dst_string);
 
 	if (bat_host)

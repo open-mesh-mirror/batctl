@@ -129,7 +129,7 @@ int read_file(char *dir, char *fname, int read_opt,
 	FILE *fp = NULL;
 
 	if (read_opt & USE_BAT_HOSTS)
-		bat_hosts_init();
+		bat_hosts_init(read_opt);
 
 	if (strstr(dir, "/sys/")) {
 		if (check_sys_dir(dir) != EXIT_SUCCESS)
@@ -178,7 +178,7 @@ read:
 			extra_char = '\0';
 
 			if (strlen(buff_ptr) == ETH_STR_LEN + 1) {
-				extra_char = buff_ptr[ETH_STR_LEN]; 
+				extra_char = buff_ptr[ETH_STR_LEN];
 				switch (extra_char) {
 				case ',':
 				case ')':

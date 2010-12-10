@@ -302,7 +302,7 @@ int vis_data(char *mesh_iface, int argc, char *argv[])
 	}
 
 	if (with_names)
-		bat_hosts_init();
+		bat_hosts_init(USE_BAT_HOSTS);
 
 	if (dot)
 		return format(mesh_iface, &dot_funcs);

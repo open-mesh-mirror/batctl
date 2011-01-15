@@ -24,3 +24,5 @@
 #define SOURCE_VERSION "devel"  /*put exactly one distinct word inside the string like "0.3-pre-alpha" or "0.3-rc1" or "0.3" */
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
+
+#define __packed __attribute((packed))   /* linux kernel compat */

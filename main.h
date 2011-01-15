@@ -24,3 +24,5 @@
 #define SOURCE_VERSION "next"
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
+
+#define __packed __attribute((packed))   /* linux kernel compat */

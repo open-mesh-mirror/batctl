@@ -384,10 +384,11 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->orig, read_opt));
 
-	printf("%s: FRAG, seq %hu, ttl %hhu, flags [%c], ",
+	printf("%s: FRAG, seq %hu, ttl %hhu, flags [%c%c], ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->dest, read_opt),
 	       ntohs(unicast_frag_packet->seqno), unicast_frag_packet->ttl,
-	       (unicast_frag_packet->flags & UNI_FRAG_HEAD ? 'H' : '.'));
+	       (unicast_frag_packet->flags & UNI_FRAG_HEAD ? 'H' : '.'),
+	       (unicast_frag_packet->flags & UNI_FRAG_LARGETAIL ? 'L' : '.'));
 
 	if (unicast_frag_packet->flags & UNI_FRAG_HEAD)
 		parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_frag_packet),

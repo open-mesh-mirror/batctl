@@ -23,6 +23,10 @@
 #include <netpacket/packet.h>
 #include "list-batman.h"
 
+#ifndef ARPHRD_IEEE80211_PRISM
+#define ARPHRD_IEEE80211_PRISM 802
+#endif
+
 #define DUMP_TYPE_BATOGM 1
 #define DUMP_TYPE_BATICMP 2
 #define DUMP_TYPE_BATUCAST 4
@@ -31,16 +35,61 @@
 #define DUMP_TYPE_BATFRAG 32
 #define DUMP_TYPE_NONBAT 64
 
+#define IEEE80211_FCTL_FTYPE 0x0c00
+#define IEEE80211_FCTL_TODS 0x0001
+#define IEEE80211_FCTL_FROMDS 0x0002
+#define IEEE80211_FCTL_PROTECTED 0x0040
+
+#define IEEE80211_FTYPE_DATA 0x0800
+
+#define IEEE80211_STYPE_QOS_DATA 0x8000
+
 struct dump_if {
 	struct list_head list;
 	char *dev;
 	int32_t raw_sock;
 	struct sockaddr_ll addr;
+	int32_t hw_type;
 };
 
 struct vlanhdr {
 	unsigned short vid;
 	u_int16_t ether_type;
 } __attribute__ ((packed));
+
+struct ieee80211_hdr {
+	u_int16_t frame_control;
+	u_int16_t duration_id;
+	u_int8_t addr1[6];
+	u_int8_t addr2[6];
+	u_int8_t addr3[6];
+	u_int16_t seq_ctrl;
+	u_int8_t addr4[6];
+} __attribute__ ((packed));
+
+struct prism_item {
+	u_int32_t did;
+	u_int16_t status;
+	u_int16_t len;
+	u_int32_t data;
+};
+
+struct prism_header {
+	u_int32_t msgcode;
+	u_int32_t msglen;
+	u_int8_t devname[16];
+	struct prism_item hosttime;
+	struct prism_item mactime;
+	struct prism_item channel;
+	struct prism_item rssi;
+	struct prism_item sq;
+	struct prism_item signal;
+	struct prism_item noise;
+	struct prism_item rate;
+	struct prism_item istx;
+	struct prism_item frmlen;
+};
+
+#define PRISM_HEADER_LEN sizeof(struct prism_header)
 
 int tcpdump(int argc, char **argv);

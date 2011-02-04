@@ -460,6 +460,30 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 	}
 }
 
+static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
+{
+	struct radiotap_header *radiotap_hdr;
+	switch (hw_type) {
+	case ARPHRD_IEEE80211_PRISM:
+		if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
+			return -1;
+		else
+			return PRISM_HEADER_LEN;
+
+	case ARPHRD_IEEE80211_RADIOTAP:
+		if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
+			return -1;
+
+		radiotap_hdr = (struct radiotap_header*)packet_buff;
+		if (buff_len <= radiotap_hdr->it_len)
+			return -1;
+		else
+			return radiotap_hdr->it_len;
+	}
+
+	return -1;
+}
+
 static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *eth_hdr;
@@ -467,12 +491,6 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int rea
 	unsigned char *shost, *dhost;
 	uint16_t fc;
 	int hdr_len;
-
-	if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
-		return;
-
-	buff_len -= PRISM_HEADER_LEN;
-	packet_buff += PRISM_HEADER_LEN;
 
 	/* we assume a minimum size of 38 bytes
 	 * (802.11 data frame + LLC)
@@ -540,6 +558,7 @@ int tcpdump(int argc, char **argv)
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
 	int read_opt = USE_BAT_HOSTS;
 	unsigned char packet_buff[2000];
+	int monitor_header_len = -1;
 
 	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
 		switch (optchar) {
@@ -609,6 +628,7 @@ int tcpdump(int argc, char **argv)
 		switch (dump_if->hw_type) {
 		case ARPHRD_ETHER:
 		case ARPHRD_IEEE80211_PRISM:
+		case ARPHRD_IEEE80211_RADIOTAP:
 			break;
 		default:
 			printf("Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
@@ -685,7 +705,10 @@ int tcpdump(int argc, char **argv)
 				parse_eth_hdr(packet_buff, read_len, read_opt, 0);
 				break;
 			case ARPHRD_IEEE80211_PRISM:
-				parse_wifi_hdr(packet_buff, read_len, read_opt, 0);
+			case ARPHRD_IEEE80211_RADIOTAP:
+				monitor_header_len = monitor_header_length(packet_buff, read_len, dump_if->hw_type);
+				if (monitor_header_len >= 0)
+					parse_wifi_hdr(packet_buff + monitor_header_len, read_len - monitor_header_len, read_opt, 0);
 				break;
 			default:
 				/* should not happen */

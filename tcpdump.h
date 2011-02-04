@@ -27,6 +27,10 @@
 #define ARPHRD_IEEE80211_PRISM 802
 #endif
 
+#ifndef ARPHRD_IEEE80211_RADIOTAP
+#define ARPHRD_IEEE80211_RADIOTAP 803
+#endif
+
 #define DUMP_TYPE_BATOGM 1
 #define DUMP_TYPE_BATICMP 2
 #define DUMP_TYPE_BATUCAST 4
@@ -67,6 +71,13 @@ struct ieee80211_hdr {
 	u_int8_t addr4[6];
 } __attribute__ ((packed));
 
+struct radiotap_header {
+	u_int8_t it_version;
+	u_int8_t it_pad;
+	u_int16_t it_len;
+	u_int32_t it_present;
+} __attribute__((__packed__));
+
 struct prism_item {
 	u_int32_t did;
 	u_int16_t status;
@@ -91,5 +102,6 @@ struct prism_header {
 };
 
 #define PRISM_HEADER_LEN sizeof(struct prism_header)
+#define RADIOTAP_HEADER_LEN sizeof(struct radiotap_header)
 
 int tcpdump(int argc, char **argv);

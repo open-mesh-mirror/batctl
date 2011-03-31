@@ -47,24 +47,8 @@ PACKAGE_NAME = batctl
 BINARY_NAME = batctl
 SOURCE_VERSION_HEADER = main.h
 
-REVISION= $(shell	if [ -d .svn ]; then \
-				if which svn > /dev/null; then \
-					echo rv$$(svn info | grep "Rev:" | sed -e '1p' -n | awk '{print $$4}'); \
-				else \
-					echo "[unknown]"; \
-				fi; \
-			elif [ -d .git ]; then \
-				if which git > /dev/null; then \
-					echo $$(git describe --always --dirty 2> /dev/null); \
-				else \
-					echo "[unknown]"; \
-				fi; \
-			elif [ -d ~/.svk ]; then \
-				if which svk > /dev/null; then \
-					echo rv$$(svk info | grep "Mirrored From" | awk '{print $$5}'); \
-				else \
-					echo "[unknown]"; \
-				fi; \
+REVISION= $(shell	if [ -d .git ]; then \
+				echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \
 			fi)
 
 REVISION_VERSION =\"\ $(REVISION)\"

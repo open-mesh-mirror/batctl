@@ -420,9 +420,9 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 	case GW_MODE_SERVER:
 		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
 		break;
-	default:
-		goto out;
 	}
+
+	goto out;
 
 opt_err:
 	printf("Error - the supplied argument is invalid: %s\n", argv[1]);

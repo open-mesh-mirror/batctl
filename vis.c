@@ -126,33 +126,33 @@ static void json_print_tq(char *orig, char *from, const long tq)
 	int int_part = TQ_MAX_VALUE / tq;
 	int frac_part = (1000 * TQ_MAX_VALUE / tq) - (int_part * 1000);
 
-	printf("\t{ router : \"%s\", ",
+	printf("{ \"router\" : \"%s\", ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("neighbor : \"%s\", label : \"%d.%03d\" }\n",
+	printf("\"neighbor\" : \"%s\", \"label\" : \"%d.%03d\" }\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)),
 	       int_part, frac_part);
 }
 
 static void json_print_HNA(char *orig, char *from)
 {
-	printf("\t{ router : \"%s\", ",
+	printf("{ \"router\" : \"%s\", ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("gateway : \"%s\", label : \"HNA\" }\n",
+	printf("\"gateway\" : \"%s\", \"label\" : \"HNA\" }\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
 static void json_print_1st(char *orig)
 {
-	printf("\t{ primary : \"%s\" }\n",
+	printf("{ \"primary\" : \"%s\" }\n",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
 static void json_print_2nd(char *orig, char *from)
 {
-	printf("\t{ secondary : \"%s\", ",
+	printf("{ \"secondary\" : \"%s\", ",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 
-	printf("of : \"%s\" }\n",
+	printf("\"of\" : \"%s\" }\n",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
 }
 

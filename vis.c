@@ -37,7 +37,7 @@
 #define TQ_MAX_VALUE 255
 
 typedef void (*print_tq_t) (char *orig, char *from, const long tq);
-typedef void (*print_HNA_t) (char *orig, char *from);
+typedef void (*print_TT_t) (char *orig, char *from);
 typedef void (*print_1st_t) (char *orig);
 typedef void (*print_2nd_t) (char *orig, char *from);
 typedef void (*print_header_t) (void);
@@ -45,22 +45,22 @@ typedef void (*print_footer_t) (void);
 
 struct funcs {
 	print_tq_t print_tq;
-	print_HNA_t print_HNA;
+	print_TT_t print_TT;
 	print_1st_t print_1st;
 	print_2nd_t print_2nd;
 	print_header_t print_header;
 	print_footer_t print_footer;
 };
 
-static bool with_HNA = true;
+static bool with_TT = true;
 static bool with_2nd = true;
 static bool with_names = true;
 
 static void usage(void)
 {
-	printf("batctl vis_data dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis_data dot {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
 	printf("or\n");
-	printf("batctl vis_data json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}\n");
+	printf("batctl vis_data json {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
 }
 
 static void dot_print_tq(char *orig, char *from, const long tq)
@@ -75,11 +75,11 @@ static void dot_print_tq(char *orig, char *from, const long tq)
 	       int_part, frac_part);
 }
 
-static void dot_print_HNA(char *orig, char *from)
+static void dot_print_TT(char *orig, char *from)
 {
 	printf("\t\"%s\" -> ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("\"%s\" [label=\"HNA\"]\n",
+	printf("\"%s\" [label=\"TT\"]\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
@@ -114,7 +114,7 @@ static void dot_print_footer(void)
 }
 
 const struct funcs dot_funcs = { dot_print_tq,
-	dot_print_HNA,
+	dot_print_TT,
 	dot_print_1st,
 	dot_print_2nd,
 	dot_print_header,
@@ -133,11 +133,11 @@ static void json_print_tq(char *orig, char *from, const long tq)
 	       int_part, frac_part);
 }
 
-static void json_print_HNA(char *orig, char *from)
+static void json_print_TT(char *orig, char *from)
 {
 	printf("{ \"router\" : \"%s\", ",
 	       get_name_by_macstr(orig, (with_names ? USE_BAT_HOSTS : 0)));
-	printf("\"gateway\" : \"%s\", \"label\" : \"HNA\" }\n",
+	printf("\"gateway\" : \"%s\", \"label\" : \"TT\" }\n",
 	       get_name_by_macstr(from, (with_names ? USE_BAT_HOSTS : 0)));
 }
 
@@ -157,7 +157,7 @@ static void json_print_2nd(char *orig, char *from)
 }
 
 const struct funcs json_funcs = { json_print_tq,
-	json_print_HNA,
+	json_print_TT,
 	json_print_1st,
 	json_print_2nd,
 	NULL,
@@ -217,12 +217,12 @@ static int format(char *mesh_iface, const struct funcs *funcs)
 				funcs->print_tq(orig, from, tq);
 				continue;
 			}
-			if (!strcmp(flag, "HNA")) {
-				/* We have an HNA record */
-				if (!with_HNA)
+			if (!strcmp(flag, "TT")) {
+				/* We have a TT record */
+				if (!with_TT)
 					continue;
 				from = strtok_r(NULL, " ", &component_save_ptr);
-				funcs->print_HNA(orig, from);
+				funcs->print_TT(orig, from);
 				continue;
 			}
 			if (!strcmp(flag, "SEC") && with_2nd) {
@@ -274,19 +274,19 @@ int vis_data(char *mesh_iface, int argc, char *argv[])
 	while (1) {
 		int option_index = 0;
 		static struct option long_options[] = {
-			{"no-HNA", 0, 0, 'H'},
+			{"no-TT", 0, 0, 'T'},
 			{"no-2nd", 0, 0, '2'},
 			{"numbers", 0, 0, 'n'},
 			{0, 0, 0, 0}
 		};
 
-		c = getopt_long(argc, argv, "hH2n", long_options, &option_index);
+		c = getopt_long(argc, argv, "hT2n", long_options, &option_index);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'H':
-			with_HNA = false;
+		case 'T':
+			with_TT = false;
 			break;
 		case '2':
 			with_2nd = false;

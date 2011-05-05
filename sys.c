@@ -213,7 +213,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	printf("[%c] %s (%d)\n", (line_ptr[0] == '1') ? 'x' : ' ',
 	       "messages related to routing / flooding / broadcasting", 1);
 	printf("[%c] %s (%d)\n", (line_ptr[0] == '2') ? 'x' : ' ',
-	       "messages related to route or hna added / changed / deleted", 2);
+	       "messages related to route or tt entry added / changed / deleted", 2);
 	printf("[%c] %s (%d)\n", (line_ptr[0] == '3') ? 'x' : ' ',
 	       "all debug messages", 3);
 

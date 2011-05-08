@@ -312,7 +312,7 @@ Usage: batctl translocal|tl
 Example:
 
 $ batctl translocal
-Locally retrieved addresses (from bat0) announced via HNA:
+Locally retrieved addresses (from bat0) announced via TT:
  * d6:e0:fd:d9:00:00
 
 batctl transglobal
@@ -324,7 +324,7 @@ Usage: batctl transglobal|tg
 
 Example:
 
-Globally announced HNAs received via the mesh (translation table):
+Globally announced TT entries received via the mesh (translation table):
  * 16:aa:c4:a2:00:00 via fe:fe:00:00:09:01
  * 5a:32:f9:df:00:00 via fe:fe:00:00:03:01
  * 32:ae:5a:00:00:00 via fe:fe:00:00:04:01
@@ -356,9 +356,9 @@ display the VIS data in dot or JSON format
 
 Usage:
 
-batctl vis dot {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}
+batctl vis dot {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}
 or
-batctl vis json {-h}{--no-HNA|-H} {--no-2nd|-2} {--numbers|-n}
+batctl vis json {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}
 
 
 Example:
@@ -367,19 +367,19 @@ Example:
 $ batctl vis_data dot
 digraph {
 	"A" -> "B" [label="1.00"]
-	"A" -> "00:ff:f3:cc:68:ac" [label="HNA"]
+	"A" -> "00:ff:f3:cc:68:ac" [label="TT"]
 	subgraph "cluster_A" {
 		"A" [peripheries=2]
 	}
 	"B" -> "A" [label="1.00"]
 	"B-if2" -> "C" [label="2.00"]
-	"B" -> "22:ff:f3:cc:68:ac" [label="HNA"]
+	"B" -> "22:ff:f3:cc:68:ac" [label="TT"]
 	subgraph "cluster_B" {
 		"B" [peripheries=2]
 		"B-if2"
 	}
 	"C" -> "B-if2" [label="2.00"]
-	"C" -> "44:ff:f3:cc:68:ac" [label="HNA"]
+	"C" -> "44:ff:f3:cc:68:ac" [label="TT"]
 	subgraph "cluster_C" {
 		"C" [peripheries=2]
 	}
@@ -395,7 +395,7 @@ connection (100%), 2.0 means 50%, 3.0 means 33% and so on.
 
 A host's mac address which is currently connected to the interface of a mesh
 node (either the mesh node itself or hosts being bridged into the mesh) is
-being displayed with an "HNA"-label. (--no-hna omits this output)
+being displayed with an "TT"-label. (--no-TT omits this output)
 
 To still have the information about which interfaces belong to which mesh node
 a subgraph/cluster is being added. The subpgraph is being labeled with a mesh
@@ -422,7 +422,7 @@ Meaning of the shapes in this image file:
 * Boxes:    interfaces belonging to one BATMAN-node
 * double circled interfaces: the primary interface of a BATMAN-node
       (which is known to other BATMAN-nodes only, except direct neighbours)
-* Ellipses with an HNA-arrow: mesh clients (this can be a BATMAN-node itself
+* Ellipses with a TT-arrow: mesh clients (this can be a BATMAN-node itself
       with its bat0 interface or computers/devices being bridged into the mesh)
 * Arrows with numbers: the transmit quality (in the form 1/TQ) from one
       BATMAN interface to another BATMAN interface

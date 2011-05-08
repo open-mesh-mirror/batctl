@@ -65,7 +65,7 @@ Once started batctl will display the list of announced gateways in the network. 
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.
 .br
 .IP "\fBloglevel\fP|\fBll\fP      [\fBlevel\fP]"
-If no parameter is given the current log level settings are displayed otherwise the parameter is used to set the log level. Level 0 disables all verbose logging. Level 1 enables messages related to routing / flooding / broadcasting. Level 2 enables messages related to route or hna added / changed / deleted. Level 3 enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
+If no parameter is given the current log level settings are displayed otherwise the parameter is used to set the log level. Level 0 disables all verbose logging. Level 1 enables messages related to routing / flooding / broadcasting. Level 2 enables messages related to route or tt entry added / changed / deleted. Level 3 enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to see them. Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options won't be available.
 .br
 .IP "\fBlog\fP|\fBl\fP            [\fB\-n\fP]\fP"
 batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output.
@@ -127,18 +127,18 @@ Display the soft\-interface neighbor table. batctl will refresh the list every s
 .IP "\fBvis_mode|vm\fP	  [\fBmode\fP]\fP"
 If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
 .br
-.IP "\fBvis_data|vd dot\fP  [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+.IP "\fBvis_data|vd dot\fP  [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-T\fP|\fB\-\-no-TT\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
 Display the visualisation data in graphviz \fBdot\fP(1) format. If
 "\-\-numbers" or "\-n" is given batctl will not replace the MAC
-addresses with bat-host names in the output. With "\-\-no-HNA" or
-"\-H" the HNA entries are not displayed, so the pure mesh topology can
+addresses with bat-host names in the output. With "\-\-no-TT" or
+"\-T" the TT entries are not displayed, so the pure mesh topology can
 be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around
 primary and secondary addresses from the same device.
 .br
-.IP "\fBvis_data|vd json\fP [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-H\fP|\fB\-\-no-HNA\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
+.IP "\fBvis_data|vd json\fP [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-T\fP|\fB\-\-no-TT\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
 Display the visualisation data in JSON format. If "\-\-numbers" or
 "\-n" is given batctl will not replace the MAC addresses with bat-host
-names in the output. With "\-\-no-HNA" or "\-H" the HNA entries are
+names in the output. With "\-\-no-TT" or "\-T" the TT entries are
 not displayed, so the pure mesh topology can be seen. With
 "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and
 secondary addresses from the same device.

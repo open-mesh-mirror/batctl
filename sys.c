@@ -182,6 +182,7 @@ static void log_level_usage(void)
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res;
+	int log_level;
 	char *path_buff;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
@@ -208,14 +209,16 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	if (res != EXIT_SUCCESS)
 		goto out;
 
-	printf("[%c] %s (%d)\n", (line_ptr[0] == '0') ? 'x' : ' ',
+	log_level = strtol(line_ptr, (char **) NULL, 10);
+
+	printf("[%c] %s (%d)\n", (!log_level) ? 'x' : ' ',
 	       "all debug output disabled", 0);
-	printf("[%c] %s (%d)\n", (line_ptr[0] == '1') ? 'x' : ' ',
+	printf("[%c] %s (%d)\n", (log_level & 1) ? 'x' : ' ',
 	       "messages related to routing / flooding / broadcasting", 1);
-	printf("[%c] %s (%d)\n", (line_ptr[0] == '2') ? 'x' : ' ',
-	       "messages related to route or tt entry added / changed / deleted", 2);
-	printf("[%c] %s (%d)\n", (line_ptr[0] == '3') ? 'x' : ' ',
-	       "all debug messages", 3);
+	printf("[%c] %s (%d)\n", (log_level & 2) ? 'x' : ' ',
+	       "messages related to route added / changed / deleted", 2);
+	printf("[%c] %s (%d)\n", (log_level & 4) ? 'x' : ' ',
+	       "messages related to translation table operations", 4);
 
 out:
 	if (errno == ENOENT)

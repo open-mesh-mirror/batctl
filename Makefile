@@ -1,3 +1,5 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
 #
 # Copyright (C) 2006-2011 B.A.T.M.A.N. contributors
 #

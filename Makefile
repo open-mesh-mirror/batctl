@@ -18,7 +18,7 @@
 # 02110-1301, USA
 #
 
-# batctl build and install configuration
+# batctl build
 BINARY_NAME = batctl
 OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect.o
 
@@ -46,7 +46,8 @@ COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
 
 # standard install paths
-SBINDIR = /usr/sbin
+PREFIX = /usr/local
+SBINDIR = $(PREFIX)/sbin
 
 # try to generate revision
 REVISION = $(shell if [ -d .git ]; then echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); fi)

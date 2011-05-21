@@ -18,6 +18,16 @@
 # 02110-1301, USA
 #
 
+# batctl build and install configuration
+BINARY_NAME = batctl
+OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect.o
+
+# batctl flags and options
+CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing
+EXTRA_CFLAGS += -DREVISION_VERSION=$(REVISION_VERSION)
+LDFLAGS += -lm
+
+# disable verbose output
 ifneq ($(findstring $(MAKEFLAGS),s),s)
 ifndef V
 	Q_CC = @echo '   ' CC $@;
@@ -27,32 +37,26 @@ ifndef V
 endif
 endif
 
+# standard build tools
 CC ?= gcc
-CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing
-EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
-LDFLAGS += -lm
 
+# standard install paths
 SBINDIR = $(INSTALL_PREFIX)/usr/sbin
 
-OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect.o
-DEP = $(OBJ:.o=.d)
-
-BINARY_NAME = batctl
-
-REVISION= $(shell	if [ -d .git ]; then \
-				echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \
-			fi)
-
+# try to generate revision
+REVISION = $(shell if [ -d .git ]; then echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); fi)
 REVISION_VERSION =\"\ $(REVISION)\"
 
+# default target
 all: $(BINARY_NAME)
+
+# standard build rules
+.SUFFIXES: .o .c
+.c.o:
+	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
 
 $(BINARY_NAME): $(OBJ) Makefile
 	$(Q_LD)$(CC) -o $@ $(OBJ) $(LDFLAGS)
-
-.c.o:
-	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
--include $(DEP)
 
 clean:
 	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
@@ -60,5 +64,9 @@ clean:
 install: $(BINARY_NAME)
 	mkdir -p $(SBINDIR)
 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
+
+# load dependencies
+DEP = $(OBJ:.o=.d)
+-include $(DEP)
 
 .PHONY: all clean install

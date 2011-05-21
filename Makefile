@@ -46,7 +46,7 @@ COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
 
 # standard install paths
-SBINDIR = $(INSTALL_PREFIX)/usr/sbin
+SBINDIR = /usr/sbin
 
 # try to generate revision
 REVISION = $(shell if [ -d .git ]; then echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); fi)
@@ -67,8 +67,8 @@ clean:
 	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
 
 install: $(BINARY_NAME)
-	$(MKDIR) $(SBINDIR)
-	$(INSTALL) -m 0755 $(BINARY_NAME) $(SBINDIR)
+	$(MKDIR) $(DESTDIR)$(SBINDIR)
+	$(INSTALL) -m 0755 $(BINARY_NAME) $(DESTDIR)$(SBINDIR)
 
 # load dependencies
 DEP = $(OBJ:.o=.d)

@@ -27,7 +27,7 @@ ifndef V
 endif
 endif
 
-CC = gcc
+CC ?= gcc
 CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing
 EXTRA_CFLAGS = -DREVISION_VERSION=$(REVISION_VERSION)
 LDFLAGS += -lm

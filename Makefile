@@ -53,10 +53,7 @@ REVISION= $(shell	if [ -d .git ]; then \
 
 REVISION_VERSION =\"\ $(REVISION)\"
 
-NUM_CPUS = $(shell nproc 2> /dev/null || echo 1)
-
-all:
-	$(MAKE) -j $(NUM_CPUS) $(BINARY_NAME)
+all: $(BINARY_NAME)
 
 $(BINARY_NAME): $(SRC_O) $(SRC_H) Makefile
 	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)

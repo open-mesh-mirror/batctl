@@ -32,10 +32,6 @@ LDFLAGS += -lm
 
 SBINDIR = $(INSTALL_PREFIX)/usr/sbin
 
-LOG_BRANCH = trunk/batctl
-
-SRC_FILES = "\(\.c\)\|\(\.h\)\|\(Makefile\)\|\(INSTALL\)\|\(LIESMICH\)\|\(README\)\|\(THANKS\)\|\(TRASH\)\|\(Doxyfile\)\|\(./posix\)\|\(./linux\)\|\(./bsd\)\|\(./man\)\|\(./doc\)"
-
 EXTRA_MODULES_C := bisect.c
 EXTRA_MODULES_H := bisect.h
 
@@ -43,9 +39,7 @@ SRC_C = main.c bat-hosts.c functions.c sys.c debug.c ping.c traceroute.c tcpdump
 SRC_H = main.h bat-hosts.h functions.h sys.h debug.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
 SRC_O = $(SRC_C:.c=.o)
 
-PACKAGE_NAME = batctl
 BINARY_NAME = batctl
-SOURCE_VERSION_HEADER = main.h
 
 REVISION= $(shell	if [ -d .git ]; then \
 				echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); \

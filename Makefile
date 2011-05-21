@@ -23,9 +23,9 @@ BINARY_NAME = batctl
 OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect.o
 
 # batctl flags and options
-CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing
-EXTRA_CFLAGS += -DREVISION_VERSION=$(REVISION_VERSION)
-LDFLAGS += -lm
+CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD
+CPPFLAGS += -DREVISION_VERSION=$(REVISION_VERSION)
+LDLIBS += -lm
 
 # disable verbose output
 ifneq ($(findstring $(MAKEFLAGS),s),s)
@@ -39,6 +39,8 @@ endif
 
 # standard build tools
 CC ?= gcc
+COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
 
 # standard install paths
 SBINDIR = $(INSTALL_PREFIX)/usr/sbin
@@ -53,10 +55,10 @@ all: $(BINARY_NAME)
 # standard build rules
 .SUFFIXES: .o .c
 .c.o:
-	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
+	$(COMPILE.c) -o $@ $<
 
-$(BINARY_NAME): $(OBJ) Makefile
-	$(Q_LD)$(CC) -o $@ $(OBJ) $(LDFLAGS)
+$(BINARY_NAME): $(OBJ)
+	$(LINK.o) $^ $(LDLIBS) -o $@
 
 clean:
 	rm -f $(BINARY_NAME) $(OBJ) $(DEP)

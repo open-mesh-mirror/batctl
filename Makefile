@@ -39,6 +39,9 @@ endif
 
 # standard build tools
 CC ?= gcc
+RM ?= rm -f
+INSTALL ?= install
+MKDIR ?= mkdir -p
 COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -61,11 +64,11 @@ $(BINARY_NAME): $(OBJ)
 	$(LINK.o) $^ $(LDLIBS) -o $@
 
 clean:
-	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
+	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
 
 install: $(BINARY_NAME)
-	mkdir -p $(SBINDIR)
-	install -m 0755 $(BINARY_NAME) $(SBINDIR)
+	$(MKDIR) $(SBINDIR)
+	$(INSTALL) -m 0755 $(BINARY_NAME) $(SBINDIR)
 
 # load dependencies
 DEP = $(OBJ:.o=.d)

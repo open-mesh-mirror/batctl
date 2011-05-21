@@ -60,3 +60,5 @@ clean:
 install:
 	mkdir -p $(SBINDIR)
 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
+
+.PHONY: all clean install

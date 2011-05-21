@@ -32,12 +32,8 @@ LDFLAGS += -lm
 
 SBINDIR = $(INSTALL_PREFIX)/usr/sbin
 
-EXTRA_MODULES_C := bisect.c
-EXTRA_MODULES_H := bisect.h
-
-SRC_C = main.c bat-hosts.c functions.c sys.c debug.c ping.c traceroute.c tcpdump.c list-batman.c hash.c vis.c debugfs.c $(EXTRA_MODULES_C)
-SRC_H = main.h bat-hosts.h functions.h sys.h debug.h ping.h traceroute.h tcpdump.h list-batman.h hash.h allocate.h vis.h debugfs.h $(EXTRA_MODULES_H)
-SRC_O = $(SRC_C:.c=.o)
+OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect.o
+DEP = $(OBJ:.o=.d)
 
 BINARY_NAME = batctl
 
@@ -49,15 +45,15 @@ REVISION_VERSION =\"\ $(REVISION)\"
 
 all: $(BINARY_NAME)
 
-$(BINARY_NAME): $(SRC_O) $(SRC_H) Makefile
-	$(Q_LD)$(CC) -o $@ $(SRC_O) $(LDFLAGS)
+$(BINARY_NAME): $(OBJ) Makefile
+	$(Q_LD)$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 .c.o:
 	$(Q_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -MD -c $< -o $@
--include $(SRC_C:.c=.d)
+-include $(DEP)
 
 clean:
-	rm -f $(BINARY_NAME) *.o *.d
+	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
 
 install:
 	mkdir -p $(SBINDIR)

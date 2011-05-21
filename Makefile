@@ -57,7 +57,7 @@ $(BINARY_NAME): $(OBJ) Makefile
 clean:
 	rm -f $(BINARY_NAME) $(OBJ) $(DEP)
 
-install:
+install: $(BINARY_NAME)
 	mkdir -p $(SBINDIR)
 	install -m 0755 $(BINARY_NAME) $(SBINDIR)
 

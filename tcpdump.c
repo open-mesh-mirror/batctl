@@ -51,8 +51,9 @@ if ((size_t)(buff_len) < (check_len)) { \
 	return; \
 }
 
-static unsigned short dump_level = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
+static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
 		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_BATFRAG | DUMP_TYPE_BATTT | DUMP_TYPE_NONBAT;
+static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
 
@@ -63,6 +64,8 @@ static void tcpdump_usage(void)
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
 	printf(" \t -p dump specific packet type\n");
+	printf(" \t -x dump all packet types except specified\n");
+	printf("packet types:\n");
 	printf(" \t\t%3d - batman ogm packets\n", DUMP_TYPE_BATOGM);
 	printf(" \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
 	printf(" \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
@@ -621,7 +624,9 @@ int tcpdump(int argc, char **argv)
 	unsigned char packet_buff[2000];
 	int monitor_header_len = -1;
 
-	while ((optchar = getopt(argc, argv, "hnp:")) != -1) {
+	dump_level = dump_level_all;
+
+	while ((optchar = getopt(argc, argv, "hnp:x:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			tcpdump_usage();
@@ -632,8 +637,14 @@ int tcpdump(int argc, char **argv)
 			break;
 		case 'p':
 			tmp = strtol(optarg, NULL , 10);
-			if ((tmp > 0) && (tmp <= dump_level))
+			if ((tmp > 0) && (tmp <= dump_level_all))
 				dump_level = tmp;
+			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			break;
+		case 'x':
+			tmp = strtol(optarg, NULL , 10);
+			if ((tmp > 0) && (tmp <= dump_level_all))
+				dump_level &= ~tmp;
 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
 			break;
 		default:

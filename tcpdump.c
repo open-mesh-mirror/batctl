@@ -253,12 +253,10 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 
 static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct tt_query_packet *tt_query_packet;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct tt_query_packet), "BAT TT");
 
-	ether_header = (struct ether_header *)packet_buff;
 	tt_query_packet = (struct tt_query_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
@@ -280,12 +278,10 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 
 static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct roam_adv_packet *roam_adv_packet;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct roam_adv_packet), "BAT ROAM");
 
-	ether_header = (struct ether_header *)packet_buff;
 	roam_adv_packet = (struct roam_adv_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)

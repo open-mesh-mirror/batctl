@@ -315,15 +315,15 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
 
-	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
-	        get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
-	        ntohl(batman_packet->seqno), batman_packet->tq, batman_packet->ttvn,
-	        batman_packet->ttl, batman_packet->version,
-	        (batman_packet->flags & DIRECTLINK ? 'D' : '.'),
-	        (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
-	        (batman_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
-	        (batman_packet->gw_flags ? 'G' : '.'),
-	        (size_t)buff_len - sizeof(struct ether_header));
+	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
+	       ntohl(batman_packet->seqno), batman_packet->tq, batman_packet->ttvn,
+	       ntohl(batman_packet->tt_crc), batman_packet->ttl, batman_packet->version,
+	       (batman_packet->flags & DIRECTLINK ? 'D' : '.'),
+	       (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
+	       (batman_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
+	       (batman_packet->gw_flags ? 'G' : '.'),
+	       (size_t)buff_len - sizeof(struct ether_header));
 }
 
 static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)

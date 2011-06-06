@@ -270,6 +270,13 @@ void fragmentation_usage(void)
 	printf(" \t -h print this help\n");
 }
 
+void ap_isolation_usage(void)
+{
+	printf("Usage: batctl [options] ap_isolation [0|1]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
 int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 		       char *file_path, void setting_usage(void),
 		       const char *sysfs_param[])

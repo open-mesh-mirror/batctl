@@ -254,6 +254,7 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct tt_query_packet *tt_query_packet;
+	char *tt_desc, *tt_data, tt_type;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct tt_query_packet), "BAT TT");
 
@@ -262,17 +263,32 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 	if (!time_printed)
 		print_time();
 
+	switch (tt_query_packet->flags & TT_QUERY_TYPE_MASK) {
+	case TT_REQUEST:
+		tt_desc = "request";
+		tt_data = "crc";
+		tt_type = 'Q';
+		break;
+	case TT_RESPONSE:
+		tt_desc = "response";
+		tt_data = "entries";
+		tt_type = 'P';
+		break;
+	default:
+		tt_desc = "unknown";
+		tt_data = "unknown";
+		tt_type = '?';
+		break;
+	}
+
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->src, read_opt));
 
-	printf("%s: TT %s, ttvn %d, %s %d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
+	printf("%s: TT %s, ttvn %d, %s %d, ttl %2d, v %d, flags [%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
-	       tt_query_packet->flags & TT_RESPONSE ? "response" : "request",
-	       tt_query_packet->ttvn, tt_query_packet->flags & TT_RESPONSE ? "entries" : "crc",
-	       ntohs(tt_query_packet->tt_data), tt_query_packet->ttl, tt_query_packet->version,
-	       (tt_query_packet->flags & TT_REQUEST ? 'Q' : '.'),
-	       (tt_query_packet->flags & TT_RESPONSE ? 'P' : '.'),
-	       (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
+	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
+	       tt_query_packet->ttl, tt_query_packet->version,
+	       tt_type, (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
 

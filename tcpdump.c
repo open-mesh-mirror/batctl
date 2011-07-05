@@ -284,7 +284,7 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->src, read_opt));
 
-	printf("%s: TT %s, ttvn %d, %s %d, ttl %2d, v %d, flags [%c%c], length %zu\n",
+	printf("%s: TT %s, ttvn %d, %s %u, ttl %2d, v %d, flags [%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
 	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
 	       tt_query_packet->ttl, tt_query_packet->version,

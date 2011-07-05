@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		goto err;
 
 	if (strcmp(argv[1], "-v") == 0) {
-		printf("batctl %s%s\n", SOURCE_VERSION, (strlen(REVISION_VERSION) > 3 ? REVISION_VERSION : ""));
+		printf("batctl %s\n", SOURCE_VERSION);
 		exit(EXIT_SUCCESS);
 	}
 

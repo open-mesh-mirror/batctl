@@ -25,7 +25,6 @@ MANPAGE = man/batctl.8
 
 # batctl flags and options
 CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD
-CPPFLAGS += -DREVISION_VERSION=$(REVISION_VERSION)
 LDLIBS += -lm
 
 # disable verbose output
@@ -52,8 +51,12 @@ SBINDIR = $(PREFIX)/sbin
 MANDIR = $(PREFIX)/share/man
 
 # try to generate revision
-REVISION = $(shell if [ -d .git ]; then echo $$(git describe --always --dirty 2> /dev/null || echo "[unknown]"); fi)
-REVISION_VERSION =\"\ $(REVISION)\"
+REVISION= $(shell	if [ -d .git ]; then \
+				echo $$(git describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
+			fi)
+ifneq ($(REVISION),)
+CPPFLAGS += -DSOURCE_VERSION=\"$(REVISION)\"
+endif
 
 # default target
 all: $(BINARY_NAME)

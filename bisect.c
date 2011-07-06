@@ -194,7 +194,7 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 	struct seqno_event *seqno_event;
 	struct rt_table *rt_table, *prev_rt_table = NULL;
 	struct rt_hist *rt_hist;
-	int i, j;
+	int i, j = -1;
 
 	if (!curr_bat_node) {
 		fprintf(stderr, "Routing table change without preceding OGM - skipping");
@@ -331,7 +331,6 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 	}
 
 	if (prev_rt_table) {
-		j = -1;
 		for (i = 0; i < prev_rt_table->num_entries; i++) {
 			/* if we have a previously deleted item don't copy it over */
 			if (prev_rt_table->entries[i].flags == RT_FLAG_DELETE) {

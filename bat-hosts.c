@@ -179,7 +179,7 @@ void bat_hosts_init(int read_opt)
 	if (!host_hash) {
 		if (read_opt & USE_BAT_HOSTS)
 			printf("Warning - could not create bat hosts hash table\n");
-		return;
+		goto out;
 	}
 
 	homedir = getenv("HOME");
@@ -216,6 +216,7 @@ void bat_hosts_init(int read_opt)
 			parse_hosts_file(&host_hash, normalized + (i * PATH_MAX), read_opt);
 	}
 
+out:
 	free(normalized);
 }
 

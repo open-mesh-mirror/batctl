@@ -318,27 +318,27 @@ static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int r
 static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
-	struct batman_packet *batman_packet;
+	struct batman_ogm_packet *batman_ogm_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_packet), "BAT OGM");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_ogm_packet), "BAT OGM");
 
 	ether_header = (struct ether_header *)packet_buff;
-	batman_packet = (struct batman_packet *)(packet_buff + sizeof(struct ether_header));
+	batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		print_time();
 
 	printf("BAT %s: ",
-	       get_name_by_macaddr((struct ether_addr *)batman_packet->orig, read_opt));
+	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
 
 	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
-	       ntohl(batman_packet->seqno), batman_packet->tq, batman_packet->ttvn,
-	       ntohl(batman_packet->tt_crc), batman_packet->ttl, batman_packet->version,
-	       (batman_packet->flags & DIRECTLINK ? 'D' : '.'),
-	       (batman_packet->flags & VIS_SERVER ? 'V' : '.'),
-	       (batman_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
-	       (batman_packet->gw_flags ? 'G' : '.'),
+	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
+	       ntohl(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
+	       (batman_ogm_packet->flags & DIRECTLINK ? 'D' : '.'),
+	       (batman_ogm_packet->flags & VIS_SERVER ? 'V' : '.'),
+	       (batman_ogm_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
+	       (batman_ogm_packet->gw_flags ? 'G' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
 
@@ -469,7 +469,7 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct batman_packet *batman_packet;
+	struct batman_ogm_packet *batman_ogm_packet;
 	struct ether_header *eth_hdr;
 
 	eth_hdr = (struct ether_header *)packet_buff;
@@ -488,10 +488,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
 	case ETH_P_BATMAN:
-		batman_packet = (struct batman_packet *)(packet_buff + ETH_HLEN);
+		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
 
-		switch (batman_packet->packet_type) {
-		case BAT_PACKET:
+		switch (batman_ogm_packet->packet_type) {
+		case BAT_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
 				dump_batman_ogm(packet_buff, buff_len, read_opt, time_printed);
 			break;
@@ -524,7 +524,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		default:
-			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_packet->packet_type);
+			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->packet_type);
 			break;
 		}
 

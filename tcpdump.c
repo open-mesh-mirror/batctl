@@ -331,10 +331,10 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
 
-	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
+	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %hu, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
-	       ntohl(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
+	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
 	       (batman_ogm_packet->flags & DIRECTLINK ? 'D' : '.'),
 	       (batman_ogm_packet->flags & VIS_SERVER ? 'V' : '.'),
 	       (batman_ogm_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),

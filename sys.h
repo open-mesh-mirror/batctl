@@ -34,6 +34,7 @@
 #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_FRAG "fragmentation"
+#define SYS_AP_ISOLA "ap_isolation"
 
 enum gw_modes {
 	GW_MODE_OFF,
@@ -47,6 +48,7 @@ extern const char *sysfs_param_server[];
 void aggregation_usage(void);
 void bonding_usage(void);
 void fragmentation_usage(void);
+void ap_isolation_usage(void);
 void gw_mode_usage(void);
 void vis_mode_usage(void);
 void orig_interval_usage(void);

@@ -58,6 +58,7 @@ void print_usage(void) {
 	printf(" \taggregation|ag  [0|1]             \tdisplay or modify the packet aggregation setting\n");
 	printf(" \tbonding|b       [0|1]             \tdisplay or modify the bonding mode setting\n");
 	printf(" \tfragmentation|f [0|1]             \tdisplay or modify the fragmentation mode setting\n");
+	printf(" \tap_isolation|ap [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
 	printf(" \tping|p          <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr   <destination>     \ttraceroute another batman adv host via layer 2\n");
@@ -187,6 +188,11 @@ int main(int argc, char **argv)
 
 		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
 					 SYS_FRAG, fragmentation_usage, sysfs_param_enable);
+
+	} else if ((strcmp(argv[1], "ap_isolation") == 0) || (strcmp(argv[1], "ap") == 0)) {
+
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_AP_ISOLA, ap_isolation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 

@@ -283,8 +283,8 @@ int ping(char *mesh_iface, int argc, char **argv)
 			break;
 		case PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-					icmp_packet_in.ttl, COMPAT_VERSION);
-			printf("Please make sure to compatible versions!\n");
+					icmp_packet_in.version, COMPAT_VERSION);
+			printf("Please make sure to use compatible versions!\n");
 			goto out;
 		default:
 			printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);

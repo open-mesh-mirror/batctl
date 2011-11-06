@@ -36,9 +36,11 @@
 #include "tcpdump.h"
 #include "bisect.h"
 #include "vis.h"
+#include "functions.h"
 #include <err.h>
 
 char mesh_dfl_iface[] = "bat0";
+char module_ver_path[] = "/sys/module/batman_adv/version";
 
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
@@ -96,7 +98,18 @@ int main(int argc, char **argv)
 		goto err;
 
 	if (strcmp(argv[1], "-v") == 0) {
-		printf("batctl %s\n", SOURCE_VERSION);
+		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
+
+		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+			line_ptr[strlen(line_ptr) - 1] = '\0';
+
+		if (ret == EXIT_SUCCESS)
+			printf("%s]\n", line_ptr);
+		else
+			printf("module not loaded]\n");
+
+		free(line_ptr);
 		exit(EXIT_SUCCESS);
 	}
 

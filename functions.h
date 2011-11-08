@@ -40,7 +40,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2);
 extern char *line_ptr;
 
 enum {
-	SINGLE_READ = 0x00,
+	NO_FLAGS = 0x00,
 	CONT_READ = 0x01,
 	CLR_CONT_READ = 0x02,
 	USE_BAT_HOSTS = 0x04,

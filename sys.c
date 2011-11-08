@@ -79,7 +79,7 @@ static int print_interfaces(char *mesh_iface)
 
 	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
 		if (res != EXIT_SUCCESS)
 			continue;
 
@@ -96,7 +96,7 @@ static int print_interfaces(char *mesh_iface)
 		line_ptr = NULL;
 
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, SINGLE_READ | USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
 		if (res != EXIT_SUCCESS) {
 			printf("<error reading status>\n");
 			continue;
@@ -174,16 +174,24 @@ err:
 
 static void log_level_usage(void)
 {
-	printf("Usage: batctl [options] loglevel [level]\n");
+	printf("Usage: batctl [options] loglevel [level[ level[ level]]...]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
+	printf("levels:\n");
+	printf(" \t none    Debug logging is disabled\n");
+	printf(" \t all     Print messages from all below\n");
+	printf(" \t batman  Messages related to routing / flooding / broadcasting\n");
+	printf(" \t routes  Messages related to route added / changed / deleted\n");
+	printf(" \t tt      Messages related to translation table operations\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res;
-	int log_level;
+	int log_level = 0;
 	char *path_buff;
+	char str[4];
+	int i;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -200,11 +208,29 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc != 1) {
-		res = write_file(path_buff, SYS_LOG_LEVEL, argv[1], NULL);
+		for (i = 1; i < argc; i++) {
+			if (strcmp(argv[i], "none") == 0) {
+				log_level = 0;
+				break;
+			} else if (strcmp(argv[i], "all") == 0) {
+				log_level = 15;
+				break;
+			} else if (strcmp(argv[i], "batman") == 0)
+				log_level |= (1 << 0);
+			else if (strcmp(argv[i], "routes") == 0)
+				log_level |= (1 << 1);
+			else if (strcmp(argv[i], "tt") == 0)
+				log_level |= (1 << 2);
+			else
+				log_level_usage();
+		}
+
+		snprintf(str, sizeof(str), "%i", log_level);
+		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
 		goto out;
 	}
 
-	res = read_file(path_buff, SYS_LOG_LEVEL, SINGLE_READ | USE_READ_BUFF, 0, 0);
+	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0);
 
 	if (res != EXIT_SUCCESS)
 		goto out;
@@ -300,7 +326,7 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, file_path, SINGLE_READ, 0, 0);
+		res = read_file(path_buff, file_path, NO_FLAGS, 0, 0);
 		goto out;
 	}
 
@@ -355,7 +381,7 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, SYS_GW_MODE, SINGLE_READ | USE_READ_BUFF, 0, 0);
+		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0);
 
 		if (res != EXIT_SUCCESS)
 			goto out;
@@ -375,10 +401,10 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 
 		switch (gw_mode) {
 		case GW_MODE_CLIENT:
-			res = read_file(path_buff, SYS_GW_SEL, SINGLE_READ | USE_READ_BUFF, 0, 0);
+			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0);
 			break;
 		case GW_MODE_SERVER:
-			res = read_file(path_buff, SYS_GW_BW, SINGLE_READ | USE_READ_BUFF, 0, 0);
+			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0);
 			break;
 		default:
 			printf("off\n");

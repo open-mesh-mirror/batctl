@@ -84,21 +84,26 @@ traceroute to fe:fe:00:00:09:01 (fe:fe:00:00:09:01), 50 hops max, 19 byte packet
 batctl tcpdump
 ===============
 
-tcpdump layer 2 traffic on the given interface
+tcpdump layer 2 and/or layer 3 traffic on the given interface
 
 Usage: batctl tcpdump [options] interface [interface]
 options:
          -h print this help
          -n don't convert addresses to bat-host names
          -p dump specific packet type
-                1 - batman ogm packets
-                2 - batman icmp packets
-                4 - batman unicast packets
-                8 - batman broadcast packets
-                16 - batman vis packets
-                32 - batman fragmented packets
-                64 - non batman packets
-                65 - batman ogm & non batman packets
+         -x dump all packet types except specified
+packet types:
+                  1 - batman ogm packets
+                  2 - batman icmp packets
+                  4 - batman unicast packets
+                  8 - batman broadcast packets
+                 16 - batman vis packets
+                 32 - batman fragmented packets
+                 64 - batman tt / roaming packets
+                128 - non batman packets
+                129 - batman ogm & non batman packets
+
+tcpdump supports standard interfaces as well as raw wifi interfaces running in monitor mode.
 
 Example output for tcpdump:
 

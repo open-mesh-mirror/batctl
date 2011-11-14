@@ -237,14 +237,15 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 
 	log_level = strtol(line_ptr, (char **) NULL, 10);
 
-	printf("[%c] %s (%d)\n", (!log_level) ? 'x' : ' ',
-	       "all debug output disabled", 0);
-	printf("[%c] %s (%d)\n", (log_level & 1) ? 'x' : ' ',
-	       "messages related to routing / flooding / broadcasting", 1);
-	printf("[%c] %s (%d)\n", (log_level & 2) ? 'x' : ' ',
-	       "messages related to route added / changed / deleted", 2);
-	printf("[%c] %s (%d)\n", (log_level & 4) ? 'x' : ' ',
-	       "messages related to translation table operations", 4);
+	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
+	       "all debug output disabled", "none");
+	printf("[%c] %s (%s)\n", (log_level & 1) ? 'x' : ' ',
+	       "messages related to routing / flooding / broadcasting",
+	       "batman");
+	printf("[%c] %s (%s)\n", (log_level & 2) ? 'x' : ' ',
+	       "messages related to route added / changed / deleted", "routes");
+	printf("[%c] %s (%s)\n", (log_level & 4) ? 'x' : ' ',
+	       "messages related to translation table operations", "tt");
 
 out:
 	if (errno == ENOENT)

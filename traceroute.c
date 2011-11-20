@@ -121,15 +121,15 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	}
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.version = COMPAT_VERSION;
-	icmp_packet_out.packet_type = BAT_ICMP;
+	icmp_packet_out.header.version = COMPAT_VERSION;
+	icmp_packet_out.header.packet_type = BAT_ICMP;
 	icmp_packet_out.msg_type = ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
 
 	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
-	for (icmp_packet_out.ttl = 1; !dst_reached && icmp_packet_out.ttl < TTL_MAX; icmp_packet_out.ttl++) {
+	for (icmp_packet_out.header.ttl = 1; !dst_reached && icmp_packet_out.header.ttl < TTL_MAX; icmp_packet_out.header.ttl++) {
 		return_mac = NULL;
 		bat_host = NULL;
 
@@ -188,7 +188,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 				goto out;
 			case PARAMETER_PROBLEM:
 				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-						icmp_packet_in.version, COMPAT_VERSION);
+						icmp_packet_in.header.version, COMPAT_VERSION);
 				printf("Please make sure to use compatible versions!\n");
 				goto out;
 			default:
@@ -198,9 +198,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		}
 
 		if (!bat_host)
-			printf("%2hhu: %s", icmp_packet_out.ttl, (return_mac ? return_mac : "*"));
+			printf("%2hhu: %s", icmp_packet_out.header.ttl, (return_mac ? return_mac : "*"));
 		else
-			printf("%2hhu: %s (%s)", icmp_packet_out.ttl, bat_host->name, return_mac);
+			printf("%2hhu: %s (%s)", icmp_packet_out.header.ttl, bat_host->name, return_mac);
 
 		for (i = 0; i < NUM_PACKETS; i++) {
 			if (time_delta[i])

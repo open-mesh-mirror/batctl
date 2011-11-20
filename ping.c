@@ -163,10 +163,10 @@ int ping(char *mesh_iface, int argc, char **argv)
 	packet_len = sizeof(struct icmp_packet);
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.packet_type = BAT_ICMP;
-	icmp_packet_out.version = COMPAT_VERSION;
+	icmp_packet_out.header.packet_type = BAT_ICMP;
+	icmp_packet_out.header.version = COMPAT_VERSION;
 	icmp_packet_out.msg_type = ECHO_REQUEST;
-	icmp_packet_out.ttl = 50;
+	icmp_packet_out.header.ttl = 50;
 	icmp_packet_out.seqno = 0;
 
 	if (rr) {
@@ -234,7 +234,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 			time_delta = end_timer();
 			printf("%zd bytes from %s icmp_seq=%hu ttl=%d time=%.2f ms",
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
-					icmp_packet_in.ttl, time_delta);
+					icmp_packet_in.header.ttl, time_delta);
 
 			if (read_len == sizeof(struct icmp_packet_rr)) {
 				if (last_rr_cur == icmp_packet_in.rr_cur
@@ -283,7 +283,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 			break;
 		case PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-					icmp_packet_in.version, COMPAT_VERSION);
+					icmp_packet_in.header.version, COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");
 			goto out;
 		default:

@@ -287,7 +287,7 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 	printf("%s: TT %s, ttvn %d, %s %u, ttl %2d, v %d, flags [%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
 	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
-	       tt_query_packet->ttl, tt_query_packet->version,
+	       tt_query_packet->header.ttl, tt_query_packet->header.version,
 	       tt_type, (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
@@ -311,7 +311,7 @@ static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int r
 
 	printf("client %s, ttl %2d, v %d, length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)roam_adv_packet->client, read_opt),
-	       roam_adv_packet->ttl, roam_adv_packet->version,
+	       roam_adv_packet->header.ttl, roam_adv_packet->header.version,
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
 
@@ -334,7 +334,7 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %hu, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
-	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->ttl, batman_ogm_packet->version,
+	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->header.ttl, batman_ogm_packet->header.version,
 	       (batman_ogm_packet->flags & DIRECTLINK ? 'D' : '.'),
 	       (batman_ogm_packet->flags & VIS_SERVER ? 'V' : '.'),
 	       (batman_ogm_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
@@ -362,19 +362,19 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	case ECHO_REPLY:
 		printf("%s: ICMP echo reply, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
+			icmp_packet->header.ttl, icmp_packet->header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case ECHO_REQUEST:
 		printf("%s: ICMP echo request, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
+			icmp_packet->header.ttl, icmp_packet->header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case TTL_EXCEEDED:
 		printf("%s: ICMP time exceeded in-transit, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
+			icmp_packet->header.ttl, icmp_packet->header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	default:
@@ -404,7 +404,7 @@ static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int 
 
 	printf("%s: UCAST, ttvn %d, ttl %hhu, ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_packet->dest, read_opt),
-	       unicast_packet->ttvn, unicast_packet->ttl);
+	       unicast_packet->ttvn, unicast_packet->header.ttl);
 
 	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_packet),
 		      buff_len - ETH_HLEN - sizeof(struct unicast_packet),
@@ -455,7 +455,7 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 
 	printf("%s: FRAG, seq %hu, ttvn %d, ttl %hhu, flags [%c%c], ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->dest, read_opt),
-	       ntohs(unicast_frag_packet->seqno), unicast_frag_packet->ttvn, unicast_frag_packet->ttl,
+	       ntohs(unicast_frag_packet->seqno), unicast_frag_packet->ttvn, unicast_frag_packet->header.ttl,
 	       (unicast_frag_packet->flags & UNI_FRAG_HEAD ? 'H' : '.'),
 	       (unicast_frag_packet->flags & UNI_FRAG_LARGETAIL ? 'L' : '.'));
 
@@ -490,7 +490,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 	case ETH_P_BATMAN:
 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
 
-		switch (batman_ogm_packet->packet_type) {
+		switch (batman_ogm_packet->header.packet_type) {
 		case BAT_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
 				dump_batman_ogm(packet_buff, buff_len, read_opt, time_printed);
@@ -524,7 +524,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		default:
-			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->packet_type);
+			printf("Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->header.packet_type);
 			break;
 		}
 

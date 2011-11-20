@@ -25,4 +25,6 @@
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
 
+#define EXIT_NOSUCCESS 2
+
 #define __packed __attribute((packed))   /* linux kernel compat */

@@ -322,7 +322,10 @@ sleep:
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
 		min, avg, max, mdev);
 
-	ret = EXIT_SUCCESS;
+	if (packets_in)
+		ret = EXIT_SUCCESS;
+	else
+		ret = EXIT_NOSUCCESS;
 
 out:
 	bat_hosts_free();

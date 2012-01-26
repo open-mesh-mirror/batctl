@@ -187,7 +187,7 @@ static void log_level_usage(void)
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
 {
-	int optchar, res;
+	int optchar, res = EXIT_FAILURE;
 	int log_level = 0;
 	char *path_buff;
 	char str[4];
@@ -221,8 +221,10 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= (1 << 1);
 			else if (strcmp(argv[i], "tt") == 0)
 				log_level |= (1 << 2);
-			else
+			else {
 				log_level_usage();
+				goto out;
+			}
 		}
 
 		snprintf(str, sizeof(str), "%i", log_level);

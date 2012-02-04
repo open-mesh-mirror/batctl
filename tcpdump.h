@@ -21,6 +21,7 @@
 
 
 #include <netpacket/packet.h>
+#include <net/ethernet.h>
 #include "list-batman.h"
 
 #ifndef ARPHRD_IEEE80211_PRISM
@@ -65,11 +66,11 @@ struct vlanhdr {
 struct ieee80211_hdr {
 	u_int16_t frame_control;
 	u_int16_t duration_id;
-	u_int8_t addr1[6];
-	u_int8_t addr2[6];
-	u_int8_t addr3[6];
+	u_int8_t addr1[ETH_ALEN];
+	u_int8_t addr2[ETH_ALEN];
+	u_int8_t addr3[ETH_ALEN];
 	u_int16_t seq_ctrl;
-	u_int8_t addr4[6];
+	u_int8_t addr4[ETH_ALEN];
 } __attribute__ ((packed));
 
 struct radiotap_header {

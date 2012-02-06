@@ -142,6 +142,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 				continue;
 			}
 
+read_packet:
 			start_timer();
 
 			tv.tv_sec = 2;
@@ -167,6 +168,10 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 					sizeof(icmp_packet_in), read_len);
 				continue;
 			}
+
+			/* after receiving an unexpected seqno we keep waiting for our answer */
+			if (htons(seq_counter) != icmp_packet_in.seqno)
+				goto read_packet;
 
 			switch (icmp_packet_in.msg_type) {
 			case ECHO_REPLY:

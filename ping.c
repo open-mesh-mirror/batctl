@@ -196,6 +196,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 			goto sleep;
 		}
 
+read_packet:
 		start_timer();
 
 		FD_ZERO(&read_socket);
@@ -228,6 +229,10 @@ int ping(char *mesh_iface, int argc, char **argv)
 				packet_len, read_len);
 			goto sleep;
 		}
+
+		/* after receiving an unexpected seqno we keep waiting for our answer */
+		if (htons(seq_counter) != icmp_packet_in.seqno)
+			goto read_packet;
 
 		switch (icmp_packet_in.msg_type) {
 		case ECHO_REPLY:

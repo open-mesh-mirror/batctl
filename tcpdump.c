@@ -315,12 +315,12 @@ static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int r
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
 
-static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct batman_ogm_packet *batman_ogm_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_ogm_packet), "BAT OGM");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_ogm_packet), "BAT IV OGM");
 
 	ether_header = (struct ether_header *)packet_buff;
 	batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + sizeof(struct ether_header));
@@ -331,7 +331,7 @@ static void dump_batman_ogm(unsigned char *packet_buff, ssize_t buff_len, int re
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
 
-	printf("OGM via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %hu, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
+	printf("OGM IV via neigh %s, seq %u, tq %3d, ttvn %d, ttcrc %hu, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
 	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->header.ttl, batman_ogm_packet->header.version,
@@ -491,9 +491,9 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
 
 		switch (batman_ogm_packet->header.packet_type) {
-		case BAT_OGM:
+		case BAT_IV_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
-				dump_batman_ogm(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_iv_ogm(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BAT_ICMP:
 			if (dump_level & DUMP_TYPE_BATICMP)

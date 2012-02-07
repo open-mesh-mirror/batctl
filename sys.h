@@ -25,6 +25,7 @@
 #define SYS_LOG "log"
 #define SYS_AGGR "aggregated_ogms"
 #define SYS_BONDING "bonding"
+#define SYS_BRIDGE_LOOP_AVOIDANCE "bridge_loop_avoidance"
 #define SYS_GW_MODE "gw_mode"
 #define SYS_GW_SEL "gw_sel_class"
 #define SYS_GW_BW "gw_bandwidth"
@@ -47,6 +48,7 @@ extern const char *sysfs_param_server[];
 
 void aggregation_usage(void);
 void bonding_usage(void);
+void bridge_loop_avoidance_usage(void);
 void fragmentation_usage(void);
 void ap_isolation_usage(void);
 void gw_mode_usage(void);

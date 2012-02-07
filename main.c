@@ -45,27 +45,28 @@ char module_ver_path[] = "/sys/module/batman_adv/version";
 void print_usage(void) {
 	printf("Usage: batctl [options] commands \n");
 	printf("commands:\n");
-	printf(" \tinterface|if    [add|del iface(s)]\tdisplay or modify the interface settings\n");
-	printf(" \toriginators|o                     \tdisplay the originator table\n");
-	printf(" \tinterval|it     [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
-	printf(" \tloglevel|ll     [level]           \tdisplay or modify the log level\n");
-	printf(" \tlog|l                             \tread the log produced by the kernel module\n");
-	printf(" \tgw_mode|gw      [mode]            \tdisplay or modify the gateway mode\n");
-	printf(" \tgateways|gwl                      \tdisplay the gateway server list\n");
-	printf(" \ttranslocal|tl                     \tdisplay the local translation table\n");
-	printf(" \ttransglobal|tg                    \tdisplay the global translation table\n");
-	printf(" \tsoftif_neigh|sn                   \tdisplay the soft-interface neighbor table\n");
-	printf(" \tvis_mode|vm     [mode]            \tdisplay or modify the status of the VIS server\n");
-	printf(" \tvis_data|vd     [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
-	printf(" \taggregation|ag  [0|1]             \tdisplay or modify the packet aggregation setting\n");
-	printf(" \tbonding|b       [0|1]             \tdisplay or modify the bonding mode setting\n");
-	printf(" \tfragmentation|f [0|1]             \tdisplay or modify the fragmentation mode setting\n");
-	printf(" \tap_isolation|ap [0|1]             \tdisplay or modify the ap isolation mode setting\n");
+	printf(" \tinterface|if               [add|del iface(s)]\tdisplay or modify the interface settings\n");
+	printf(" \toriginators|o                                \tdisplay the originator table\n");
+	printf(" \tinterval|it                [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
+	printf(" \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
+	printf(" \tlog|l                                        \tread the log produced by the kernel module\n");
+	printf(" \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
+	printf(" \tgateways|gwl                                 \tdisplay the gateway server list\n");
+	printf(" \ttranslocal|tl                                \tdisplay the local translation table\n");
+	printf(" \ttransglobal|tg                               \tdisplay the global translation table\n");
+	printf(" \tclaimtable|cl                                \tdisplay the bridge loop avoidance claim table\n");
+	printf(" \tvis_mode|vm                [mode]            \tdisplay or modify the status of the VIS server\n");
+	printf(" \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
+	printf(" \taggregation|ag             [0|1]             \tdisplay or modify the packet aggregation setting\n");
+	printf(" \tbonding|b                  [0|1]             \tdisplay or modify the bonding mode setting\n");
+	printf(" \tbridge_loop_avoidance|bl   [0|1]             \tdisplay or modify the bridge loop avoidance setting\n");
+	printf(" \tfragmentation|f            [0|1]             \tdisplay or modify the fragmentation mode setting\n");
+	printf(" \tap_isolation|ap            [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
-	printf(" \tping|p          <destination>     \tping another batman adv host via layer 2\n");
-	printf(" \ttraceroute|tr   <destination>     \ttraceroute another batman adv host via layer 2\n");
-	printf(" \ttcpdump|td      <interface>       \ttcpdump layer 2 traffic on the given interface\n");
-	printf(" \tbisect          <file1> .. <fileN>\tanalyze given log files for routing stability\n");
+	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
+	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
+	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+	printf(" \tbisect                     <file1> .. <fileN>\tanalyze given log files for routing stability\n");
 	printf("options:\n");
 	printf(" \t-m mesh interface (default 'bat0')\n");
 	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
@@ -151,10 +152,10 @@ int main(int argc, char **argv)
 		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
 					 DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
 
-	} else if ((strcmp(argv[1], "softif_neigh") == 0) || (strcmp(argv[1], "sn") == 0)) {
+	} else if ((strcmp(argv[1], "claimtable") == 0) || (strcmp(argv[1], "cl") == 0)) {
 
 		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_SOFTIF_NEIGH, softif_neigh_usage);
+					 DEBUG_BLA_CLAIM_TABLE, bla_claim_table_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
@@ -196,6 +197,11 @@ int main(int argc, char **argv)
 
 		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
 					 SYS_BONDING, bonding_usage, sysfs_param_enable);
+
+	} else if ((strcmp(argv[1], "bridge_loop_avoidance") == 0) || (strcmp(argv[1], "bl") == 0)) {
+
+		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
+					 SYS_BRIDGE_LOOP_AVOIDANCE, bridge_loop_avoidance_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "fragmentation") == 0) || (strcmp(argv[1], "f") == 0)) {
 

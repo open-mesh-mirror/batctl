@@ -183,6 +183,7 @@ static void log_level_usage(void)
 	printf(" \t batman  Messages related to routing / flooding / broadcasting\n");
 	printf(" \t routes  Messages related to route added / changed / deleted\n");
 	printf(" \t tt      Messages related to translation table operations\n");
+	printf(" \t bla     Messages related to bridge loop avoidance\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -221,6 +222,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= (1 << 1);
 			else if (strcmp(argv[i], "tt") == 0)
 				log_level |= (1 << 2);
+			else if (strcmp(argv[i], "bla") == 0)
+				log_level |= (1 << 4);
 			else {
 				log_level_usage();
 				goto out;
@@ -248,6 +251,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	       "messages related to route added / changed / deleted", "routes");
 	printf("[%c] %s (%s)\n", (log_level & 4) ? 'x' : ' ',
 	       "messages related to translation table operations", "tt");
+	printf("[%c] %s (%s)\n", (log_level & 8) ? 'x' : ' ',
+	       "messages related to bridge loop avoidance", "bla");
 
 out:
 	if (errno == ENOENT)
@@ -267,6 +272,13 @@ void aggregation_usage(void)
 void bonding_usage(void)
 {
 	printf("Usage: batctl [options] bonding [0|1]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+}
+
+void bridge_loop_avoidance_usage(void)
+{
+	printf("Usage: batctl [options] bridge_loop_avoidance [0|1]\n");
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }

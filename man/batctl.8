@@ -121,8 +121,8 @@ Display the local translation table. batctl will refresh the list every second i
 .IP "\fBtransglobal\fP|\fBtg\fP   [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
 Display the global translation table. batctl will refresh the list every second if the "\-w" option was given or add a number to let it refresh at a custom interval in seconds (with optional decimal places). Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
 .br
-.IP "\fBsoftif_neigh\fP|\fBsn\fP   [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
-Display the soft\-interface neighbor table. batctl will refresh the list every second if the "\-w" option was given or add a number to let it refresh at a custom interval in seconds (with optional decimal places). Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
+.IP "\fBclaimtable\fP|\fBcl\fP   [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP]"
+Display the bridge loop avoidance claim table. batctl will refresh the list every second if the "\-w" option was given or add a number to let it refresh at a custom interval in seconds (with optional decimal places). Use "\-n" to let batctl not replace the MAC addresses with bat\-host names in the output.
 .br
 .IP "\fBvis_mode|vm\fP	  [\fBmode\fP]\fP"
 If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
@@ -148,6 +148,9 @@ If no parameter is given the current aggregation setting is displayed. Otherwise
 .br
 .IP "\fBbonding\fP|\fBb\fP        [\fB1\fP|\fB0\fP]"
 If no parameter is given the current bonding mode setting is displayed. Otherwise the parameter is used to enable or disable the bonding mode.
+.br
+.IP "\fBbridge_loop_avoidance\fP|\fBbl\fP        [\fB1\fP|\fB0\fP]"
+If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable or disable the bridge loop avoidance.
 .br
 .IP "\fBfragmentation\fP|\fBf\fP   [\fB1\fP|\fB0\fP]"
 If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or disable fragmentation.

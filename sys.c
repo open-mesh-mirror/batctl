@@ -223,7 +223,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 			else if (strcmp(argv[i], "tt") == 0)
 				log_level |= (1 << 2);
 			else if (strcmp(argv[i], "bla") == 0)
-				log_level |= (1 << 4);
+				log_level |= (1 << 3);
 			else {
 				log_level_usage();
 				goto out;

@@ -35,10 +35,18 @@
 #include "main.h"
 #include "functions.h"
 #include "bat-hosts.h"
+#include "sys.h"
 
 static struct timeval start_time;
 static char *host_name;
 char *line_ptr = NULL;
+
+const char *sysfs_compile_out_param[] = {
+	SYS_LOG,
+	SYS_LOG_LEVEL,
+	SYS_BRIDGE_LOOP_AVOIDANCE,
+	NULL,
+};
 
 void start_timer(void)
 {
@@ -125,6 +133,7 @@ int read_file(char *dir, char *fname, int read_opt,
 	struct bat_host *bat_host;
 	int res = EXIT_FAILURE;
 	float last_seen;
+	const char **ptr;
 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
 	size_t len = 0;
 	FILE *fp = NULL;
@@ -145,8 +154,21 @@ open:
 	fp = fopen(full_path, "r");
 
 	if (!fp) {
-		if (!(read_opt & SILENCE_ERRORS))
+		if (!(read_opt & SILENCE_ERRORS)) {
+			for (ptr = sysfs_compile_out_param; *ptr; ptr++) {
+				if (strcmp(*ptr, fname) != 0)
+					continue;
+
+				break;
+			}
+
 			printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
+			if (*ptr) {
+				printf("The option you called seems not to be compiled into your batman-adv kernel module.\n");
+				printf("Consult the README if you wish to learn more about compiling options into batman-adv.\n");
+			}
+		}
+
 		goto out;
 	}
 

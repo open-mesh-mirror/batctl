@@ -185,9 +185,5 @@ int log_print(char *mesh_iface, int argc, char **argv)
 
 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
 	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0);
-
-	if ((res != EXIT_SUCCESS) && (errno == ENOENT))
-		printf("To read the debug log you need to compile the module with debugging enabled (see the README)\n");
-
 	return res;
 }

@@ -255,9 +255,6 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	       "messages related to bridge loop avoidance", "bla");
 
 out:
-	if (errno == ENOENT)
-		printf("To increase the log level you need to compile the module with debugging enabled (see the README)\n");
-
 	free(path_buff);
 	return res;
 }

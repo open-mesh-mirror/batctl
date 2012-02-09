@@ -113,7 +113,8 @@ static int check_sys_dir(char *dir)
 		return EXIT_SUCCESS;
 
 	printf("Error - the folder '%s' was not found within the sys filesystem\n", dir);
-	printf("Please make sure that the batman-adv kernel module is loaded\n");
+	printf("Please make sure that the batman-adv kernel module is loaded and\n");
+	printf("that you have activated your mesh by adding interfaces to batman-adv\n");
 	return EXIT_FAILURE;
 }
 

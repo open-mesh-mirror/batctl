@@ -214,7 +214,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level = 0;
 				break;
 			} else if (strcmp(argv[i], "all") == 0) {
-				log_level = 7;
+				log_level = 15;
 				break;
 			} else if (strcmp(argv[i], "batman") == 0)
 				log_level |= (1 << 0);

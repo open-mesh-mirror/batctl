@@ -300,6 +300,7 @@ $  batctl loglevel
 [ ] messages related to routing / flooding / broadcasting (batman)
 [ ] messages related to route added / changed / deleted (routes)
 [ ] messages related to translation table operations (tt)
+[ ] messages related to bridge loop avoidance (bla)
 
 batctl aggregation
 ==================

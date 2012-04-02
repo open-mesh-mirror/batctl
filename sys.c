@@ -257,7 +257,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	printf("[%c] %s (%s)\n", (log_level & 8) ? 'x' : ' ',
 	       "messages related to bridge loop avoidance", "bla");
 	printf("[%c] %s (%s)\n", (log_level & 16) ? 'x' : ' ',
-	       "messages related to the distributed arp table", "arp");
+	       "messages related to the distributed arp table", "dat");
 
 out:
 	free(path_buff);

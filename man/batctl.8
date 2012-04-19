@@ -59,7 +59,7 @@ protocol.
 If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed. In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to add or delete.
 .br
 .IP "\fBoriginators\fP|\fBo\fP    [\fB\-w\fP [\fI\interval\fP]][\fB\-n\fP][\fB\-t\fP]"
-Once started batctl will display the list of announced gateways in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. The "\-t" option filters all originators that have not been seen for the specified amount of seconds (with optional decimal places) from the output.
+Once started batctl will display the list of announced originators in the network. Use the "\-w" option to let batctl refresh the list every second or add a number to let it refresh at a custom interval in seconds (with optional decimal places). If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. The "\-t" option filters all originators that have not been seen for the specified amount of seconds (with optional decimal places) from the output.
 .br
 .IP "\fBinterval\fP|\fBit\fP      [\fBorig_interval\fP]"
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the originator interval. The interval is in units of milliseconds.

@@ -61,6 +61,7 @@ static void tcpdump_usage(void)
 {
 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
 	printf("options:\n");
+	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", COMPAT_VERSION);
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
 	printf(" \t -p dump specific packet type\n");
@@ -491,6 +492,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 	case ETH_P_BATMAN:
 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
 
+		if ((read_opt & COMPAT_FILTER) &&
+		    (batman_ogm_packet->header.version != COMPAT_VERSION))
+			return;
+
 		switch (batman_ogm_packet->header.packet_type) {
 		case BAT_IV_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
@@ -639,8 +644,12 @@ int tcpdump(int argc, char **argv)
 
 	dump_level = dump_level_all;
 
-	while ((optchar = getopt(argc, argv, "hnp:x:")) != -1) {
+	while ((optchar = getopt(argc, argv, "chnp:x:")) != -1) {
 		switch (optchar) {
+		case 'c':
+			read_opt |= COMPAT_FILTER;
+			found_args += 1;
+			break;
 		case 'h':
 			tcpdump_usage();
 			return EXIT_SUCCESS;

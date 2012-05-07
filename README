@@ -88,6 +88,7 @@ tcpdump layer 2 and/or layer 3 traffic on the given interface
 
 Usage: batctl tcpdump [options] interface [interface]
 options:
+         -c compat filter - only display packets matching own compat version (14)
          -h print this help
          -n don't convert addresses to bat-host names
          -p dump specific packet type

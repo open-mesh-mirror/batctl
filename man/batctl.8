@@ -175,15 +175,39 @@ address. batctl will send 3 packets to each host and display the
 response time. If "\-n" is given batctl will not replace the MAC
 addresses with bat\-host names in the output.
 .br
-.IP "\fBtcpdump\fP|\fBtd\fP       [\fB\-p filter\fP][\fB\-n\fP] \fBinterface ...\fP"
-batctl will display all packets that are seen on the given
-interface(s). The "\-p" options allows the filtering of certain packet
-types: 1 - batman ogm packets, 2 - batman icmp packets, 4 - unicast
-packets, 8 - broadcast packets, 16 - vis packets, and 32 - none batman
-packets. These numbers can be added to filter more than one packet
-type, e.g. use "\-p 3" to display batman ogm packets and batman icmp
-packets only. If "\-n" is given batctl will not replace the MAC
-addresses with bat\-host names in the output.
+.IP "\fBtcpdump\fP|\fBtd\fP       [\fB\-c\fP][\fB\-n\fP][\fB\-p filter\fP][\fB\-x filter\fP] \fBinterface ...\fP"
+batctl will display all packets that are seen on the given interface(s). A variety of options to filter the output
+are available: To only print packets that match the compatibility number of batctl specify the "\-c" (compat filter)
+option. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. To filter
+the shown packet types you can either use "\-p" (dump only specified packet types) or "\-x" (dump all packet types
+except specified). The following packet types are available:
+.RS 17
+1 - batman ogm packets
+.RE
+.RS 17
+2 - batman icmp packets
+.RE
+.RS 17
+4 - batman unicast packets
+.RE
+.RS 17
+8 - batman broadcast packets
+.RE
+.RS 16
+16 - batman vis packets
+.RE
+.RS 16
+32 - batman fragmented packets
+.RE
+.RS 16
+64 - batman tt / roaming packets
+.RE
+.RS 15
+128 - non batman packets
+.RE
+.RS 7
+Example: batctl td <interface> -p 129 \-> only display batman ogm packets and non batman packets
+.RE
 .br
 .IP "\fBbisect\fP           [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]"
 Analyses the logfiles to build a small internal database of all sent

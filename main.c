@@ -36,6 +36,7 @@
 #include "tcpdump.h"
 #include "bisect.h"
 #include "vis.h"
+#include "ioctl.h"
 #include "functions.h"
 #include <err.h>
 
@@ -63,6 +64,7 @@ void print_usage(void) {
 	printf(" \tfragmentation|f            [0|1]             \tdisplay or modify the fragmentation mode setting\n");
 	printf(" \tap_isolation|ap            [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
+	printf(" \tstatistics|s                                 \tprint mesh statistics\n");
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
@@ -212,6 +214,10 @@ int main(int argc, char **argv)
 
 		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
 					 SYS_AP_ISOLA, ap_isolation_usage, sysfs_param_enable);
+
+	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
+
+		ret = ioctl_statistics_get(mesh_iface);
 
 	} else if ((strcmp(argv[1], "bisect") == 0)) {
 

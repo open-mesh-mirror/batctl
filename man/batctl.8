@@ -158,6 +158,25 @@ If no parameter is given the current fragmentation mode setting is displayed. Ot
 .IP "\fBap_isolation\fP|\fBap\fP   [\fB1\fP|\fB0\fP]"
 If no parameter is given the current ap isolation setting is displayed. Otherwise the parameter is used to enable or disable ap isolation.
 .br
+.IP "\fBstatistics\fP|\fBs\fP"
+Retrieve traffic counters from batman-adv kernel module. The output may vary depending on which features have
+been compiled into the kernel module. For example, if the distributed arp table (short: dat) wasn't selected
+as an option at compile time its counters won't be shown.
+.br
+Each module subsystem has its own counters which are indicated by their prefixes:
+.RS 15
+mgmt - mesh protocol counters
+.RE
+.RS 17
+tt - translation table counters
+.RE
+.RS 16
+dat - distributed arp table counters
+.RE
+.RS 7
+All counters without a prefix concern payload (pure user data) traffic.
+.RE
+.br
 .IP "\fBping\fP|\fBp\fP           [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
 Layer 2 ping of a MAC address or bat\-host name.  batctl will try to
 find the bat\-host name if the given parameter was not a MAC

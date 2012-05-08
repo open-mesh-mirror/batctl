@@ -34,6 +34,48 @@ address to your provided host name. Host names are much easier to remember than
 MAC addresses.  ;)
 
 
+batctl statistics
+=================
+
+The batman-adv kernel module maintains a number of traffic counters which are exported
+to user space. With batctl these counters can be easily retrieved. The output may vary
+depending on which features have been compiled into the kernel module. For example, if
+the distributed arp table (short: dat) wasn't selected as an option at compile time
+its counters won't be shown.
+Each module subsystem has its own counters which are indicated by their prefixes:
+ * mgmt - mesh protocol counters
+ * tt - translation table counters
+ * dat - distributed arp table counters
+All counters without a prefix concern payload (pure user data) traffic.
+
+Usage: batctl statistics
+
+Example:
+
+$ batctl statistics
+        tx: 14
+        tx_bytes: 1316
+        tx_errors: 0
+        rx: 14
+        rx_bytes: 1316
+        forward: 0
+        forward_bytes: 0
+        mgmt_tx: 18
+        mgmt_tx_bytes: 762
+        mgmt_rx: 17
+        mgmt_rx_bytes: 1020
+        tt_request_tx: 0
+        tt_request_rx: 0
+        tt_response_tx: 0
+        tt_response_rx: 0
+        tt_roam_adv_tx: 0
+        tt_roam_adv_rx: 0
+        dat_request_tx: 0
+        dat_request_rx: 0
+        dat_reply_tx: 1
+        dat_reply_rx: 0
+
+
 batctl ping
 ============
 

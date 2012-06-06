@@ -67,7 +67,7 @@ void sig_handler(int sig)
 
 int ping(char *mesh_iface, int argc, char **argv)
 {
-	struct icmp_packet_rr icmp_packet_out, icmp_packet_in;
+	struct batadv_icmp_packet_rr icmp_packet_out, icmp_packet_in;
 	struct timeval tv;
 	struct ether_addr *dst_mac = NULL, *rr_mac = NULL;
 	struct bat_host *bat_host, *rr_host;
@@ -160,7 +160,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 		goto out;
 	}
 
-	packet_len = sizeof(struct icmp_packet);
+	packet_len = sizeof(struct batadv_icmp_packet);
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
 	icmp_packet_out.header.packet_type = BATADV_ICMP;
@@ -170,7 +170,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	icmp_packet_out.seqno = 0;
 
 	if (rr) {
-		packet_len = sizeof(struct icmp_packet_rr);
+		packet_len = sizeof(struct batadv_icmp_packet_rr);
 		icmp_packet_out.rr_cur = 1;
 		memset(&icmp_packet_out.rr, 0, BATADV_RR_LEN * ETH_ALEN);
 		memset(last_rr, 0, BATADV_RR_LEN * ETH_ALEN);
@@ -241,7 +241,7 @@ read_packet:
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
 					icmp_packet_in.header.ttl, time_delta);
 
-			if (read_len == sizeof(struct icmp_packet_rr)) {
+			if (read_len == sizeof(struct batadv_icmp_packet_rr)) {
 				if (last_rr_cur == icmp_packet_in.rr_cur
 					&& !memcmp(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN)) {
 

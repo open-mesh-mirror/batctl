@@ -51,7 +51,7 @@ void traceroute_usage(void)
 
 int traceroute(char *mesh_iface, int argc, char **argv)
 {
-	struct icmp_packet icmp_packet_out, icmp_packet_in;
+	struct batadv_icmp_packet icmp_packet_out, icmp_packet_in;
 	struct bat_host *bat_host;
 	struct ether_addr *dst_mac = NULL;
 	struct timeval tv;

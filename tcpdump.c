@@ -254,12 +254,12 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 
 static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct tt_query_packet *tt_query_packet;
+	struct batadv_tt_query_packet *tt_query_packet;
 	char *tt_desc, *tt_data, tt_type;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct tt_query_packet), "BAT TT");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_tt_query_packet), "BAT TT");
 
-	tt_query_packet = (struct tt_query_packet *)(packet_buff + sizeof(struct ether_header));
+	tt_query_packet = (struct batadv_tt_query_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		print_time();
@@ -295,11 +295,11 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 
 static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct roam_adv_packet *roam_adv_packet;
+	struct batadv_roam_adv_packet *roam_adv_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct roam_adv_packet), "BAT ROAM");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_roam_adv_packet), "BAT ROAM");
 
-	roam_adv_packet = (struct roam_adv_packet *)(packet_buff + sizeof(struct ether_header));
+	roam_adv_packet = (struct batadv_roam_adv_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		print_time();
@@ -319,12 +319,12 @@ static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int r
 static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
-	struct batman_ogm_packet *batman_ogm_packet;
+	struct batadv_ogm_packet *batman_ogm_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batman_ogm_packet), "BAT IV OGM");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_ogm_packet), "BAT IV OGM");
 
 	ether_header = (struct ether_header *)packet_buff;
-	batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + sizeof(struct ether_header));
+	batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		print_time();
@@ -346,12 +346,12 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 
 static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct icmp_packet *icmp_packet;
+	struct batadv_icmp_packet *icmp_packet;
 	char *name;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct icmp_packet), "BAT ICMP");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");
 
-	icmp_packet = (struct icmp_packet *)(packet_buff + sizeof(struct ether_header));
+	icmp_packet = (struct batadv_icmp_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		print_time();
@@ -389,14 +389,14 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
-	struct unicast_packet *unicast_packet;
+	struct batadv_unicast_packet *unicast_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct unicast_packet), "BAT UCAST");
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct unicast_packet),
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_packet), "BAT UCAST");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_packet),
 		sizeof(struct ether_header), "BAT UCAST (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
-	unicast_packet = (struct unicast_packet *)(packet_buff + sizeof(struct ether_header));
+	unicast_packet = (struct batadv_unicast_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		time_printed = print_time();
@@ -408,22 +408,22 @@ static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int 
 	       get_name_by_macaddr((struct ether_addr *)unicast_packet->dest, read_opt),
 	       unicast_packet->ttvn, unicast_packet->header.ttl);
 
-	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_packet),
-		      buff_len - ETH_HLEN - sizeof(struct unicast_packet),
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_packet),
+		      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_packet),
 		      read_opt, time_printed);
 }
 
 static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
-	struct bcast_packet *bcast_packet;
+	struct batadv_bcast_packet *bcast_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct bcast_packet), "BAT BCAST");
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct bcast_packet),
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_bcast_packet), "BAT BCAST");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_bcast_packet),
 	          sizeof(struct ether_header), "BAT BCAST (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
-	bcast_packet = (struct bcast_packet *)(packet_buff + sizeof(struct ether_header));
+	bcast_packet = (struct batadv_bcast_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		time_printed = print_time();
@@ -435,19 +435,19 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int 
 	       get_name_by_macaddr((struct ether_addr *)bcast_packet->orig, read_opt),
 	       ntohl(bcast_packet->seqno));
 
-	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct bcast_packet),
-		      buff_len - ETH_HLEN - sizeof(struct bcast_packet),
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_bcast_packet),
+		      buff_len - ETH_HLEN - sizeof(struct batadv_bcast_packet),
 		      read_opt, time_printed);
 }
 
 static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct unicast_frag_packet *unicast_frag_packet;
+	struct batadv_unicast_frag_packet *unicast_frag_packet;
 
-	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct unicast_frag_packet), "BAT FRAG");
-	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
+	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct batadv_unicast_frag_packet), "BAT FRAG");
+	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
 
-	unicast_frag_packet = (struct unicast_frag_packet *)(packet_buff + ETH_HLEN);
+	unicast_frag_packet = (struct batadv_unicast_frag_packet *)(packet_buff + ETH_HLEN);
 
 	if (!time_printed)
 		time_printed = print_time();
@@ -462,16 +462,16 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 	       (unicast_frag_packet->flags & BATADV_UNI_FRAG_LARGETAIL ? 'L' : '.'));
 
 	if (unicast_frag_packet->flags & BATADV_UNI_FRAG_HEAD)
-		parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_frag_packet),
-			      buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet),
+		parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_frag_packet),
+			      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet),
 			      read_opt, time_printed);
 	else
-		printf("length %zu\n", (size_t)buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet));
+		printf("length %zu\n", (size_t)buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet));
 }
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct batman_ogm_packet *batman_ogm_packet;
+	struct batadv_ogm_packet *batman_ogm_packet;
 	struct ether_header *eth_hdr;
 
 	eth_hdr = (struct ether_header *)packet_buff;
@@ -490,7 +490,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
 	case BATADV_ETH_P_BATMAN:
-		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
+		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
 
 		if ((read_opt & COMPAT_FILTER) &&
 		    (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION))

@@ -79,7 +79,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	char *dst_string, *mac_string, *rr_string;
 	double time_delta;
 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
-	uint8_t last_rr_cur = 0, last_rr[BAT_RR_LEN][ETH_ALEN];
+	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
 	size_t packet_len;
 	char *debugfs_mnt;
 	char icmp_socket[MAX_PATH+1];
@@ -164,7 +164,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
 	icmp_packet_out.header.packet_type = BAT_ICMP;
-	icmp_packet_out.header.version = COMPAT_VERSION;
+	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
 	icmp_packet_out.msg_type = ECHO_REQUEST;
 	icmp_packet_out.header.ttl = 50;
 	icmp_packet_out.seqno = 0;
@@ -172,8 +172,8 @@ int ping(char *mesh_iface, int argc, char **argv)
 	if (rr) {
 		packet_len = sizeof(struct icmp_packet_rr);
 		icmp_packet_out.rr_cur = 1;
-		memset(&icmp_packet_out.rr, 0, BAT_RR_LEN * ETH_ALEN);
-		memset(last_rr, 0, BAT_RR_LEN * ETH_ALEN);
+		memset(&icmp_packet_out.rr, 0, BATADV_RR_LEN * ETH_ALEN);
+		memset(last_rr, 0, BATADV_RR_LEN * ETH_ALEN);
 	}
 
 	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,
@@ -243,14 +243,14 @@ read_packet:
 
 			if (read_len == sizeof(struct icmp_packet_rr)) {
 				if (last_rr_cur == icmp_packet_in.rr_cur
-					&& !memcmp(last_rr, icmp_packet_in.rr, BAT_RR_LEN * ETH_ALEN)) {
+					&& !memcmp(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN)) {
 
 					printf("\t(same route)");
 
 				} else {
 					printf("\nRR: ");
 
-					for (i = 0; i < BAT_RR_LEN
+					for (i = 0; i < BATADV_RR_LEN
 						&& i < icmp_packet_in.rr_cur; i++) {
 
 						rr_mac = (struct ether_addr *)&icmp_packet_in.rr[i];
@@ -266,7 +266,7 @@ read_packet:
 					}
 
 					last_rr_cur = icmp_packet_in.rr_cur;
-					memcpy(last_rr, icmp_packet_in.rr, BAT_RR_LEN * ETH_ALEN);
+					memcpy(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN);
 				}
 			}
 
@@ -288,7 +288,7 @@ read_packet:
 			break;
 		case PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-					icmp_packet_in.header.version, COMPAT_VERSION);
+					icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");
 			goto out;
 		default:

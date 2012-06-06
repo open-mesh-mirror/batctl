@@ -121,7 +121,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	}
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.header.version = COMPAT_VERSION;
+	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
 	icmp_packet_out.header.packet_type = BAT_ICMP;
 	icmp_packet_out.msg_type = ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
@@ -193,7 +193,7 @@ read_packet:
 				goto out;
 			case PARAMETER_PROBLEM:
 				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-						icmp_packet_in.header.version, COMPAT_VERSION);
+						icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
 				printf("Please make sure to use compatible versions!\n");
 				goto out;
 			default:

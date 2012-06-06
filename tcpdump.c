@@ -61,7 +61,7 @@ static void tcpdump_usage(void)
 {
 	printf("Usage: batctl tcpdump [options] interface [interface]\n");
 	printf("options:\n");
-	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", COMPAT_VERSION);
+	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", BATADV_COMPAT_VERSION);
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
 	printf(" \t -p dump specific packet type\n");
@@ -264,7 +264,7 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 	if (!time_printed)
 		print_time();
 
-	switch (tt_query_packet->flags & TT_QUERY_TYPE_MASK) {
+	switch (tt_query_packet->flags & BATADV_TT_QUERY_TYPE_MASK) {
 	case TT_REQUEST:
 		tt_desc = "request";
 		tt_data = "crc";
@@ -489,11 +489,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
-	case ETH_P_BATMAN:
+	case BATADV_ETH_P_BATMAN:
 		batman_ogm_packet = (struct batman_ogm_packet *)(packet_buff + ETH_HLEN);
 
 		if ((read_opt & COMPAT_FILTER) &&
-		    (batman_ogm_packet->header.version != COMPAT_VERSION))
+		    (batman_ogm_packet->header.version != BATADV_COMPAT_VERSION))
 			return;
 
 		switch (batman_ogm_packet->header.packet_type) {

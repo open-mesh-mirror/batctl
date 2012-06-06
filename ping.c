@@ -163,9 +163,9 @@ int ping(char *mesh_iface, int argc, char **argv)
 	packet_len = sizeof(struct icmp_packet);
 
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.header.packet_type = BAT_ICMP;
+	icmp_packet_out.header.packet_type = BATADV_ICMP;
 	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
-	icmp_packet_out.msg_type = ECHO_REQUEST;
+	icmp_packet_out.msg_type = BATADV_ECHO_REQUEST;
 	icmp_packet_out.header.ttl = 50;
 	icmp_packet_out.seqno = 0;
 
@@ -235,7 +235,7 @@ read_packet:
 			goto read_packet;
 
 		switch (icmp_packet_in.msg_type) {
-		case ECHO_REPLY:
+		case BATADV_ECHO_REPLY:
 			time_delta = end_timer();
 			printf("%zd bytes from %s icmp_seq=%hu ttl=%d time=%.2f ms",
 					read_len, dst_string, ntohs(icmp_packet_in.seqno),
@@ -280,13 +280,13 @@ read_packet:
 			mdev += time_delta * time_delta;
 			packets_in++;
 			break;
-		case DESTINATION_UNREACHABLE:
+		case BATADV_DESTINATION_UNREACHABLE:
 			printf("From %s: Destination Host Unreachable (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
-		case TTL_EXCEEDED:
+		case BATADV_TTL_EXCEEDED:
 			printf("From %s: Time to live exceeded (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
-		case PARAMETER_PROBLEM:
+		case BATADV_PARAMETER_PROBLEM:
 			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
 					icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");

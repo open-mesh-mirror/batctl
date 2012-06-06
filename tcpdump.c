@@ -265,12 +265,12 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 		print_time();
 
 	switch (tt_query_packet->flags & BATADV_TT_QUERY_TYPE_MASK) {
-	case TT_REQUEST:
+	case BATADV_TT_REQUEST:
 		tt_desc = "request";
 		tt_data = "crc";
 		tt_type = 'Q';
 		break;
-	case TT_RESPONSE:
+	case BATADV_TT_RESPONSE:
 		tt_desc = "response";
 		tt_data = "entries";
 		tt_type = 'P';
@@ -289,7 +289,7 @@ static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int rea
 	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
 	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
 	       tt_query_packet->header.ttl, tt_query_packet->header.version,
-	       tt_type, (tt_query_packet->flags & TT_FULL_TABLE ? 'F' : '.'),
+	       tt_type, (tt_query_packet->flags & BATADV_TT_FULL_TABLE ? 'F' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
 
@@ -336,10 +336,10 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq, batman_ogm_packet->ttvn,
 	       ntohs(batman_ogm_packet->tt_crc), batman_ogm_packet->header.ttl, batman_ogm_packet->header.version,
-	       (batman_ogm_packet->flags & NOT_BEST_NEXT_HOP ? 'N' : '.'),
-	       (batman_ogm_packet->flags & DIRECTLINK ? 'D' : '.'),
-	       (batman_ogm_packet->flags & VIS_SERVER ? 'V' : '.'),
-	       (batman_ogm_packet->flags & PRIMARIES_FIRST_HOP ? 'F' : '.'),
+	       (batman_ogm_packet->flags & BATADV_NOT_BEST_NEXT_HOP ? 'N' : '.'),
+	       (batman_ogm_packet->flags & BATADV_DIRECTLINK ? 'D' : '.'),
+	       (batman_ogm_packet->flags & BATADV_VIS_SERVER ? 'V' : '.'),
+	       (batman_ogm_packet->flags & BATADV_PRIMARIES_FIRST_HOP ? 'F' : '.'),
 	       (batman_ogm_packet->gw_flags ? 'G' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
@@ -361,19 +361,19 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst, read_opt);
 
 	switch (icmp_packet->msg_type) {
-	case ECHO_REPLY:
+	case BATADV_ECHO_REPLY:
 		printf("%s: ICMP echo reply, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->header.ttl, icmp_packet->header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
-	case ECHO_REQUEST:
+	case BATADV_ECHO_REQUEST:
 		printf("%s: ICMP echo request, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->header.ttl, icmp_packet->header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
-	case TTL_EXCEEDED:
+	case BATADV_TTL_EXCEEDED:
 		printf("%s: ICMP time exceeded in-transit, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->header.ttl, icmp_packet->header.version,
@@ -458,10 +458,10 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 	printf("%s: FRAG, seq %hu, ttvn %d, ttl %hhu, flags [%c%c], ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->dest, read_opt),
 	       ntohs(unicast_frag_packet->seqno), unicast_frag_packet->ttvn, unicast_frag_packet->header.ttl,
-	       (unicast_frag_packet->flags & UNI_FRAG_HEAD ? 'H' : '.'),
-	       (unicast_frag_packet->flags & UNI_FRAG_LARGETAIL ? 'L' : '.'));
+	       (unicast_frag_packet->flags & BATADV_UNI_FRAG_HEAD ? 'H' : '.'),
+	       (unicast_frag_packet->flags & BATADV_UNI_FRAG_LARGETAIL ? 'L' : '.'));
 
-	if (unicast_frag_packet->flags & UNI_FRAG_HEAD)
+	if (unicast_frag_packet->flags & BATADV_UNI_FRAG_HEAD)
 		parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct unicast_frag_packet),
 			      buff_len - ETH_HLEN - sizeof(struct unicast_frag_packet),
 			      read_opt, time_printed);
@@ -497,35 +497,35 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 			return;
 
 		switch (batman_ogm_packet->header.packet_type) {
-		case BAT_IV_OGM:
+		case BATADV_IV_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
 				dump_batman_iv_ogm(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_ICMP:
+		case BATADV_ICMP:
 			if (dump_level & DUMP_TYPE_BATICMP)
 				dump_batman_icmp(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_UNICAST:
+		case BATADV_UNICAST:
 			if (dump_level & DUMP_TYPE_BATUCAST)
 				dump_batman_ucast(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_BCAST:
+		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_VIS:
+		case BATADV_VIS:
 			if (dump_level & DUMP_TYPE_BATVIS)
 				printf("Warning - batman vis packet received: function not implemented yet\n");
 			break;
-		case BAT_UNICAST_FRAG:
+		case BATADV_UNICAST_FRAG:
 			if (dump_level & DUMP_TYPE_BATFRAG)
 				dump_batman_frag(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_TT_QUERY:
+		case BATADV_TT_QUERY:
 			if (dump_level & DUMP_TYPE_BATTT)
 				dump_batman_tt(packet_buff, buff_len, read_opt, time_printed);
 			break;
-		case BAT_ROAM_ADV:
+		case BATADV_ROAM_ADV:
 			if (dump_level & DUMP_TYPE_BATTT)
 				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
 			break;

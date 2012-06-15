@@ -107,6 +107,13 @@ char *get_name_by_macstr(char *mac_str, int read_opt)
 	return get_name_by_macaddr(mac_addr, read_opt);
 }
 
+int file_exists(const char *fpath)
+{
+	struct stat st;
+
+	return stat(fpath, &st) == 0;
+}
+
 static int check_sys_dir(char *dir)
 {
 	struct stat st;

@@ -154,6 +154,23 @@ int interface(char *mesh_iface, int argc, char **argv)
 	for (i = 2; i < argc; i++) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
 
+		if (!file_exists(path_buff)) {
+			snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_DIR, argv[i]);
+
+			if (!file_exists(path_buff)) {
+				printf("Error - interface does not exist: %s\n", argv[i]);
+				continue;
+			}
+
+			if (!file_exists(module_ver_path)) {
+				printf("Error - batman-adv module has not been loaded\n");
+				goto err;
+			}
+
+			printf("Error - interface type not supported by batman-adv: %s\n", argv[i]);
+			continue;
+		}
+
 		if (argv[1][0] == 'a')
 			res = write_file("", path_buff, mesh_iface, NULL);
 		else

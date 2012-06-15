@@ -28,3 +28,5 @@
 #define EXIT_NOSUCCESS 2
 
 #define __packed __attribute((packed))   /* linux kernel compat */
+
+extern char module_ver_path[];

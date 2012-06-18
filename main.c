@@ -56,6 +56,7 @@ void print_usage(void) {
 	printf(" \ttranslocal|tl                                \tdisplay the local translation table\n");
 	printf(" \ttransglobal|tg                               \tdisplay the global translation table\n");
 	printf(" \tclaimtable|cl                                \tdisplay the bridge loop avoidance claim table\n");
+	printf(" \tbackbonetable|bbl                            \tdisplay the bridge loop avoidance backbone table\n");
 	printf(" \tvis_mode|vm                [mode]            \tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag             [0|1]             \tdisplay or modify the packet aggregation setting\n");
@@ -158,6 +159,11 @@ int main(int argc, char **argv)
 
 		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
 					 DEBUG_BLA_CLAIM_TABLE, bla_claim_table_usage);
+	} else if ((strcmp(argv[1], "backbonetable") == 0) || (strcmp(argv[1], "bbl") == 0)) {
+
+		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
+					 DEBUG_BLA_BACKBONE_TABLE,
+					 bla_backbone_table_usage);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 

@@ -70,6 +70,16 @@ void bla_claim_table_usage(void)
 	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance claim table continuously\n");
 }
 
+void bla_backbone_table_usage(void)
+{
+	printf("Usage: batctl [options] backbone table\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
+	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance backbone table continuously\n");
+}
+
+
 void gateways_usage(void)
 {
 	printf("Usage: batctl [options] gateways \n");

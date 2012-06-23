@@ -37,53 +37,6 @@
 
 typedef unsigned long long u64;
 
-const char proc_net_dev_path[] = "/proc/net/dev";
-
-static int statistics_common_get(char *mesh_iface)
-{
-	FILE *fp;
-	char iface[IFNAMSIZ + 1], *line_ptr = NULL;;
-	unsigned long long rx_bytes, rx_packets, tx_bytes, tx_packets;
-	unsigned long tx_errors;
-	size_t len = 0;
-	int res, ret = EXIT_FAILURE;
-
-	rx_bytes = rx_packets = tx_bytes = tx_packets = tx_errors = 0;
-
-	fp = fopen(proc_net_dev_path, "r");
-	if (!fp) {
-		printf("Error - can't open '%s' for read: %s\n",
-		       proc_net_dev_path, strerror(errno));
-		goto out;
-	}
-
-	while (getline(&line_ptr, &len, fp) != -1) {
-		res = sscanf(line_ptr, " %" STR(IFNAMSIZ) "[^: \t]: %llu %llu %*d %*d %*d %*d %*d %*d %llu %llu %lu\n",
-			     iface, &rx_bytes, &rx_packets, &tx_bytes, &tx_packets, &tx_errors);
-
-		if (res != 6)
-			continue;
-
-		if (strcmp(iface, mesh_iface) != 0)
-			continue;
-
-		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "tx", tx_packets);
-		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "tx_bytes", tx_bytes);
-		printf("\t%.*s: %lu\n", ETH_GSTRING_LEN, "tx_errors", tx_errors);
-		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "rx", rx_packets);
-		printf("\t%.*s: %llu\n", ETH_GSTRING_LEN, "rx_bytes", rx_bytes);
-		ret = EXIT_SUCCESS;
-		goto out;
-	}
-
-	printf("Error - interface '%s' not found\n", mesh_iface);
-
-out:
-	fclose(fp);
-	free(line_ptr);
-	return ret;
-}
-
 /* code borrowed from ethtool */
 static int statistics_custom_get(int fd, struct ifreq *ifr)
 {
@@ -161,10 +114,6 @@ int ioctl_statistics_get(char *mesh_iface)
 		printf("Error - can't open socket: %s\n", strerror(errno));
 		goto out;
 	}
-
-	ret = statistics_common_get(mesh_iface);
-	if (ret != EXIT_SUCCESS)
-		goto out;
 
 	ret = statistics_custom_get(fd, &ifr);
 

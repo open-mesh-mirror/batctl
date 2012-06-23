@@ -45,7 +45,7 @@ char module_ver_path[] = "/sys/module/batman_adv/version";
 
 void print_usage(void)
 {
-	int i;
+	int i, opt_indent;
 
 	printf("Usage: batctl [options] command|debug table \n");
 	printf("options:\n");
@@ -56,17 +56,24 @@ void print_usage(void)
 
 	printf("commands:\n");
 	printf(" \tinterface|if               [add|del iface(s)]\tdisplay or modify the interface settings\n");
-	printf(" \tinterval|it                [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
+	for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
+		printf(" \t%s|%s", batctl_settings[i].opt_long, batctl_settings[i].opt_short);
+		opt_indent = strlen(batctl_settings[i].opt_long) + strlen(batctl_settings[i].opt_short);
+
+		if (batctl_settings[i].params == sysfs_param_enable)
+			printf("%*s                display or modify %s setting\n",
+			       31 - opt_indent, "[0|1]", batctl_settings[i].opt_long);
+		else if (batctl_settings[i].params == sysfs_param_server)
+			printf("%*s      display or modify %s setting\n",
+			       41 - opt_indent, "[client|server]", batctl_settings[i].opt_long);
+		else
+			printf("                                display or modify %s setting\n",
+			       batctl_settings[i].opt_long);
+	}
 	printf(" \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                                        \tread the log produced by the kernel module\n");
 	printf(" \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
-	printf(" \tvis_mode|vm                [mode]            \tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
-	printf(" \taggregation|ag             [0|1]             \tdisplay or modify the packet aggregation setting\n");
-	printf(" \tbonding|b                  [0|1]             \tdisplay or modify the bonding mode setting\n");
-	printf(" \tbridge_loop_avoidance|bl   [0|1]             \tdisplay or modify the bridge loop avoidance setting\n");
-	printf(" \tfragmentation|f            [0|1]             \tdisplay or modify the fragmentation mode setting\n");
-	printf(" \tap_isolation|ap            [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
 
 	printf("debug tables:                                   \tdisplay the corresponding debug table\n");
@@ -153,16 +160,6 @@ int main(int argc, char **argv)
 
 		ret = log_print(mesh_iface, argc - 1, argv + 1);
 
-	} else if ((strcmp(argv[1], "interval") == 0) || (strcmp(argv[1], "it") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_ORIG_INTERVAL, orig_interval_usage, NULL);
-
-	} else if ((strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_VIS_MODE, vis_mode_usage, sysfs_param_server);
-
 	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
 
 		ret = vis_data(mesh_iface, argc - 1, argv + 1);
@@ -170,31 +167,6 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
 		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_AGGR, aggregation_usage, sysfs_param_enable);
-
-	} else if ((strcmp(argv[1], "bonding") == 0) || (strcmp(argv[1], "b") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_BONDING, bonding_usage, sysfs_param_enable);
-
-	} else if ((strcmp(argv[1], "bridge_loop_avoidance") == 0) || (strcmp(argv[1], "bl") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_BRIDGE_LOOP_AVOIDANCE, bridge_loop_avoidance_usage, sysfs_param_enable);
-
-	} else if ((strcmp(argv[1], "fragmentation") == 0) || (strcmp(argv[1], "f") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_FRAG, fragmentation_usage, sysfs_param_enable);
-
-	} else if ((strcmp(argv[1], "ap_isolation") == 0) || (strcmp(argv[1], "ap") == 0)) {
-
-		ret = handle_sys_setting(mesh_iface, argc - 1, argv + 1,
-					 SYS_AP_ISOLA, ap_isolation_usage, sysfs_param_enable);
 
 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
 
@@ -205,6 +177,15 @@ int main(int argc, char **argv)
 		ret = bisect(argc - 1, argv + 1);
 
 	} else {
+
+		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
+			if ((strcmp(argv[1], batctl_settings[i].opt_long) != 0) &&
+			    (strcmp(argv[1], batctl_settings[i].opt_short) != 0))
+				continue;
+
+			ret = handle_sys_setting(mesh_iface, i, argc - 1, argv + 1);
+			goto out;
+		}
 
 		for (i = 0; i < BATCTL_TABLE_NUM; i++) {
 			if ((strcmp(argv[1], batctl_debug_tables[i].opt_long) != 0) &&

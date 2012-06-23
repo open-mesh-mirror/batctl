@@ -23,20 +23,24 @@
 #define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL "log_level"
 #define SYS_LOG "log"
-#define SYS_AGGR "aggregated_ogms"
-#define SYS_BONDING "bonding"
-#define SYS_BRIDGE_LOOP_AVOIDANCE "bridge_loop_avoidance"
 #define SYS_GW_MODE "gw_mode"
 #define SYS_GW_SEL "gw_sel_class"
 #define SYS_GW_BW "gw_bandwidth"
-#define SYS_VIS_MODE "vis_mode"
-#define SYS_ORIG_INTERVAL "orig_interval"
 #define SYS_IFACE_PATH "/sys/class/net"
 #define SYS_IFACE_DIR SYS_IFACE_PATH"/%s/"
 #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
-#define SYS_FRAG "fragmentation"
-#define SYS_AP_ISOLA "ap_isolation"
+
+enum batctl_settings_list {
+	BATCTL_SETTINGS_ORIG_INTERVAL,
+	BATCTL_SETTINGS_AP_ISOLATION,
+	BATCTL_SETTINGS_BLA,
+	BATCTL_SETTINGS_VIS_MODE,
+	BATCTL_SETTINGS_AGGREGATION,
+	BATCTL_SETTINGS_BONDING,
+	BATCTL_SETTINGS_FRAGMENTATION,
+	BATCTL_SETTINGS_NUM,
+};
 
 enum gw_modes {
 	GW_MODE_OFF,
@@ -44,20 +48,18 @@ enum gw_modes {
 	GW_MODE_SERVER,
 };
 
+struct settings_data {
+	const char opt_long[OPT_LONG_MAX_LEN];
+	const char opt_short[OPT_SHORT_MAX_LEN];
+	const char sysfs_name[SETTINGS_PATH_MAX_LEN];
+	const char **params;
+};
+
 extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
+extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
 
-void aggregation_usage(void);
-void bonding_usage(void);
-void bridge_loop_avoidance_usage(void);
-void fragmentation_usage(void);
-void ap_isolation_usage(void);
-void gw_mode_usage(void);
-void vis_mode_usage(void);
-void orig_interval_usage(void);
 int interface(char *mesh_iface, int argc, char **argv);
 int handle_loglevel(char *mesh_iface, int argc, char **argv);
-int handle_sys_setting(char *mesh_iface, int argc, char **argv,
-		       char *file_path, void setting_usage(void),
-		       const char *sysfs_param[]);
+int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
 int handle_gw_setting(char *mesh_iface, int argc, char **argv);

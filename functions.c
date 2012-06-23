@@ -44,7 +44,7 @@ char *line_ptr = NULL;
 const char *sysfs_compile_out_param[] = {
 	SYS_LOG,
 	SYS_LOG_LEVEL,
-	SYS_BRIDGE_LOOP_AVOIDANCE,
+	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
 	NULL,
 };
 

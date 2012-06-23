@@ -31,6 +31,7 @@
 #define OPT_SHORT_MAX_LEN 5
 
 #define DEBUG_TABLE_PATH_MAX_LEN 20
+#define SETTINGS_PATH_MAX_LEN 25
 
 #define __packed __attribute((packed))   /* linux kernel compat */
 

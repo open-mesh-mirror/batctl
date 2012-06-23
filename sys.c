@@ -49,6 +49,52 @@ const char *sysfs_param_server[] = {
 	NULL,
 };
 
+const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
+	{
+		.opt_long = "orig_interval",
+		.opt_short = "it",
+		.sysfs_name = "orig_interval",
+		.params = NULL,
+	},
+	{
+		.opt_long = "ap_isolation",
+		.opt_short = "ap",
+		.sysfs_name = "ap_isolation",
+		.params = sysfs_param_enable,
+	},
+	{
+		.opt_long = "bridge_loop_avoidance",
+		.opt_short = "bl",
+		.sysfs_name = "bridge_loop_avoidance",
+		.params = sysfs_param_enable,
+	},
+	{
+		.opt_long = "vis_mode",
+		.opt_short = "vm",
+		.sysfs_name = "vis_mode",
+		.params = sysfs_param_server,
+	},
+	{
+		.opt_long = "aggregation",
+		.opt_short = "ag",
+		.sysfs_name = "aggregated_ogms",
+		.params = sysfs_param_enable,
+	},
+	{
+		.opt_long = "bonding",
+		.opt_short = "b",
+		.sysfs_name = "bonding",
+		.params = sysfs_param_enable,
+	},
+	{
+		.opt_long = "fragmentation",
+		.opt_short = "f",
+		.sysfs_name = "fragmentation",
+		.params = sysfs_param_enable,
+	},
+
+};
+
 static void interface_usage(void)
 {
 	printf("Usage: batctl interface [options] [add|del iface(s)] \n");
@@ -276,65 +322,23 @@ out:
 	return res;
 }
 
-void aggregation_usage(void)
+static void settings_usage(int setting)
 {
-	printf("Usage: batctl [options] aggregation [0|1]\n");
+	printf("Usage: batctl [options] %s|%s",
+	       (char *)batctl_settings[setting].opt_long, (char *)batctl_settings[setting].opt_short);
+
+	if (batctl_settings[setting].params == sysfs_param_enable)
+		printf(" [0|1]\n");
+	else if (batctl_settings[setting].params == sysfs_param_server)
+		printf(" [client|server]\n");
+	else
+		printf("\n");
+
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 }
 
-void bonding_usage(void)
-{
-	printf("Usage: batctl [options] bonding [0|1]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void bridge_loop_avoidance_usage(void)
-{
-	printf("Usage: batctl [options] bridge_loop_avoidance [0|1]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void gw_mode_usage(void)
-{
-	printf("Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void vis_mode_usage(void)
-{
-	printf("Usage: batctl [options] vis_mode [mode]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void orig_interval_usage(void)
-{
-	printf("Usage: batctl [options] interval \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void fragmentation_usage(void)
-{
-	printf("Usage: batctl [options] fragmentation [0|1]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-void ap_isolation_usage(void)
-{
-	printf("Usage: batctl [options] ap_isolation [0|1]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-}
-
-int handle_sys_setting(char *mesh_iface, int argc, char **argv,
-		       char *file_path, void setting_usage(void),
-		       const char *sysfs_param[])
+int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
 	char *path_buff;
@@ -343,10 +347,10 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
 		case 'h':
-			setting_usage();
+			settings_usage(setting);
 			return EXIT_SUCCESS;
 		default:
-			setting_usage();
+			settings_usage(setting);
 			return EXIT_FAILURE;
 		}
 	}
@@ -355,14 +359,15 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, file_path, NO_FLAGS, 0, 0);
+		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
+				NO_FLAGS, 0, 0);
 		goto out;
 	}
 
-	if (!sysfs_param)
+	if (!batctl_settings[setting].params)
 		goto write_file;
 
-	ptr = sysfs_param;
+	ptr = batctl_settings[setting].params;
 	while (*ptr) {
 		if (strcmp(*ptr, argv[1]) == 0)
 			goto write_file;
@@ -373,7 +378,7 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
 	printf("The following values are allowed:\n");
 
-	ptr = sysfs_param;
+	ptr = batctl_settings[setting].params;
 	while (*ptr) {
 		printf(" * %s\n", *ptr);
 		ptr++;
@@ -382,11 +387,19 @@ int handle_sys_setting(char *mesh_iface, int argc, char **argv,
 	goto out;
 
 write_file:
-	res = write_file(path_buff, file_path, argv[1], argc > 2 ? argv[2] : NULL);
+	res = write_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
+			 argv[1], argc > 2 ? argv[2] : NULL);
 
 out:
 	free(path_buff);
 	return res;
+}
+
+static void gw_mode_usage(void)
+{
+	printf("Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
+	printf("options:\n");
+	printf(" \t -h print this help\n");
 }
 
 int handle_gw_setting(char *mesh_iface, int argc, char **argv)

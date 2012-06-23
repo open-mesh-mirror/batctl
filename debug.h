@@ -21,21 +21,26 @@
 
 
 #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
-#define DEBUG_ORIGINATORS "originators"
-#define DEBUG_TRANSTABLE_LOCAL "transtable_local"
-#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
-#define DEBUG_BLA_CLAIM_TABLE "bla_claim_table"
-#define DEBUG_BLA_BACKBONE_TABLE "bla_backbone_table"
-#define DEBUG_GATEWAYS "gateways"
 #define DEBUG_VIS_DATA "vis_data"
 #define DEBUG_LOG "log"
 
-void originators_usage(void);
-void trans_local_usage(void);
-void trans_global_usage(void);
-void bla_claim_table_usage(void);
-void bla_backbone_table_usage(void);
-void gateways_usage(void);
-int handle_debug_table(char *mesh_iface, int argc, char **argv,
-		       char *file_path, void table_usage(void));
+enum batctl_debug_tables {
+	BATCTL_TABLE_ORIGINATORS,
+	BATCTL_TABLE_GATEWAYS,
+	BATCTL_TABLE_TRANSLOCAL,
+	BATCTL_TABLE_TRANSGLOBAL,
+	BATCTL_TABLE_BLA_CLAIMS,
+	BATCTL_TABLE_BLA_BACKBONES,
+	BATCTL_TABLE_NUM,
+};
+
+struct debug_table_data {
+       const char opt_long[OPT_LONG_MAX_LEN];
+       const char opt_short[OPT_SHORT_MAX_LEN];
+       const char debugfs_name[DEBUG_TABLE_PATH_MAX_LEN];
+};
+
+extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
+
+int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
 int log_print(char *mesh_iface, int argc, char **argv);

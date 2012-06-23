@@ -27,6 +27,11 @@
 
 #define EXIT_NOSUCCESS 2
 
+#define OPT_LONG_MAX_LEN 25
+#define OPT_SHORT_MAX_LEN 5
+
+#define DEBUG_TABLE_PATH_MAX_LEN 20
+
 #define __packed __attribute((packed))   /* linux kernel compat */
 
 extern char module_ver_path[];

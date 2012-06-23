@@ -43,20 +43,23 @@
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";
 
-void print_usage(void) {
-	printf("Usage: batctl [options] commands \n");
+void print_usage(void)
+{
+	int i;
+
+	printf("Usage: batctl [options] command|debug table \n");
+	printf("options:\n");
+	printf(" \t-m mesh interface (default 'bat0')\n");
+	printf(" \t-h print this help (or 'batctl <command|debug table> -h' for the specific help)\n");
+	printf(" \t-v print version\n");
+	printf("\n");
+
 	printf("commands:\n");
 	printf(" \tinterface|if               [add|del iface(s)]\tdisplay or modify the interface settings\n");
-	printf(" \toriginators|o                                \tdisplay the originator table\n");
 	printf(" \tinterval|it                [orig_interval]   \tdisplay or modify the originator interval (in ms)\n");
 	printf(" \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
 	printf(" \tlog|l                                        \tread the log produced by the kernel module\n");
 	printf(" \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
-	printf(" \tgateways|gwl                                 \tdisplay the gateway server list\n");
-	printf(" \ttranslocal|tl                                \tdisplay the local translation table\n");
-	printf(" \ttransglobal|tg                               \tdisplay the global translation table\n");
-	printf(" \tclaimtable|cl                                \tdisplay the bridge loop avoidance claim table\n");
-	printf(" \tbackbonetable|bbl                            \tdisplay the bridge loop avoidance backbone table\n");
 	printf(" \tvis_mode|vm                [mode]            \tdisplay or modify the status of the VIS server\n");
 	printf(" \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	printf(" \taggregation|ag             [0|1]             \tdisplay or modify the packet aggregation setting\n");
@@ -65,20 +68,22 @@ void print_usage(void) {
 	printf(" \tfragmentation|f            [0|1]             \tdisplay or modify the fragmentation mode setting\n");
 	printf(" \tap_isolation|ap            [0|1]             \tdisplay or modify the ap isolation mode setting\n");
 	printf("\n");
+
+	printf("debug tables:                                   \tdisplay the corresponding debug table\n");
+	for (i = 0; i < BATCTL_TABLE_NUM; i++)
+		printf(" \t%s|%s\n", batctl_debug_tables[i].opt_long, batctl_debug_tables[i].opt_short);
+
+	printf("\n");
 	printf(" \tstatistics|s                                 \tprint mesh statistics\n");
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
 	printf(" \tbisect                     <file1> .. <fileN>\tanalyze given log files for routing stability\n");
-	printf("options:\n");
-	printf(" \t-m mesh interface (default 'bat0')\n");
-	printf(" \t-h print this help (or 'batctl <command> -h' for the command specific help)\n");
-	printf(" \t-v print version\n");
 }
 
 int main(int argc, char **argv)
 {
-	int ret = EXIT_FAILURE;
+	int i, ret = EXIT_FAILURE;
 	char *mesh_iface = mesh_dfl_iface;
 
 	if ((argc > 1) && (strcmp(argv[1], "-m") == 0)) {
@@ -140,31 +145,6 @@ int main(int argc, char **argv)
 
 		ret = interface(mesh_iface, argc - 1, argv + 1);
 
-	} else if ((strcmp(argv[1], "originators") == 0) || (strcmp(argv[1], "o") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_ORIGINATORS, originators_usage);
-
-	} else if ((strcmp(argv[1], "translocal") == 0) || (strcmp(argv[1], "tl") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_TRANSTABLE_LOCAL, trans_local_usage);
-
-	} else if ((strcmp(argv[1], "transglobal") == 0) || (strcmp(argv[1], "tg") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_TRANSTABLE_GLOBAL, trans_global_usage);
-
-	} else if ((strcmp(argv[1], "claimtable") == 0) || (strcmp(argv[1], "cl") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_BLA_CLAIM_TABLE, bla_claim_table_usage);
-	} else if ((strcmp(argv[1], "backbonetable") == 0) || (strcmp(argv[1], "bbl") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_BLA_BACKBONE_TABLE,
-					 bla_backbone_table_usage);
-
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
 		ret = handle_loglevel(mesh_iface, argc - 1, argv + 1);
@@ -190,11 +170,6 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
 		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "gateways") == 0) || (strcmp(argv[1], "gwl") == 0)) {
-
-		ret = handle_debug_table(mesh_iface, argc - 1, argv + 1,
-					 DEBUG_GATEWAYS, gateways_usage);
 
 	} else if ((strcmp(argv[1], "aggregation") == 0) || (strcmp(argv[1], "ag") == 0)) {
 
@@ -230,10 +205,21 @@ int main(int argc, char **argv)
 		ret = bisect(argc - 1, argv + 1);
 
 	} else {
-		printf("Error - no command specified\n");
+
+		for (i = 0; i < BATCTL_TABLE_NUM; i++) {
+			if ((strcmp(argv[1], batctl_debug_tables[i].opt_long) != 0) &&
+			    (strcmp(argv[1], batctl_debug_tables[i].opt_short) != 0))
+				continue;
+
+			ret = handle_debug_table(mesh_iface, i, argc - 1, argv + 1);
+			goto out;
+		}
+
+		printf("Error - no valid command or debug table specified: %s\n", argv[1]);
 		print_usage();
 	}
 
+out:
 	return ret;
 
 err:

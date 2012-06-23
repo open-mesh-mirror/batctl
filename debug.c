@@ -33,64 +33,53 @@
 #include "debugfs.h"
 #include "functions.h"
 
-void originators_usage(void)
+const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+	{
+		.opt_long = "originators",
+		.opt_short = "o",
+		.debugfs_name = "originators",
+	},
+	{
+		.opt_long = "gateways",
+		.opt_short = "gwl",
+		.debugfs_name = "gateways",
+	},
+	{
+		.opt_long = "translocal",
+		.opt_short = "tl",
+		.debugfs_name = "transtable_local",
+	},
+	{
+		.opt_long = "transglobal",
+		.opt_short = "tg",
+		.debugfs_name = "transtable_global",
+	},
+	{
+		.opt_long = "claimtable",
+		.opt_short = "cl",
+		.debugfs_name = "bla_claim_table",
+	},
+	{
+		.opt_long = "backbonetable",
+		.opt_short = "bbt",
+		.debugfs_name = "bla_backbone_table",
+	},
+};
+
+void debug_table_usage(int debug_table)
 {
-	printf("Usage: batctl [options] originators \n");
+	printf("Usage: batctl [options] %s|%s\n",
+	       batctl_debug_tables[debug_table].opt_long, batctl_debug_tables[debug_table].opt_short);
 	printf("options:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the originator table continuously\n");
-	printf(" \t -t timeout interval - don't print originators not seen for x.y seconds \n");
+	printf(" \t -w [interval] watch mode - refresh the table continuously\n");
+
+	if (debug_table == BATCTL_TABLE_ORIGINATORS)
+		printf(" \t -t timeout interval - don't print originators not seen for x.y seconds \n");
 }
 
-void trans_local_usage(void)
-{
-	printf("Usage: batctl [options] translocal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the local translation table continuously\n");
-}
-
-void trans_global_usage(void)
-{
-	printf("Usage: batctl [options] transglobal \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the global translation table continuously\n");
-}
-
-void bla_claim_table_usage(void)
-{
-	printf("Usage: batctl [options] claimtable \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance claim table continuously\n");
-}
-
-void bla_backbone_table_usage(void)
-{
-	printf("Usage: batctl [options] backbone table\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the bridge loop avoidance backbone table continuously\n");
-}
-
-
-void gateways_usage(void)
-{
-	printf("Usage: batctl [options] gateways \n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -w [interval] watch mode - refresh the gateway server list continuously\n");
-}
-
-int handle_debug_table(char *mesh_iface, int argc, char **argv,
-		       char *file_path, void table_usage(void))
+int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 {
 	int optchar, read_opt = USE_BAT_HOSTS;
 	char full_path[MAX_PATH+1];
@@ -102,7 +91,7 @@ int handle_debug_table(char *mesh_iface, int argc, char **argv,
 	while ((optchar = getopt(argc, argv, "hnw:t:")) != -1) {
 		switch (optchar) {
 		case 'h':
-			table_usage();
+			debug_table_usage(debug_table);
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
@@ -115,36 +104,37 @@ int handle_debug_table(char *mesh_iface, int argc, char **argv,
 			}
 
 			if (!sscanf(optarg, "%f", &watch_interval)) {
-				printf("Error - provided argument of -w is not a number\n");
+				printf("Error - provided argument of '-%c' is not a number\n", optchar);
 				return EXIT_FAILURE;
 			}
 			break;
 		case 't':
-			if (table_usage != originators_usage) {
-				table_usage();
+			if (debug_table != BATCTL_TABLE_ORIGINATORS) {
+				printf("Error - unrecognised option '-%c'\n", optchar);
+				debug_table_usage(debug_table);
 				return EXIT_FAILURE;
 			}
 
 			read_opt |= NO_OLD_ORIGS;
 			if (!sscanf(optarg, "%f", &orig_timeout)) {
-				printf("Error - provided argument of -t is not a number\n");
+				printf("Error - provided argument of '-%c' is not a number\n", optchar);
 				return EXIT_FAILURE;
 			}
 			break;
 		case '?':
 			if (optopt == 't')
-				printf("Error - argument -t needs a number\n");
+				printf("Error - option '-t' needs a number as argument\n");
 
 			else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
 			}
 			else
-				printf("Error - unrecognised option -%c\n", optopt);
+				printf("Error - unrecognised option: '-%c'\n", optopt);
 
 			return EXIT_FAILURE;
 		default:
-			table_usage();
+			debug_table_usage(debug_table);
 			return EXIT_FAILURE;
 		}
 	}
@@ -156,7 +146,8 @@ int handle_debug_table(char *mesh_iface, int argc, char **argv,
 	}
 
 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
-	return read_file(full_path, file_path, read_opt, orig_timeout, watch_interval);
+	return read_file(full_path, (char *)batctl_debug_tables[debug_table].debugfs_name,
+			 read_opt, orig_timeout, watch_interval);
 }
 
 static void log_usage(void)

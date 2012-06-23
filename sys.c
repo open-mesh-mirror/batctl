@@ -97,8 +97,8 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 
 static void interface_usage(void)
 {
-	printf("Usage: batctl interface [options] [add|del iface(s)] \n");
-	printf("options:\n");
+	printf("Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 }
 
@@ -237,8 +237,8 @@ err:
 
 static void log_level_usage(void)
 {
-	printf("Usage: batctl [options] loglevel [level[ level[ level]]...]\n");
-	printf("options:\n");
+	printf("Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf("levels:\n");
 	printf(" \t none    Debug logging is disabled\n");
@@ -324,7 +324,7 @@ out:
 
 static void settings_usage(int setting)
 {
-	printf("Usage: batctl [options] %s|%s",
+	printf("Usage: batctl [options] %s|%s [parameters]",
 	       (char *)batctl_settings[setting].opt_long, (char *)batctl_settings[setting].opt_short);
 
 	if (batctl_settings[setting].params == sysfs_param_enable)
@@ -334,7 +334,7 @@ static void settings_usage(int setting)
 	else
 		printf("\n");
 
-	printf("options:\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 }
 

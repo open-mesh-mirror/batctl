@@ -37,8 +37,8 @@ static struct bat_node *curr_bat_node = NULL;
 
 static void bisect_usage(void)
 {
-	printf("Usage: batctl bisect [options] <file1> <file2> .. <fileN>\n");
-	printf("options:\n");
+	printf("Usage: batctl bisect [parameters] <file1> <file2> .. <fileN>\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -l run a loop detection of given mac address or bat-host (default)\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");

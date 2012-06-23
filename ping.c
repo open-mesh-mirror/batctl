@@ -44,8 +44,8 @@ char is_aborted = 0;
 
 void ping_usage(void)
 {
-	printf("Usage: batctl ping [options] mac|bat-host \n");
-	printf("options:\n");
+	printf("Usage: batctl [options] ping [parameters] mac|bat-host \n");
+	printf("parameters:\n");
 	printf(" \t -c ping packet count \n");
 	printf(" \t -h print this help\n");
 	printf(" \t -i interval in seconds\n");

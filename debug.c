@@ -68,9 +68,9 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 
 void debug_table_usage(int debug_table)
 {
-	printf("Usage: batctl [options] %s|%s\n",
+	printf("Usage: batctl [options] %s|%s [parameters]\n",
 	       batctl_debug_tables[debug_table].opt_long, batctl_debug_tables[debug_table].opt_short);
-	printf("options:\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
 	printf(" \t -w [interval] watch mode - refresh the table continuously\n");
@@ -152,8 +152,8 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 
 static void log_usage(void)
 {
-	printf("Usage: batctl [options] log \n");
-	printf("options:\n");
+	printf("Usage: batctl [options] log [parameters]\n");
+	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
 }

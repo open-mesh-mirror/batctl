@@ -81,8 +81,8 @@ batctl ping
 
 Sends a Layer 2 batman-adv ping to check round trip time and connectivity
 
-Usage: batctl ping [options] mac|bat-host
-options:
+Usage: batctl ping [parameters] mac|bat-host
+parameters:
          -c ping packet count
          -h print this help
          -i interval in seconds
@@ -106,7 +106,7 @@ batctl traceroute
 Traceroute sends 3 packets to each hop, awaits the answers and prints out the
 response times.
 
-Usage: batctl traceroute [options] mac|bat-host
+Usage: batctl traceroute [parameters] mac|bat-host
 
 Example:
 
@@ -128,8 +128,8 @@ batctl tcpdump
 
 tcpdump layer 2 and/or layer 3 traffic on the given interface
 
-Usage: batctl tcpdump [options] interface [interface]
-options:
+Usage: batctl tcpdump [parameters] interface [interface]
+parameters:
          -c compat filter - only display packets matching own compat version (14)
          -h print this help
          -n don't convert addresses to bat-host names
@@ -182,8 +182,8 @@ bat-host name) to only see data connected to  this  originator.  If  "-n"  was
 given batctl will not replace the mac addresses with bat-host names in the
 output.
 
-Usage: batctl bisect [options] <file1> <file2> .. <fileN>
-options:
+Usage: batctl bisect [parameters] <file1> <file2> .. <fileN>
+parameters:
          -h print this help
          -l run a loop detection of given mac address or bat-host (default)
          -n don't convert addresses to bat-host names
@@ -292,7 +292,7 @@ batctl interface
 
 display or modify the interface settings
 
-Usage: batctl interface|if    [add|del iface(s)]
+Usage: batctl interface|if [add|del iface(s)]
 
 Example:
 
@@ -304,7 +304,7 @@ batctl interval
 
 display or modify the originator interval in ms
 
-Usage: batctl interval|it   [orig_interval]
+Usage: batctl orig_interval|it [interval]
 
 Example:
 
@@ -335,7 +335,7 @@ batctl loglevel
 
 display or modify the log level
 
-Usage: batctl loglevel|ll   [level]
+Usage: batctl loglevel|ll [level]
 
 Example:
 $  batctl loglevel
@@ -415,7 +415,7 @@ batctl vis_mode
 
 display or modify the status of the VIS server
 
-Usage: batctl vis_mode|vm     [mode]
+Usage: batctl vis_mode|vm [mode]
 
 Example:
 

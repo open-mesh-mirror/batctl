@@ -59,8 +59,8 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 
 static void tcpdump_usage(void)
 {
-	printf("Usage: batctl tcpdump [options] interface [interface]\n");
-	printf("options:\n");
+	printf("Usage: batctl tcpdump [parameters] interface [interface]\n");
+	printf("parameters:\n");
 	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", BATADV_COMPAT_VERSION);
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");

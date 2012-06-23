@@ -47,10 +47,10 @@ void print_usage(void)
 {
 	int i, opt_indent;
 
-	printf("Usage: batctl [options] command|debug table \n");
+	printf("Usage: batctl [options] command|debug table [parameters]\n");
 	printf("options:\n");
 	printf(" \t-m mesh interface (default 'bat0')\n");
-	printf(" \t-h print this help (or 'batctl <command|debug table> -h' for the specific help)\n");
+	printf(" \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
 	printf(" \t-v print version\n");
 	printf("\n");
 

@@ -118,14 +118,14 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
 		goto out;
 
 	switch (bla_dst->type) {
-	case BATADV_CLAIM_TYPE_ADD:
+	case BATADV_CLAIM_TYPE_CLAIM:
 		printf("BLA CLAIM, backbone %s, ",
 		       get_name_by_macaddr((struct ether_addr *)hw_src, read_opt));
 		printf("client %s, bla group %04x\n",
 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt),
 		       ntohs(bla_dst->group));
 		break;
-	case BATADV_CLAIM_TYPE_DEL:
+	case BATADV_CLAIM_TYPE_UNCLAIM:
 		printf("BLA UNCLAIM, backbone %s, ",
 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt));
 		printf("client %s, bla group %04x\n",

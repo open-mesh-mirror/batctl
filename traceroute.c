@@ -125,6 +125,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	icmp_packet_out.header.packet_type = BATADV_ICMP;
 	icmp_packet_out.msg_type = BATADV_ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
+	icmp_packet_out.reserved = 0;
 
 	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));

@@ -174,6 +174,8 @@ int ping(char *mesh_iface, int argc, char **argv)
 		icmp_packet_out.rr_cur = 1;
 		memset(&icmp_packet_out.rr, 0, BATADV_RR_LEN * ETH_ALEN);
 		memset(last_rr, 0, BATADV_RR_LEN * ETH_ALEN);
+	} else {
+		((struct batadv_icmp_packet *)&icmp_packet_out)->reserved = 0;
 	}
 
 	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,

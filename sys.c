@@ -109,6 +109,11 @@ static int print_interfaces(char *mesh_iface)
 	char *path_buff;
 	int res;
 
+	if (!file_exists(module_ver_path)) {
+		printf("Error - batman-adv module has not been loaded\n");
+		goto err;
+	}
+
 	path_buff = malloc(PATH_BUFF_LEN);
 	if (!path_buff) {
 		printf("Error - could not allocate path buffer: out of memory ?\n");
@@ -187,6 +192,12 @@ int interface(char *mesh_iface, int argc, char **argv)
 	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
 	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
 		printf("Error - unknown argument specified: %s\n", argv[1]);
+		interface_usage();
+		goto err;
+	}
+
+	if (argc == 2) {
+		printf("Error - missing interface name(s) after '%s'\n", argv[1]);
 		interface_usage();
 		goto err;
 	}

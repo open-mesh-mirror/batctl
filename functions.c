@@ -36,15 +36,18 @@
 #include "functions.h"
 #include "bat-hosts.h"
 #include "sys.h"
+#include "debug.h"
 
 static struct timeval start_time;
 static char *host_name;
 char *line_ptr = NULL;
 
-const char *sysfs_compile_out_param[] = {
+const char *fs_compile_out_param[] = {
 	SYS_LOG,
 	SYS_LOG_LEVEL,
 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
+	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
+	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
 	NULL,
 };
 
@@ -114,23 +117,42 @@ int file_exists(const char *fpath)
 	return stat(fpath, &st) == 0;
 }
 
-static int check_sys_dir(char *dir)
+static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 {
+	const char **ptr;
 	struct stat st;
 
-	if (stat("/sys/", &st) != 0) {
-		printf("Error - the folder '/sys/' was not found on the system\n");
-		printf("Please make sure that the sys filesystem is properly mounted\n");
-		return EXIT_FAILURE;
+	if (strstr(dir, "/sys/")) {
+		if (stat("/sys/", &st) != 0) {
+			printf("Error - the folder '/sys/' was not found on the system\n");
+			printf("Please make sure that the sys filesystem is properly mounted\n");
+			return;
+		}
 	}
 
-	if (stat(dir, &st) == 0)
-		return EXIT_SUCCESS;
+	if (!file_exists(module_ver_path)) {
+		printf("Error - batman-adv module has not been loaded\n");
+		return;
+	}
 
-	printf("Error - the folder '%s' was not found within the sys filesystem\n", dir);
-	printf("Please make sure that the batman-adv kernel module is loaded and\n");
-	printf("that you have activated your mesh by adding interfaces to batman-adv\n");
-	return EXIT_FAILURE;
+	if (!file_exists(dir)) {
+		printf("Error - mesh has not been enabled yet\n");
+		printf("Activate your mesh by adding interfaces to batman-adv\n");
+		return;
+	}
+
+	for (ptr = fs_compile_out_param; *ptr; ptr++) {
+		if (strcmp(*ptr, fname) != 0)
+			continue;
+
+		break;
+	}
+
+	printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
+	if (*ptr) {
+		printf("The option you called seems not to be compiled into your batman-adv kernel module.\n");
+		printf("Consult the README if you wish to learn more about compiling options into batman-adv.\n");
+	}
 }
 
 int read_file(char *dir, char *fname, int read_opt,
@@ -140,18 +162,12 @@ int read_file(char *dir, char *fname, int read_opt,
 	struct bat_host *bat_host;
 	int res = EXIT_FAILURE;
 	float last_seen;
-	const char **ptr;
 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
 	size_t len = 0;
 	FILE *fp = NULL;
 
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init(read_opt);
-
-	if (strstr(dir, "/sys/")) {
-		if (check_sys_dir(dir) != EXIT_SUCCESS)
-			goto out;
-	}
 
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
@@ -161,20 +177,8 @@ open:
 	fp = fopen(full_path, "r");
 
 	if (!fp) {
-		if (!(read_opt & SILENCE_ERRORS)) {
-			for (ptr = sysfs_compile_out_param; *ptr; ptr++) {
-				if (strcmp(*ptr, fname) != 0)
-					continue;
-
-				break;
-			}
-
-			printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
-			if (*ptr) {
-				printf("The option you called seems not to be compiled into your batman-adv kernel module.\n");
-				printf("Consult the README if you wish to learn more about compiling options into batman-adv.\n");
-			}
-		}
+		if (!(read_opt & SILENCE_ERRORS))
+			file_open_problem_dbg(dir, fname, full_path);
 
 		goto out;
 	}
@@ -285,11 +289,6 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 	char full_path[500];
 	ssize_t write_len;
 
-	if (strstr(dir, "/sys/")) {
-		if (check_sys_dir(dir) != EXIT_SUCCESS)
-			goto out;
-	}
-
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
 	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
@@ -297,7 +296,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 	fd = open(full_path, O_WRONLY);
 
 	if (fd < 0) {
-		printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
+		file_open_problem_dbg(dir, fname, full_path);
 		goto out;
 	}
 

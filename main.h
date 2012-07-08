@@ -34,5 +34,6 @@
 #define SETTINGS_PATH_MAX_LEN 25
 
 #define __packed __attribute((packed))   /* linux kernel compat */
+#define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
 extern char module_ver_path[];

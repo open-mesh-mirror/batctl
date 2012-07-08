@@ -291,13 +291,13 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level = 15;
 				break;
 			} else if (strcmp(argv[i], "batman") == 0)
-				log_level |= (1 << 0);
+				log_level |= BIT(0);
 			else if (strcmp(argv[i], "routes") == 0)
-				log_level |= (1 << 1);
+				log_level |= BIT(1);
 			else if (strcmp(argv[i], "tt") == 0)
-				log_level |= (1 << 2);
+				log_level |= BIT(2);
 			else if (strcmp(argv[i], "bla") == 0)
-				log_level |= (1 << 3);
+				log_level |= BIT(3);
 			else {
 				log_level_usage();
 				goto out;

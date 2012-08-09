@@ -318,14 +318,14 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 
 	printf("[%c] %s (%s)\n", (!log_level) ? 'x' : ' ',
 	       "all debug output disabled", "none");
-	printf("[%c] %s (%s)\n", (log_level & 1) ? 'x' : ' ',
+	printf("[%c] %s (%s)\n", (log_level & BIT(0)) ? 'x' : ' ',
 	       "messages related to routing / flooding / broadcasting",
 	       "batman");
-	printf("[%c] %s (%s)\n", (log_level & 2) ? 'x' : ' ',
+	printf("[%c] %s (%s)\n", (log_level & BIT(1)) ? 'x' : ' ',
 	       "messages related to route added / changed / deleted", "routes");
-	printf("[%c] %s (%s)\n", (log_level & 4) ? 'x' : ' ',
+	printf("[%c] %s (%s)\n", (log_level & BIT(2)) ? 'x' : ' ',
 	       "messages related to translation table operations", "tt");
-	printf("[%c] %s (%s)\n", (log_level & 8) ? 'x' : ' ',
+	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
 	       "messages related to bridge loop avoidance", "bla");
 
 out:

@@ -184,7 +184,8 @@ open:
 	}
 
 	if (read_opt & CLR_CONT_READ)
-		system("clear");
+		/* clear screen, set cursor back to 0,0 */
+		printf("\033[2J\033[0;0f");
 
 read:
 	while (getline(&line_ptr, &len, fp) != -1) {

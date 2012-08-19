@@ -20,7 +20,7 @@
  */
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2012.3.0"
+#define SOURCE_VERSION "2012.4.0"
 #endif
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"

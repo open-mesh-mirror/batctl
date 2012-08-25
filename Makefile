@@ -18,9 +18,14 @@
 # 02110-1301, USA
 #
 
+# changing the CONFIG_* line to 'y' enables the related feature
+# batctl advanced debugging tool bisect:
+export CONFIG_BATCTL_BISECT=n
+
 # batctl build
 BINARY_NAME = batctl
-OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o list-batman.o hash.o vis.o debugfs.o bisect_iv.o ioctl.o
+OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o  hash.o vis.o debugfs.o ioctl.o list-batman.o
+OBJ_BISECT = bisect_iv.o
 MANPAGE = man/batctl.8
 
 # batctl flags and options
@@ -38,6 +43,11 @@ endif
 endif
 
 # standard build tools
+ifeq ($(CONFIG_BATCTL_BISECT),y)
+OBJ += $(OBJ_BISECT)
+CPPFLAGS += -DBATCTL_BISECT
+endif
+
 CC ?= gcc
 RM ?= rm -f
 INSTALL ?= install
@@ -70,7 +80,7 @@ $(BINARY_NAME): $(OBJ)
 	$(LINK.o) $^ $(LDLIBS) -o $@
 
 clean:
-	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
+	$(RM) $(BINARY_NAME) $(OBJ) $(OBJ_BISECT) $(DEP)
 
 install: $(BINARY_NAME)
 	$(MKDIR) $(DESTDIR)$(SBINDIR)
@@ -79,7 +89,7 @@ install: $(BINARY_NAME)
 	$(INSTALL) -m 0644 $(MANPAGE) $(DESTDIR)$(MANDIR)/man8
 
 # load dependencies
-DEP = $(OBJ:.o=.d)
+DEP = $(OBJ:.o=.d) $(OBJ_BISECT:.o=.d)
 -include $(DEP)
 
 .PHONY: all clean install

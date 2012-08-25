@@ -85,7 +85,9 @@ void print_usage(void)
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+#ifdef BATCTL_BISECT
 	printf(" \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
+#endif
 }
 
 int main(int argc, char **argv)
@@ -172,9 +174,11 @@ int main(int argc, char **argv)
 
 		ret = ioctl_statistics_get(mesh_iface);
 
+#ifdef BATCTL_BISECT
 	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
 
 		ret = bisect_iv(argc - 1, argv + 1);
+#endif
 
 	} else {
 

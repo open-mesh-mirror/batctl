@@ -250,13 +250,13 @@ except specified). The following packet types are available:
 Example: batctl td <interface> -p 129 \-> only display batman ogm packets and non batman packets
 .RE
 .br
-.IP "\fBbisect\fP [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]"
-Analyses the logfiles to build a small internal database of all sent sequence numbers and routing table changes. This
-database can then be analyzed in a number of different ways. With "\-l" the database can be used to search for routing
-loops. Use "\-t" to trace OGMs of a host throughout the network. Use "\-r" to display routing tables of the nodes. The
-option "\-s" can be used to limit the output to a range of sequence numbers, between min and max, or to one specific
-sequence number, min. Furthermore using "\-o" you can filter the output to a specified originator. If "\-n" is given
-batctl will not replace the MAC addresses with bat\-host names in the output.
+.IP "\fBbisect_iv\fP [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]"
+Analyses the B.A.T.M.A.N. IV logfiles to build a small internal database of all sent sequence numbers and routing table
+changes. This database can then be analyzed in a number of different ways. With "\-l" the database can be used to search
+for routing loops. Use "\-t" to trace OGMs of a host throughout the network. Use "\-r" to display routing tables of the
+nodes. The option "\-s" can be used to limit the output to a range of sequence numbers, between min and max, or to one
+specific sequence number, min. Furthermore using "\-o" you can filter the output to a specified originator. If "\-n" is
+given batctl will not replace the MAC addresses with bat\-host names in the output.
 .br
 .SH FILES
 .TP

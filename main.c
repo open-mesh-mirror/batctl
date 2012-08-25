@@ -34,7 +34,7 @@
 #include "ping.h"
 #include "traceroute.h"
 #include "tcpdump.h"
-#include "bisect.h"
+#include "bisect_iv.h"
 #include "vis.h"
 #include "ioctl.h"
 #include "functions.h"
@@ -85,7 +85,7 @@ void print_usage(void)
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
-	printf(" \tbisect                     <file1> .. <fileN>\tanalyze given log files for routing stability\n");
+	printf(" \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
 }
 
 int main(int argc, char **argv)
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
 	/* TODO: remove this generic check here and move it into the individual functions */
 	/* check if user is root */
-	if ((strcmp(argv[1], "bisect") != 0) && ((getuid()) || (getgid()))) {
+	if ((strncmp(argv[1], "bisect", strlen("bisect")) != 0) && ((getuid()) || (getgid()))) {
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
@@ -172,9 +172,9 @@ int main(int argc, char **argv)
 
 		ret = ioctl_statistics_get(mesh_iface);
 
-	} else if ((strcmp(argv[1], "bisect") == 0)) {
+	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
 
-		ret = bisect(argc - 1, argv + 1);
+		ret = bisect_iv(argc - 1, argv + 1);
 
 	} else {
 

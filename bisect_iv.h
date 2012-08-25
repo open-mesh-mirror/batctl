@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2012 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner <lindner_marek@yahoo.de>
@@ -29,7 +29,7 @@
 #define RT_FLAG_UPDATE 2
 #define RT_FLAG_DELETE 3
 
-int bisect(int argc, char **argv);
+int bisect_iv(int argc, char **argv);
 
 
 

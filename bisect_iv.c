@@ -27,7 +27,7 @@
 #include <errno.h>
 
 #include "main.h"
-#include "bisect.h"
+#include "bisect_iv.h"
 #include "bat-hosts.h"
 #include "hash.h"
 #include "functions.h"
@@ -35,9 +35,9 @@
 static struct hashtable_t *node_hash = NULL;
 static struct bat_node *curr_bat_node = NULL;
 
-static void bisect_usage(void)
+static void bisect_iv_usage(void)
 {
-	printf("Usage: batctl bisect [parameters] <file1> <file2> .. <fileN>\n");
+	printf("Usage: batctl bisect_iv [parameters] <file1> <file2> .. <fileN>\n");
 	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -l run a loop detection of given mac address or bat-host (default)\n");
@@ -1441,7 +1441,7 @@ err:
 	return 0;
 }
 
-int bisect(int argc, char **argv)
+int bisect_iv(int argc, char **argv)
 {
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
@@ -1455,7 +1455,7 @@ int bisect(int argc, char **argv)
 	while ((optchar = getopt(argc, argv, "hl:no:r:s:t:")) != -1) {
 		switch (optchar) {
 		case 'h':
-			bisect_usage();
+			bisect_iv_usage();
 			return EXIT_SUCCESS;
 		case 'l':
 			loop_orig_ptr = optarg;
@@ -1501,14 +1501,14 @@ int bisect(int argc, char **argv)
 			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
 			break;
 		default:
-			bisect_usage();
+			bisect_iv_usage();
 			return EXIT_FAILURE;
 		}
 	}
 
 	if (argc <= found_args + 1) {
 		printf("Error - need at least 2 log files to compare\n");
-		bisect_usage();
+		bisect_iv_usage();
 		goto err;
 	}
 

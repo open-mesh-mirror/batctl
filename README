@@ -167,22 +167,20 @@ $ batctl tcpdump mesh0
 01:51:43.600999 BAT wyoming: OGM via neigh kansas, seqno 6722, tq 245, ttl 49, v 9, flags [.D.], length 28
 01:51:44.381064 BAT kansas: OGM via neigh kansas, seqno 6720, tq 255, ttl 50, v 9, flags [..I], length 28
 
-batctl bisect
-=============
+batctl bisect_iv
+================
 
-Analyzes  the logfiles to build a small internal database of all sent sequence
-numbers and routing table changes. This database can be used to search for
-routing loops (default action), to trace OGMs of  a  host  (use  "-t"  to
-specify  the  mac address or bat-host name) throughout the network or to
-display routing tables of the nodes (use "-r" to specify the mac address or
-bat-host name). You can name a specific sequence number or a range  using the
-"-s"  option  to limit the output's range. Furthermore you can filter the
-output by specifying an originator (use "-o" to specify the mac address or
-bat-host name) to only see data connected to  this  originator.  If  "-n"  was
-given batctl will not replace the mac addresses with bat-host names in the
-output.
+Analyzes the B.A.T.M.A.N. IV logfiles to build a small internal database of all sent sequence
+numbers and routing table changes. This database can be used to search for routing loops
+(default action), to trace OGMs of  a  host  (use  "-t"  to specify  the  mac address or
+bat-host name) throughout the network or to display routing tables of the nodes (use "-r" to
+specify the mac address or bat-host name). You can name a specific sequence number or a range
+using the "-s"  option  to limit the output's range. Furthermore you can filter the output by
+specifying an originator (use "-o" to specify the mac address or bat-host name) to only see
+data connected to  this  originator.  If  "-n"  was given batctl will not replace the mac
+addresses with bat-host names in the output.
 
-Usage: batctl bisect [parameters] <file1> <file2> .. <fileN>
+Usage: batctl bisect_iv [parameters] <file1> <file2> .. <fileN>
 parameters:
          -h print this help
          -l run a loop detection of given mac address or bat-host (default)
@@ -193,7 +191,7 @@ parameters:
 
 Examples:
 
-$ batctl bisect log/* -l uml3
+$ batctl bisect_iv log/* -l uml3
 Analyzing routing tables of originator: uml3 [all sequence numbers]
 
 Checking host: uml3
@@ -211,7 +209,7 @@ Path towards uml9 (seqno 12 via neigh uml4): -> uml4 -> uml5 -> uml6 -> uml7 -> 
 Path towards uml9 (seqno 21 via neigh uml5): -> uml5 -> uml6 -> uml7 -> uml8 -> uml9.
 Path towards uml9 (seqno 22 via neigh uml4): -> uml4 -> uml5 -> uml6 -> uml7 -> uml8 -> uml9.
 
-$ ./batctl bisect -t uml3 log/*
+$ ./batctl bisect_iv -t uml3 log/*
 Sequence number flow of originator: uml3 [all sequence numbers]
 [...]
 +=> uml3 (seqno 19)

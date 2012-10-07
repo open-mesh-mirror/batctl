@@ -539,6 +539,33 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 		printf("length %zu\n", (size_t)buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet));
 }
 
+static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+{
+	struct ether_header *ether_header;
+	struct batadv_unicast_packet *unicast_4addr_packet;
+
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_packet), "BAT 4ADDR");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_packet),
+		sizeof(struct ether_header), "BAT 4ADDR (unpacked)");
+
+	ether_header = (struct ether_header *)packet_buff;
+	unicast_4addr_packet = (struct batadv_unicast_packet *)(packet_buff + sizeof(struct ether_header));
+
+	if (!time_printed)
+		time_printed = print_time();
+
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
+
+	printf("%s: 4ADDR, ttvn %d, ttl %hhu, ",
+	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->dest, read_opt),
+	       unicast_4addr_packet->ttvn, unicast_4addr_packet->header.ttl);
+
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_packet),
+		      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_packet),
+		      read_opt, time_printed);
+}
+
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct batadv_ogm_packet *batman_ogm_packet;
@@ -599,6 +626,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_ROAM_ADV:
 			if (dump_level & DUMP_TYPE_BATTT)
 				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BATADV_UNICAST_4ADDR:
+			if (dump_level & DUMP_TYPE_BATUCAST)
+				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		default:
 			fprintf(stderr, "Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->header.packet_type);

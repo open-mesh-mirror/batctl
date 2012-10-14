@@ -22,6 +22,7 @@
 
 #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
 #define DEBUG_VIS_DATA "vis_data"
+#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
 #define DEBUG_LOG "log"
 
 enum batctl_debug_tables {

@@ -47,6 +47,7 @@ void traceroute_usage(void)
 	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
+	printf(" \t -T don't try to translate mac to originator address\n");
 }
 
 int traceroute(char *mesh_iface, int argc, char **argv)
@@ -63,14 +64,19 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	double time_delta[NUM_PACKETS];
 	char *debugfs_mnt;
 	char icmp_socket[MAX_PATH+1];
+	int disable_translate_mac = 0;
 
-	while ((optchar = getopt(argc, argv, "hn")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnT")) != -1) {
 		switch (optchar) {
 		case 'h':
 			traceroute_usage();
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
+			found_args += 1;
+			break;
+		case 'T':
+			disable_translate_mac = 1;
 			found_args += 1;
 			break;
 		default:
@@ -100,6 +106,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 			goto out;
 		}
 	}
+
+	if (!disable_translate_mac)
+		dst_mac = translate_mac(mesh_iface, dst_mac);
 
 	mac_string = ether_ntoa_long(dst_mac);
 

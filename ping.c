@@ -51,6 +51,7 @@ void ping_usage(void)
 	printf(" \t -i interval in seconds\n");
 	printf(" \t -t timeout in seconds\n");
 	printf(" \t -R record route\n");
+	printf(" \t -T don't try to translate mac to originator address\n");
 }
 
 void sig_handler(int sig)
@@ -83,8 +84,9 @@ int ping(char *mesh_iface, int argc, char **argv)
 	size_t packet_len;
 	char *debugfs_mnt;
 	char icmp_socket[MAX_PATH+1];
+	int disable_translate_mac = 0;
 
-	while ((optchar = getopt(argc, argv, "hc:i:t:R")) != -1) {
+	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
 		switch (optchar) {
 		case 'c':
 			loop_count = strtol(optarg, NULL , 10);
@@ -110,6 +112,10 @@ int ping(char *mesh_iface, int argc, char **argv)
 		case 'R':
 			rr = 1;
 			found_args++;
+			break;
+		case 'T':
+			disable_translate_mac = 1;
+			found_args += 1;
 			break;
 		default:
 			ping_usage();
@@ -138,6 +144,9 @@ int ping(char *mesh_iface, int argc, char **argv)
 			goto out;
 		}
 	}
+
+	if (!disable_translate_mac)
+		dst_mac = translate_mac(mesh_iface, dst_mac);
 
 	mac_string = ether_ntoa_long(dst_mac);
 	signal(SIGINT, sig_handler);

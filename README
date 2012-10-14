@@ -87,6 +87,7 @@ parameters:
          -h print this help
          -i interval in seconds
          -t timeout in seconds
+         -T don't try to translate mac to originator address
          -R record route
 
 Example:

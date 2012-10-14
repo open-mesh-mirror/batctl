@@ -35,7 +35,7 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
 int file_exists(const char *fpath);
 int read_file(char *dir, char *path, int read_opt,
-	      float orig_timeout, float watch_interval);
+	      float orig_timeout, float watch_interval, size_t header_lines);
 int write_file(char *dir, char *fname, char *arg1, char *arg2);
 struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
@@ -52,4 +52,5 @@ enum {
 	SILENCE_ERRORS = 0x20,
 	NO_OLD_ORIGS = 0x40,
 	COMPAT_FILTER = 0x80,
+	SKIP_HEADER = 0x100,
 };

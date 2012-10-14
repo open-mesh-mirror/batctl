@@ -38,36 +38,43 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_long = "originators",
 		.opt_short = "o",
 		.debugfs_name = "originators",
+		.header_lines = 2,
 	},
 	{
 		.opt_long = "gateways",
 		.opt_short = "gwl",
 		.debugfs_name = "gateways",
+		.header_lines = 1,
 	},
 	{
 		.opt_long = "translocal",
 		.opt_short = "tl",
 		.debugfs_name = "transtable_local",
+		.header_lines = 1,
 	},
 	{
 		.opt_long = "transglobal",
 		.opt_short = "tg",
 		.debugfs_name = "transtable_global",
+		.header_lines = 2,
 	},
 	{
 		.opt_long = "claimtable",
 		.opt_short = "cl",
 		.debugfs_name = "bla_claim_table",
+		.header_lines = 2,
 	},
 	{
 		.opt_long = "backbonetable",
 		.opt_short = "bbt",
 		.debugfs_name = "bla_backbone_table",
+		.header_lines = 2,
 	},
 	{
 		.opt_long = "dat_cache",
 		.opt_short = "dc",
 		.debugfs_name = "dat_cache",
+		.header_lines = 2,
 	},
 };
 
@@ -78,6 +85,7 @@ void debug_table_usage(int debug_table)
 	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	printf(" \t -H don't show the header\n");
 	printf(" \t -w [interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table == BATCTL_TABLE_ORIGINATORS)
@@ -93,7 +101,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 	float watch_interval = 1;
 	opterr = 0;
 
-	while ((optchar = getopt(argc, argv, "hnw:t:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw:t:H")) != -1) {
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(debug_table);
@@ -126,6 +134,9 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 				return EXIT_FAILURE;
 			}
 			break;
+		case 'H':
+			read_opt |= SKIP_HEADER;
+			break;
 		case '?':
 			if (optopt == 't')
 				printf("Error - option '-t' needs a number as argument\n");
@@ -152,7 +163,8 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 
 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
 	return read_file(full_path, (char *)batctl_debug_tables[debug_table].debugfs_name,
-			 read_opt, orig_timeout, watch_interval);
+			 read_opt, orig_timeout, watch_interval,
+			 batctl_debug_tables[debug_table].header_lines);
 }
 
 static void log_usage(void)
@@ -190,6 +202,6 @@ int log_print(char *mesh_iface, int argc, char **argv)
 	}
 
 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
-	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0);
+	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
 	return res;
 }

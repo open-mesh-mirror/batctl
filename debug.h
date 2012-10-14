@@ -40,6 +40,7 @@ struct debug_table_data {
        const char opt_long[OPT_LONG_MAX_LEN];
        const char opt_short[OPT_SHORT_MAX_LEN];
        const char debugfs_name[DEBUG_TABLE_PATH_MAX_LEN];
+       size_t header_lines;
 };
 
 extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];

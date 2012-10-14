@@ -136,7 +136,7 @@ static int print_interfaces(char *mesh_iface)
 
 	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if (res != EXIT_SUCCESS)
 			continue;
 
@@ -153,7 +153,7 @@ static int print_interfaces(char *mesh_iface)
 		line_ptr = NULL;
 
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
-		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if (res != EXIT_SUCCESS) {
 			printf("<error reading status>\n");
 			continue;
@@ -318,7 +318,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 		goto out;
 	}
 
-	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0);
+	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
 
 	if (res != EXIT_SUCCESS)
 		goto out;
@@ -382,7 +382,7 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 
 	if (argc == 1) {
 		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
-				NO_FLAGS, 0, 0);
+				NO_FLAGS, 0, 0, 0);
 		goto out;
 	}
 
@@ -445,7 +445,7 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0);
+		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
 
 		if (res != EXIT_SUCCESS)
 			goto out;
@@ -465,10 +465,10 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 
 		switch (gw_mode) {
 		case GW_MODE_CLIENT:
-			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0);
+			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
 			break;
 		case GW_MODE_SERVER:
-			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0);
+			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
 			break;
 		default:
 			printf("off\n");

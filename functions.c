@@ -162,7 +162,7 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 }
 
 int read_file(char *dir, char *fname, int read_opt,
-	      float orig_timeout, float watch_interval)
+	      float orig_timeout, float watch_interval, size_t header_lines)
 {
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
@@ -171,6 +171,7 @@ int read_file(char *dir, char *fname, int read_opt,
 	char full_path[500], *buff_ptr, *space_ptr, extra_char;
 	size_t len = 0;
 	FILE *fp = NULL;
+	size_t line;
 
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init(read_opt);
@@ -180,6 +181,7 @@ int read_file(char *dir, char *fname, int read_opt,
 	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
 
 open:
+	line = 0;
 	fp = fopen(full_path, "r");
 
 	if (!fp) {
@@ -195,6 +197,9 @@ open:
 
 read:
 	while (getline(&line_ptr, &len, fp) != -1) {
+		if (line++ < header_lines && read_opt & SKIP_HEADER)
+			continue;
+
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;

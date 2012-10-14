@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 	if (strcmp(argv[1], "-v") == 0) {
 		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
 
-		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0);
+		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
 			line_ptr[strlen(line_ptr) - 1] = '\0';
 

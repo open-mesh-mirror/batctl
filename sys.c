@@ -258,6 +258,7 @@ static void log_level_usage(void)
 	printf(" \t routes  Messages related to route added / changed / deleted\n");
 	printf(" \t tt      Messages related to translation table operations\n");
 	printf(" \t bla     Messages related to bridge loop avoidance\n");
+	printf(" \t dat     Messages related to arp snooping and distributed arp table\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -288,7 +289,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level = 0;
 				break;
 			} else if (strcmp(argv[i], "all") == 0) {
-				log_level = 15;
+				log_level = 31;
 				break;
 			} else if (strcmp(argv[i], "batman") == 0)
 				log_level |= BIT(0);
@@ -298,6 +299,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= BIT(2);
 			else if (strcmp(argv[i], "bla") == 0)
 				log_level |= BIT(3);
+			else if (strcmp(argv[i], "dat") == 0)
+				log_level |= BIT(4);
 			else {
 				log_level_usage();
 				goto out;
@@ -327,6 +330,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	       "messages related to translation table operations", "tt");
 	printf("[%c] %s (%s)\n", (log_level & BIT(3)) ? 'x' : ' ',
 	       "messages related to bridge loop avoidance", "bla");
+	printf("[%c] %s (%s)\n", (log_level & BIT(4)) ? 'x' : ' ',
+	       "messages related to arp snooping and distributed arp table", "dat");
 
 out:
 	free(path_buff);

@@ -69,6 +69,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 		.params = sysfs_param_enable,
 	},
 	{
+		.opt_long = "distributed_arp_table",
+		.opt_short = "dat",
+		.sysfs_name = "distributed_arp_table",
+		.params = sysfs_param_enable,
+	},
+	{
 		.opt_long = "vis_mode",
 		.opt_short = "vm",
 		.sysfs_name = "vis_mode",

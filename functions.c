@@ -22,6 +22,9 @@
 
 #define _GNU_SOURCE
 #include <netinet/ether.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -400,5 +403,151 @@ out:
 	if (f)
 		fclose(f);
 	free(line);
+	return mac_result;
+}
+
+static uint32_t resolve_ipv4(const char *asc)
+{
+	int ret;
+	struct addrinfo hints;
+	struct addrinfo *res;
+	struct sockaddr_in *inet4;
+	uint32_t addr = 0;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	ret = getaddrinfo(asc, NULL, &hints, &res);
+	if (ret)
+		return 0;
+
+	if (res) {
+		inet4 = (struct sockaddr_in *)res->ai_addr;
+		addr = inet4->sin_addr.s_addr;
+	}
+
+	freeaddrinfo(res);
+	return addr;
+}
+
+static void request_arp(uint32_t ipv4_addr)
+{
+	struct sockaddr_in inet4;
+	int sock;
+	char t = 0;
+
+	memset(&inet4, 0, sizeof(inet4));
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock < 0)
+		return;
+
+	inet4.sin_family = AF_INET;
+	inet4.sin_port = htons(9);
+	inet4.sin_addr.s_addr = ipv4_addr;
+	sendto(sock, &t, sizeof(t), 0, (const struct sockaddr *)&inet4,
+	       sizeof(inet4));
+	close(sock);
+}
+
+static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
+{
+	struct ether_addr mac_empty;
+	struct ether_addr *mac_result = NULL, *mac_tmp;
+	struct sockaddr_in inet4;
+	int ret;
+	FILE *f;
+	size_t len = 0;
+	char *line = NULL;
+	int skip_line = 1;
+	size_t column;
+	char *token, *input, *saveptr;
+	int line_invalid;
+
+	memset(&mac_empty, 0, sizeof(mac_empty));
+
+	f = fopen("/proc/net/arp", "r");
+	if (!f)
+		return NULL;
+
+	while (getline(&line, &len, f) != -1) {
+		if (skip_line) {
+			skip_line = 0;
+			continue;
+		}
+
+		line_invalid = 0;
+		column = 0;
+		input = line;
+		while ((token = strtok_r(input, " \t", &saveptr))) {
+			input = NULL;
+
+			if (column == 0) {
+				ret = inet_pton(AF_INET, token, &inet4.sin_addr);
+				if (ret != 1) {
+					line_invalid = 1;
+					break;
+				}
+			}
+
+			if (column == 3) {
+				mac_tmp = ether_aton(token);
+				if (!mac_tmp || memcmp(mac_tmp, &mac_empty,
+						       sizeof(mac_empty)) == 0) {
+					line_invalid = 1;
+					break;
+				}
+			}
+
+			column++;
+		}
+
+		if (column < 4)
+			line_invalid = 1;
+
+		if (line_invalid)
+			continue;
+
+		if (ipv4_addr == inet4.sin_addr.s_addr) {
+			mac_result = mac_tmp;
+			break;
+		}
+	}
+
+	free(line);
+	fclose(f);
+	return mac_result;
+}
+
+static struct ether_addr *resolve_mac_from_ipv4(const char *asc)
+{
+	uint32_t ipv4_addr;
+	int retries = 5;
+	struct ether_addr *mac_result = NULL;
+
+	ipv4_addr = resolve_ipv4(asc);
+	if (!ipv4_addr)
+		return NULL;
+
+	while (retries-- && !mac_result) {
+		mac_result = resolve_mac_from_arp(ipv4_addr);
+		if (!mac_result) {
+			request_arp(ipv4_addr);
+			usleep(200000);
+		}
+	}
+
+	return mac_result;
+}
+
+struct ether_addr *resolve_mac(const char *asc)
+{
+	struct ether_addr *mac_result = NULL;
+
+	mac_result = ether_aton(asc);
+	if (mac_result)
+		goto out;
+
+	mac_result = resolve_mac_from_ipv4(asc);
+
+out:
 	return mac_result;
 }

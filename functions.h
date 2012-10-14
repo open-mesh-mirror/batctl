@@ -38,6 +38,7 @@ int read_file(char *dir, char *path, int read_opt,
 	      float orig_timeout, float watch_interval);
 int write_file(char *dir, char *fname, char *arg1, char *arg2);
 struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+struct ether_addr *resolve_mac(const char *asc);
 
 extern char *line_ptr;
 

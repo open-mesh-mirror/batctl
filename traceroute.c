@@ -43,7 +43,7 @@
 
 void traceroute_usage(void)
 {
-	printf("Usage: batctl [options] traceroute [parameters] mac|bat-host \n");
+	printf("Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
 	printf("parameters:\n");
 	printf(" \t -h print this help\n");
 	printf(" \t -n don't convert addresses to bat-host names\n");
@@ -99,10 +99,10 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		dst_mac = &bat_host->mac_addr;
 
 	if (!dst_mac) {
-		dst_mac = ether_aton(dst_string);
+		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			printf("Error - the traceroute destination is not a mac address or bat-host name: %s\n", dst_string);
+			printf("Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
 			goto out;
 		}
 	}

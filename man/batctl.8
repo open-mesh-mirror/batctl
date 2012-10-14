@@ -212,19 +212,25 @@ tt - translation table counters
 All counters without a prefix concern payload (pure user data) traffic.
 .RE
 .br
-.IP "\fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
+.IP "\fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIPv4_address\fP"
 Layer 2 ping of a MAC address or bat\-host name.  batctl will try to find the bat\-host name if the given parameter was
-not a MAC address. The "\-c" option tells batctl how man pings should be sent before the program exits. Without the "\-c"
+not a MAC address. It can also try to guess the MAC address using an IPv4 address or a hostname when
+the IPv4 address was configured on top of the batman-adv interface of the destination device and both source and
+destination devices are in the same IPv4 subnet.
+The "\-c" option tells batctl how man pings should be sent before the program exits. Without the "\-c"
 option batctl will continue pinging without end. Use CTRL + C to stop it.  With "\-i" and "\-t" you can set the default
 interval between pings and the timeout time for replies, both in seconds. When run with "\-R", the route taken by the ping
 messages will be recorded. With "\-T" you can disable the automatic translation of a client MAC address to the originator
 address which is responsible for this client.
 .br
-.IP "\fBtraceroute\fP|\fBtr\fP [\fB\-n\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP"
+.IP "\fBtraceroute\fP|\fBtr\fP [\fB\-n\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIPv4_address\fP"
 Layer 2 traceroute to a MAC address or bat\-host name. batctl will try to find the bat\-host name if the given parameter
-was not a MAC address. batctl will send 3 packets to each host and display the response time. If "\-n" is given batctl will
-not replace the MAC addresses with bat\-host names in the output. With "\-T" you can disable the automatic translation of a
-client MAC address to the originator address which is responsible for this client.
+was not a MAC address. It can also try to guess the MAC address using an IPv4 address or a hostname when
+the IPv4 address was configured on top of the batman-adv interface of the destination device and both source and
+destination devices are in the same IPv4 subnet.
+batctl will send 3 packets to each host and display the response time. If "\-n" is given batctl will
+not replace the MAC addresses with bat\-host names in the output. With "\-T" you can disable the automatic translation
+of a client MAC address to the originator address which is responsible for this client.
 .br
 .IP "\fBtcpdump\fP|\fBtd\fP [\fB\-c\fP][\fB\-n\fP][\fB\-p filter\fP][\fB\-x filter\fP] \fBinterface ...\fP"
 batctl will display all packets that are seen on the given interface(s). A variety of options to filter the output

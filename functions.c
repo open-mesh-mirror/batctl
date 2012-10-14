@@ -48,6 +48,7 @@ const char *fs_compile_out_param[] = {
 	batctl_settings[BATCTL_SETTINGS_BLA].sysfs_name,
 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
+	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
 	NULL,
 };
 

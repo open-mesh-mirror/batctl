@@ -64,6 +64,11 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_short = "bbt",
 		.debugfs_name = "bla_backbone_table",
 	},
+	{
+		.opt_long = "dat_cache",
+		.opt_short = "dc",
+		.debugfs_name = "dat_cache",
+	},
 };
 
 void debug_table_usage(int debug_table)

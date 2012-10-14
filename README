@@ -408,6 +408,24 @@ where:
 
 If any of the flags is not enabled, a '.' will substitute its symbol.
 
+batctl dat_cache
+=================
+
+display the local D.A.T. cache
+
+Usage batctl dat_cache|dc
+
+Example:
+
+Distributed ARP Table (bat0):
+          IPv4             MAC           last-seen
+ *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
+
+where:
+- IPv4 is the IP address of a client in the mesh network
+- MAC is the MAC address associated to that IP
+- last-seen is the amount of time since last refresh of this entry
+
 batctl vis_mode
 =================
 

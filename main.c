@@ -31,6 +31,7 @@
 #include "main.h"
 #include "sys.h"
 #include "debug.h"
+#include "debugfs.h"
 #include "ping.h"
 #include "traceroute.h"
 #include "tcpdump.h"
@@ -42,6 +43,7 @@
 
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";
+char module_compat_ver_file[] = "batman_adv/compat_version";
 
 void print_usage(void)
 {
@@ -90,6 +92,44 @@ void print_usage(void)
 #endif
 }
 
+static void print_version(void)
+{
+	int ret;
+	char *debugfs_mnt;
+
+	printf("batctl %s [", SOURCE_VERSION);
+
+	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	if (ret == EXIT_SUCCESS) {
+		printf("batman-adv: %s", line_ptr);
+	} else {
+		printf("module not loaded");
+		goto out;
+	}
+
+	free(line_ptr);
+	line_ptr = NULL;
+
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt)
+		goto out;
+
+	ret = read_file(debugfs_mnt, module_compat_ver_file, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	if (ret == EXIT_SUCCESS)
+		printf(", compat: %s", line_ptr);
+
+out:
+	free(line_ptr);
+	line_ptr = NULL;
+	printf("]\n");
+}
+
 int main(int argc, char **argv)
 {
 	int i, ret = EXIT_FAILURE;
@@ -116,18 +156,7 @@ int main(int argc, char **argv)
 		goto err;
 
 	if (strcmp(argv[1], "-v") == 0) {
-		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
-
-		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
-			line_ptr[strlen(line_ptr) - 1] = '\0';
-
-		if (ret == EXIT_SUCCESS)
-			printf("%s]\n", line_ptr);
-		else
-			printf("module not loaded]\n");
-
-		free(line_ptr);
+		print_version();
 		exit(EXIT_SUCCESS);
 	}
 

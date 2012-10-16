@@ -33,6 +33,7 @@
 #include "debug.h"
 #include "debugfs.h"
 #include "ping.h"
+#include "translate.h"
 #include "traceroute.h"
 #include "tcpdump.h"
 #include "bisect_iv.h"
@@ -87,6 +88,7 @@ void print_usage(void)
 	printf(" \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	printf(" \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	printf(" \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+	printf(" \ttranslate|t                <destination>     \ttranslate a destination to the originator responsible for it\n");
 #ifdef BATCTL_BISECT
 	printf(" \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
 #endif
@@ -202,6 +204,10 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
 
 		ret = ioctl_statistics_get(mesh_iface);
+
+	} else if ((strcmp(argv[1], "translate") == 0) || (strcmp(argv[1], "t") == 0)) {
+
+		ret = translate(mesh_iface, argc - 1, argv + 1);
 
 #ifdef BATCTL_BISECT
 	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {

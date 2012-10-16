@@ -75,6 +75,24 @@ $ batctl statistics
         dat_reply_tx: 1
         dat_reply_rx: 0
 
+batctl translate
+================
+
+Translates a destination (hostname, IPv4, MAC, bat_host-name) to the originator
+mac address responsible for it.
+
+Usage: batctl translate mac|bat-host|host-name|IPv4-address
+
+Example:
+
+$ batctl translate www.google.de
+02:ca:fe:af:fe:01
+$ batctl translate 02:ca:fe:af:fe:01
+02:ca:fe:af:fe:01
+$ batctl translate 192.168.1.2
+02:ca:fe:af:fe:05
+$ batctl translate fe:fe:00:00:09:01
+02:ca:fe:af:fe:05
 
 batctl ping
 ============

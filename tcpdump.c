@@ -43,6 +43,9 @@
 #include "bat-hosts.h"
 #include "functions.h"
 
+#ifndef ETH_P_BATMAN
+#define ETH_P_BATMAN	0x4305
+#endif /* ETH_P_BATMAN */
 
 #define LEN_CHECK(buff_len, check_len, desc) \
 if ((size_t)(buff_len) < (check_len)) { \
@@ -587,7 +590,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		if ((dump_level & DUMP_TYPE_NONBAT) || (time_printed))
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
-	case BATADV_ETH_P_BATMAN:
+	case ETH_P_BATMAN:
 		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
 
 		if ((read_opt & COMPAT_FILTER) &&

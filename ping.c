@@ -44,14 +44,14 @@ char is_aborted = 0;
 
 void ping_usage(void)
 {
-	printf("Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address \n");
-	printf("parameters:\n");
-	printf(" \t -c ping packet count \n");
-	printf(" \t -h print this help\n");
-	printf(" \t -i interval in seconds\n");
-	printf(" \t -t timeout in seconds\n");
-	printf(" \t -R record route\n");
-	printf(" \t -T don't try to translate mac to originator address\n");
+	fprintf(stderr, "Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address \n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -c ping packet count \n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -i interval in seconds\n");
+	fprintf(stderr, " \t -t timeout in seconds\n");
+	fprintf(stderr, " \t -R record route\n");
+	fprintf(stderr, " \t -T don't try to translate mac to originator address\n");
 }
 
 void sig_handler(int sig)
@@ -124,7 +124,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	}
 
 	if (argc <= found_args) {
-		printf("Error - target mac address or bat-host name not specified\n");
+		fprintf(stderr, "Error - target mac address or bat-host name not specified\n");
 		ping_usage();
 		return EXIT_FAILURE;
 	}
@@ -140,7 +140,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			printf("Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
+			fprintf(stderr, "Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
 			goto out;
 		}
 	}
@@ -154,7 +154,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
-		printf("Error - can't mount or find debugfs\n");
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
 		goto out;
 	}
 
@@ -163,7 +163,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	ping_fd = open(icmp_socket, O_RDWR);
 
 	if (ping_fd < 0) {
-		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
+		fprintf(stderr, "Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
 				icmp_socket, strerror(errno));
 		printf("Check whether the module is loaded and active.\n");
 		goto out;
@@ -203,7 +203,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 		icmp_packet_out.seqno = htons(++seq_counter);
 
 		if (write(ping_fd, (char *)&icmp_packet_out, packet_len) < 0) {
-			printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+			fprintf(stderr, "Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 			goto sleep;
 		}
 
@@ -231,7 +231,7 @@ read_packet:
 		read_len = read(ping_fd, (char *)&icmp_packet_in, packet_len);
 
 		if (read_len < 0) {
-			printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+			fprintf(stderr, "Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 			goto sleep;
 		}
 
@@ -298,7 +298,7 @@ read_packet:
 			printf("From %s: Time to live exceeded (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case BATADV_PARAMETER_PROBLEM:
-			printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+			fprintf(stderr, "Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
 					icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");
 			goto out;

@@ -37,15 +37,15 @@ static struct bat_node *curr_bat_node = NULL;
 
 static void bisect_iv_usage(void)
 {
-	printf("Usage: batctl bisect_iv [parameters] <file1> <file2> .. <fileN>\n");
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -l run a loop detection of given mac address or bat-host (default)\n");
-	printf(" \t -n don't convert addresses to bat-host names\n");
-	printf(" \t -o only display orig events that affect given mac address or bat-host\n");
-	printf(" \t -r print routing tables of given mac address or bat-host\n");
-	printf(" \t -s seqno range to limit the output\n");
-	printf(" \t -t trace seqnos of given mac address or bat-host\n");
+	fprintf(stderr, "Usage: batctl bisect_iv [parameters] <file1> <file2> .. <fileN>\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -l run a loop detection of given mac address or bat-host (default)\n");
+	fprintf(stderr, " \t -n don't convert addresses to bat-host names\n");
+	fprintf(stderr, " \t -o only display orig events that affect given mac address or bat-host\n");
+	fprintf(stderr, " \t -r print routing tables of given mac address or bat-host\n");
+	fprintf(stderr, " \t -s seqno range to limit the output\n");
+	fprintf(stderr, " \t -t trace seqnos of given mac address or bat-host\n");
 }
 
 static int compare_name(void *data1, void *data2)
@@ -1423,7 +1423,7 @@ static int get_orig_addr(char *orig_name, char *orig_addr)
 	orig_mac = ether_aton(orig_name_tmp);
 
 	if (!orig_mac) {
-		printf("Error - the originator is not a mac address or bat-host name: %s\n", orig_name);
+		fprintf(stderr, "Error - the originator is not a mac address or bat-host name: %s\n", orig_name);
 		goto err;
 	}
 
@@ -1507,7 +1507,7 @@ int bisect_iv(int argc, char **argv)
 	}
 
 	if (argc <= found_args + 1) {
-		printf("Error - need at least 2 log files to compare\n");
+		fprintf(stderr, "Error - need at least 2 log files to compare\n");
 		bisect_iv_usage();
 		goto err;
 	}
@@ -1515,7 +1515,7 @@ int bisect_iv(int argc, char **argv)
 	node_hash = hash_new(64, compare_name, choose_name);
 
 	if (!node_hash) {
-		printf("Error - could not create node hash table\n");
+		fprintf(stderr, "Error - could not create node hash table\n");
 		goto err;
 	}
 
@@ -1523,13 +1523,13 @@ int bisect_iv(int argc, char **argv)
 	num_parsed_files = 0;
 
 	if ((rt_orig_ptr) && (trace_orig_ptr)) {
-		printf("Error - the 'print routing table' option can't be used together with the the 'trace seqno' option\n");
+		fprintf(stderr, "Error - the 'print routing table' option can't be used together with the the 'trace seqno' option\n");
 		goto err;
 	} else if ((loop_orig_ptr) && (trace_orig_ptr)) {
-		printf("Error - the 'loop detection' option can't be used together with the the 'trace seqno' option\n");
+		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the the 'trace seqno' option\n");
 		goto err;
 	} else if ((loop_orig_ptr) && (rt_orig_ptr)) {
-		printf("Error - the 'loop detection' option can't be used together with the the 'print routing table' option\n");
+		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the the 'print routing table' option\n");
 		goto err;
 	} else if (rt_orig_ptr) {
 		res = get_orig_addr(rt_orig_ptr, orig);
@@ -1553,7 +1553,7 @@ int bisect_iv(int argc, char **argv)
 		seqno_max = seqno_min;
 
 	if (seqno_min > seqno_max) {
-		printf("Error - the sequence range minimum (%lli) should be smaller than the maximum (%lli)\n",
+		fprintf(stderr, "Error - the sequence range minimum (%lli) should be smaller than the maximum (%lli)\n",
 		       seqno_min, seqno_max);
 		goto err;
 	}
@@ -1575,7 +1575,7 @@ int bisect_iv(int argc, char **argv)
 	}
 
 	if (num_parsed_files < 2) {
-		printf("Error - need at least 2 log files to compare\n");
+		fprintf(stderr, "Error - need at least 2 log files to compare\n");
 		goto err;
 	}
 

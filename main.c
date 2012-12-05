@@ -114,8 +114,10 @@ int main(int argc, char **argv)
 		goto err;
 	}
 
-	if (strcmp(argv[1], "-h") == 0)
-		goto err;
+	if (strcmp(argv[1], "-h") == 0) {
+		print_usage();
+		exit(EXIT_SUCCESS);
+	}
 
 	if (strcmp(argv[1], "-v") == 0) {
 		printf("batctl %s [batman-adv: ", SOURCE_VERSION);

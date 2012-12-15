@@ -43,11 +43,11 @@
 
 void traceroute_usage(void)
 {
-	printf("Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't convert addresses to bat-host names\n");
-	printf(" \t -T don't try to translate mac to originator address\n");
+	fprintf(stderr, "Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -n don't convert addresses to bat-host names\n");
+	fprintf(stderr, " \t -T don't try to translate mac to originator address\n");
 }
 
 int traceroute(char *mesh_iface, int argc, char **argv)
@@ -86,7 +86,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	}
 
 	if (argc <= found_args) {
-		printf("Error - target mac address or bat-host name not specified\n");
+		fprintf(stderr, "Error - target mac address or bat-host name not specified\n");
 		traceroute_usage();
 		return EXIT_FAILURE;
 	}
@@ -102,7 +102,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			printf("Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
+			fprintf(stderr, "Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
 			goto out;
 		}
 	}
@@ -114,7 +114,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
-		printf("Error - can't mount or find debugfs\n");
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
 		goto out;
 	}
 
@@ -123,9 +123,9 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	trace_fd = open(icmp_socket, O_RDWR);
 
 	if (trace_fd < 0) {
-		printf("Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
+		fprintf(stderr, "Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
 				icmp_socket, strerror(errno));
-		printf("Check whether the module is loaded and active.\n");
+		fprintf(stderr, "Check whether the module is loaded and active.\n");
 		goto out;
 	}
 
@@ -148,7 +148,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 			time_delta[i] = 0.0;
 
 			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
-				printf("Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+				fprintf(stderr, "Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 				continue;
 			}
 
@@ -169,7 +169,7 @@ read_packet:
 			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
 
 			if (read_len < 0) {
-				printf("Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+				fprintf(stderr, "Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
 				continue;
 			}
 
@@ -202,9 +202,9 @@ read_packet:
 				printf("%s: Destination Host Unreachable\n", dst_string);
 				goto out;
 			case BATADV_PARAMETER_PROBLEM:
-				printf("Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+				fprintf(stderr, "Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
 						icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
-				printf("Please make sure to use compatible versions!\n");
+				fprintf(stderr, "Please make sure to use compatible versions!\n");
 				goto out;
 			default:
 				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);

@@ -80,16 +80,16 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 
 void debug_table_usage(int debug_table)
 {
-	printf("Usage: batctl [options] %s|%s [parameters]\n",
+	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]\n",
 	       batctl_debug_tables[debug_table].opt_long, batctl_debug_tables[debug_table].opt_short);
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
-	printf(" \t -H don't show the header\n");
-	printf(" \t -w [interval] watch mode - refresh the table continuously\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
+	fprintf(stderr, " \t -H don't show the header\n");
+	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table == BATCTL_TABLE_ORIGINATORS)
-		printf(" \t -t timeout interval - don't print originators not seen for x.y seconds \n");
+		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
 }
 
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
@@ -117,20 +117,20 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 			}
 
 			if (!sscanf(optarg, "%f", &watch_interval)) {
-				printf("Error - provided argument of '-%c' is not a number\n", optchar);
+				fprintf(stderr, "Error - provided argument of '-%c' is not a number\n", optchar);
 				return EXIT_FAILURE;
 			}
 			break;
 		case 't':
 			if (debug_table != BATCTL_TABLE_ORIGINATORS) {
-				printf("Error - unrecognised option '-%c'\n", optchar);
+				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(debug_table);
 				return EXIT_FAILURE;
 			}
 
 			read_opt |= NO_OLD_ORIGS;
 			if (!sscanf(optarg, "%f", &orig_timeout)) {
-				printf("Error - provided argument of '-%c' is not a number\n", optchar);
+				fprintf(stderr, "Error - provided argument of '-%c' is not a number\n", optchar);
 				return EXIT_FAILURE;
 			}
 			break;
@@ -139,14 +139,14 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 			break;
 		case '?':
 			if (optopt == 't')
-				printf("Error - option '-t' needs a number as argument\n");
+				fprintf(stderr, "Error - option '-t' needs a number as argument\n");
 
 			else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
 			}
 			else
-				printf("Error - unrecognised option: '-%c'\n", optopt);
+				fprintf(stderr, "Error - unrecognised option: '-%c'\n", optopt);
 
 			return EXIT_FAILURE;
 		default:
@@ -157,7 +157,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
-		printf("Error - can't mount or find debugfs\n");
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
 		return EXIT_FAILURE;
 	}
 
@@ -169,10 +169,10 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 
 static void log_usage(void)
 {
-	printf("Usage: batctl [options] log [parameters]\n");
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't replace mac addresses with bat-host names\n");
+	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 }
 
 int log_print(char *mesh_iface, int argc, char **argv)
@@ -197,7 +197,7 @@ int log_print(char *mesh_iface, int argc, char **argv)
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
-		printf("Error - can't mount or find debugfs\n");
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
 		return EXIT_FAILURE;
 	}
 

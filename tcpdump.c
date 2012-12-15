@@ -62,23 +62,23 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 
 static void tcpdump_usage(void)
 {
-	printf("Usage: batctl tcpdump [parameters] interface [interface]\n");
-	printf("parameters:\n");
-	printf(" \t -c compat filter - only display packets matching own compat version (%i)\n", BATADV_COMPAT_VERSION);
-	printf(" \t -h print this help\n");
-	printf(" \t -n don't convert addresses to bat-host names\n");
-	printf(" \t -p dump specific packet type\n");
-	printf(" \t -x dump all packet types except specified\n");
-	printf("packet types:\n");
-	printf(" \t\t%3d - batman ogm packets\n", DUMP_TYPE_BATOGM);
-	printf(" \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
-	printf(" \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
-	printf(" \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
-	printf(" \t\t%3d - batman vis packets\n", DUMP_TYPE_BATVIS);
-	printf(" \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
-	printf(" \t\t%3d - batman tt / roaming packets\n", DUMP_TYPE_BATTT);
-	printf(" \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
-	printf(" \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
+	fprintf(stderr, "Usage: batctl tcpdump [parameters] interface [interface]\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -c compat filter - only display packets matching own compat version (%i)\n", BATADV_COMPAT_VERSION);
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, " \t -n don't convert addresses to bat-host names\n");
+	fprintf(stderr, " \t -p dump specific packet type\n");
+	fprintf(stderr, " \t -x dump all packet types except specified\n");
+	fprintf(stderr, "packet types:\n");
+	fprintf(stderr, " \t\t%3d - batman ogm packets\n", DUMP_TYPE_BATOGM);
+	fprintf(stderr, " \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
+	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
+	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
+	fprintf(stderr, " \t\t%3d - batman vis packets\n", DUMP_TYPE_BATVIS);
+	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
+	fprintf(stderr, " \t\t%3d - batman tt / roaming packets\n", DUMP_TYPE_BATTT);
+	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
+	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
 
 static int print_time(void)

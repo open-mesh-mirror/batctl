@@ -58,9 +58,9 @@ static bool with_names = true;
 
 static void usage(void)
 {
-	printf("batctl vis_data dot {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
-	printf("or\n");
-	printf("batctl vis_data json {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
+	fprintf(stderr, "batctl vis_data dot {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
+	fprintf(stderr, "or\n");
+	fprintf(stderr, "batctl vis_data json {-h}{--no-TT|-T} {--no-2nd|-2} {--numbers|-n}\n");
 }
 
 static void dot_print_tq(char *orig, char *from, const long tq)
@@ -171,7 +171,7 @@ static FILE *open_vis(char *mesh_iface)
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
-		printf("Error - can't mount or find debugfs\n");
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
 		return NULL;
 	}
 

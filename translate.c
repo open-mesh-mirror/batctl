@@ -31,7 +31,7 @@
 
 static void translate_usage(void)
 {
-	printf("Usage: batctl [options] translate mac|bat-host|host_name|IPv4_address\n");
+	fprintf(stderr, "Usage: batctl [options] translate mac|bat-host|host_name|IPv4_address\n");
 }
 
 int translate(char *mesh_iface, int argc, char **argv)

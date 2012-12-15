@@ -103,9 +103,9 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 
 static void interface_usage(void)
 {
-	printf("Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
+	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
 }
 
 static int print_interfaces(char *mesh_iface)
@@ -116,21 +116,21 @@ static int print_interfaces(char *mesh_iface)
 	int res;
 
 	if (!file_exists(module_ver_path)) {
-		printf("Error - batman-adv module has not been loaded\n");
+		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
 		goto err;
 	}
 
 	path_buff = malloc(PATH_BUFF_LEN);
 	if (!path_buff) {
-		printf("Error - could not allocate path buffer: out of memory ?\n");
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
 		goto err;
 	}
 
 	iface_base_dir = opendir(SYS_IFACE_PATH);
 	if (!iface_base_dir) {
-		printf("Error - the directory '%s' could not be read: %s\n",
+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
 		       SYS_IFACE_PATH, strerror(errno));
-		printf("Is the batman-adv module loaded and sysfs mounted ?\n");
+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
 		goto err_buff;
 	}
 
@@ -157,7 +157,7 @@ static int print_interfaces(char *mesh_iface)
 		path_buff[PATH_BUFF_LEN - 1] = '\0';
 		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if (res != EXIT_SUCCESS) {
-			printf("<error reading status>\n");
+			fprintf(stderr, "<error reading status>\n");
 			continue;
 		}
 
@@ -199,20 +199,20 @@ int interface(char *mesh_iface, int argc, char **argv)
 
 	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
 	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
-		printf("Error - unknown argument specified: %s\n", argv[1]);
+		fprintf(stderr, "Error - unknown argument specified: %s\n", argv[1]);
 		interface_usage();
 		goto err;
 	}
 
 	if (argc == 2) {
-		printf("Error - missing interface name(s) after '%s'\n", argv[1]);
+		fprintf(stderr, "Error - missing interface name(s) after '%s'\n", argv[1]);
 		interface_usage();
 		goto err;
 	}
 
 	path_buff = malloc(PATH_BUFF_LEN);
 	if (!path_buff) {
-		printf("Error - could not allocate path buffer: out of memory ?\n");
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
 		goto err;
 	}
 
@@ -225,16 +225,16 @@ int interface(char *mesh_iface, int argc, char **argv)
 			path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 			if (!file_exists(path_buff)) {
-				printf("Error - interface does not exist: %s\n", argv[i]);
+				fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
 				continue;
 			}
 
 			if (!file_exists(module_ver_path)) {
-				printf("Error - batman-adv module has not been loaded\n");
+				fprintf(stderr, "Error - batman-adv module has not been loaded\n");
 				goto err;
 			}
 
-			printf("Error - interface type not supported by batman-adv: %s\n", argv[i]);
+			fprintf(stderr, "Error - interface type not supported by batman-adv: %s\n", argv[i]);
 			continue;
 		}
 
@@ -258,17 +258,17 @@ err:
 
 static void log_level_usage(void)
 {
-	printf("Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
-	printf("levels:\n");
-	printf(" \t none    Debug logging is disabled\n");
-	printf(" \t all     Print messages from all below\n");
-	printf(" \t batman  Messages related to routing / flooding / broadcasting\n");
-	printf(" \t routes  Messages related to route added / changed / deleted\n");
-	printf(" \t tt      Messages related to translation table operations\n");
-	printf(" \t bla     Messages related to bridge loop avoidance\n");
-	printf(" \t dat     Messages related to arp snooping and distributed arp table\n");
+	fprintf(stderr, "Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+	fprintf(stderr, "levels:\n");
+	fprintf(stderr, " \t none    Debug logging is disabled\n");
+	fprintf(stderr, " \t all     Print messages from all below\n");
+	fprintf(stderr, " \t batman  Messages related to routing / flooding / broadcasting\n");
+	fprintf(stderr, " \t routes  Messages related to route added / changed / deleted\n");
+	fprintf(stderr, " \t tt      Messages related to translation table operations\n");
+	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
+	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -352,18 +352,18 @@ out:
 
 static void settings_usage(int setting)
 {
-	printf("Usage: batctl [options] %s|%s [parameters]",
+	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]",
 	       (char *)batctl_settings[setting].opt_long, (char *)batctl_settings[setting].opt_short);
 
 	if (batctl_settings[setting].params == sysfs_param_enable)
-		printf(" [0|1]\n");
+		fprintf(stderr, " [0|1]\n");
 	else if (batctl_settings[setting].params == sysfs_param_server)
-		printf(" [client|server]\n");
+		fprintf(stderr, " [client|server]\n");
 	else
-		printf("\n");
+		fprintf(stderr, "\n");
 
-	printf("parameters:\n");
-	printf(" \t -h print this help\n");
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
 }
 
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
@@ -404,12 +404,12 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 		ptr++;
 	}
 
-	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
-	printf("The following values are allowed:\n");
+	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+	fprintf(stderr, "The following values are allowed:\n");
 
 	ptr = batctl_settings[setting].params;
 	while (*ptr) {
-		printf(" * %s\n", *ptr);
+		fprintf(stderr, " * %s\n", *ptr);
 		ptr++;
 	}
 
@@ -426,9 +426,9 @@ out:
 
 static void gw_mode_usage(void)
 {
-	printf("Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
-	printf("options:\n");
-	printf(" \t -h print this help\n");
+	fprintf(stderr, "Usage: batctl [options] gw_mode [mode] [sel_class|bandwidth]\n");
+	fprintf(stderr, "options:\n");
+	fprintf(stderr, " \t -h print this help\n");
 }
 
 int handle_gw_setting(char *mesh_iface, int argc, char **argv)
@@ -533,12 +533,12 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 	goto out;
 
 opt_err:
-	printf("Error - the supplied argument is invalid: %s\n", argv[1]);
-	printf("The following values are allowed:\n");
+	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+	fprintf(stderr, "The following values are allowed:\n");
 
 	ptr = sysfs_param_server;
 	while (*ptr) {
-		printf(" * %s\n", *ptr);
+		fprintf(stderr, " * %s\n", *ptr);
 		ptr++;
 	}
 

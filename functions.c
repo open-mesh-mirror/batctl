@@ -130,20 +130,20 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 
 	if (strstr(dir, "/sys/")) {
 		if (stat("/sys/", &st) != 0) {
-			printf("Error - the folder '/sys/' was not found on the system\n");
-			printf("Please make sure that the sys filesystem is properly mounted\n");
+			fprintf(stderr, "Error - the folder '/sys/' was not found on the system\n");
+			fprintf(stderr, "Please make sure that the sys filesystem is properly mounted\n");
 			return;
 		}
 	}
 
 	if (!file_exists(module_ver_path)) {
-		printf("Error - batman-adv module has not been loaded\n");
+		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
 		return;
 	}
 
 	if (!file_exists(dir)) {
-		printf("Error - mesh has not been enabled yet\n");
-		printf("Activate your mesh by adding interfaces to batman-adv\n");
+		fprintf(stderr, "Error - mesh has not been enabled yet\n");
+		fprintf(stderr, "Activate your mesh by adding interfaces to batman-adv\n");
 		return;
 	}
 
@@ -154,10 +154,10 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 		break;
 	}
 
-	printf("Error - can't open file '%s': %s\n", full_path, strerror(errno));
+	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
 	if (*ptr) {
-		printf("The option you called seems not to be compiled into your batman-adv kernel module.\n");
-		printf("Consult the README if you wish to learn more about compiling options into batman-adv.\n");
+		fprintf(stderr, "The option you called seems not to be compiled into your batman-adv kernel module.\n");
+		fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");
 	}
 }
 
@@ -318,7 +318,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 		write_len = write(fd, arg1, strlen(arg1) + 1);
 
 	if (write_len < 0) {
-		printf("Error - can't write to file '%s': %s\n", full_path, strerror(errno));
+		fprintf(stderr, "Error - can't write to file '%s': %s\n", full_path, strerror(errno));
 		goto out;
 	}
 

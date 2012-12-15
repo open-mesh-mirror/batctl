@@ -50,7 +50,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (caddr_t)&drvinfo;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		printf("Error - can't open driver information: %s\n", strerror(errno));
+		fprintf(stderr, "Error - can't open driver information: %s\n", strerror(errno));
 		goto out;
 	}
 
@@ -64,7 +64,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	strings = calloc(1, sz_str + sizeof(struct ethtool_gstrings));
 	stats = calloc(1, sz_stats + sizeof(struct ethtool_stats));
 	if (!strings || !stats) {
-		printf("Error - out of memory\n");
+		fprintf(stderr, "Error - out of memory\n");
 		goto out;
 	}
 
@@ -74,7 +74,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (caddr_t)strings;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		printf("Error - can't get stats strings information: %s\n", strerror(errno));
+		fprintf(stderr, "Error - can't get stats strings information: %s\n", strerror(errno));
 		goto out;
 	}
 
@@ -83,7 +83,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (caddr_t) stats;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		printf("Error - can't get stats information: %s\n", strerror(errno));
+		fprintf(stderr, "Error - can't get stats information: %s\n", strerror(errno));
 		goto out;
 	}
 
@@ -111,7 +111,7 @@ int ioctl_statistics_get(char *mesh_iface)
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
-		printf("Error - can't open socket: %s\n", strerror(errno));
+		fprintf(stderr, "Error - can't open socket: %s\n", strerror(errno));
 		goto out;
 	}
 

@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH "BATCTL" "8" "Jan 04, 2010" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
+.TH "BATCTL" "8" "Jan 06, 2013" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -18,6 +18,8 @@
 .\" --------------------------------------------------------------------------
 .\" Process this file with
 .\" groff -man batctl.8 -Tutf8
+.\" Retrieve format warnings with
+.\" man --warnings batctl.8 > /dev/null
 .\" --------------------------------------------------------------------------
 .ad l
 .SH NAME
@@ -100,8 +102,8 @@ replace the MAC addresses with bat\-host names in the output.
 .br
 .IP "\fBgw_mode|gw\fP [\fBoff\fP|\fBclient\fP|\fBserver\fP] [\fBsel_class|bandwidth\fP]\fP"
 If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode. The
-second (optional) argument specifies the selection class (if 'client' was the first argument) or the gateway bandwidth (if
-'server' was the first argument). If the node is a server this parameter is used to inform other nodes in the network about
+second (optional) argument specifies the selection class (if 'client' was the first argument) or the gateway bandwidth (if 'server'
+was the first argument). If the node is a server this parameter is used to inform other nodes in the network about
 this node's internet connection bandwidth. Just enter any number (optionally followed by "kbit" or "mbit") and the batman-adv
 module will guess your appropriate gateway class. Use "/" to separate the down\(hy and upload rates. You can omit the upload
 rate and the module will assume an upload of download / 5.

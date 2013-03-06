@@ -275,6 +275,7 @@ static void log_level_usage(void)
 	fprintf(stderr, " \t tt      Messages related to translation table operations\n");
 	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
+	fprintf(stderr, " \t nc      Messages related to network coding\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -306,7 +307,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level = 0;
 				break;
 			} else if (strcmp(argv[i], "all") == 0) {
-				log_level = 31;
+				log_level = 63;
 				break;
 			} else if (strcmp(argv[i], "batman") == 0)
 				log_level |= BIT(0);
@@ -318,6 +319,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= BIT(3);
 			else if (strcmp(argv[i], "dat") == 0)
 				log_level |= BIT(4);
+			else if (strcmp(argv[i], "nc") == 0)
+				log_level |= BIT(5);
 			else {
 				log_level_usage();
 				goto out;
@@ -350,6 +353,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	       "messages related to bridge loop avoidance", "bla");
 	printf("[%c] %s (%s)\n", (log_level & BIT(4)) ? 'x' : ' ',
 	       "messages related to arp snooping and distributed arp table", "dat");
+	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
+	       "messages related to network coding", "nc");
 
 out:
 	free(path_buff);

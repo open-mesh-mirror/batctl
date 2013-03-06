@@ -96,9 +96,10 @@ If no parameter is given the current log level settings are displayed otherwise 
 level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
 Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
 translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
-messages related to ARP snooping and the Distributed Arp Table. Level 'all' enables all messages. The messages are sent
-to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging output enabled when compiling
-the module otherwise the output as well as the loglevel options won't be available.
+messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
+Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it.
+Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
+won't be available.
 .br
 .IP "\fBlog\fP|\fBl\fP [\fB\-n\fP]\fP"
 batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not

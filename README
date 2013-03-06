@@ -362,6 +362,7 @@ $  batctl loglevel
 [ ] messages related to translation table operations (tt)
 [ ] messages related to bridge loop avoidance (bla)
 [ ] messages related to arp snooping and distributed arp table (dat)
+[ ] messages related to network coding (nc)
 
 batctl nc_nodes
 ===============

@@ -98,6 +98,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 		.sysfs_name = "fragmentation",
 		.params = sysfs_param_enable,
 	},
+	{
+		.opt_long = "network_coding",
+		.opt_short = "nc",
+		.sysfs_name = "network_coding",
+		.params = sysfs_param_enable,
+	}
 
 };
 

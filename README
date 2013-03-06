@@ -363,6 +363,24 @@ $  batctl loglevel
 [ ] messages related to bridge loop avoidance (bla)
 [ ] messages related to arp snooping and distributed arp table (dat)
 
+batctl nc_nodes
+===============
+
+display the neighbor nodes considered for network coded packets
+
+Usage: batctl nc_nodes|nn
+
+Example:
+
+Node:      fe:fe:00:0a:01:01
+ Ingoing:  fe:fe:00:0a:01:01 fe:fe:00:0a:02:01
+ Outgoing: fe:fe:00:0a:01:01 fe:fe:00:0a:02:01
+
+Where:
+- Node is the neighbor
+- Ingoing is the neighbors this neighbor can hear packets from
+- Outgoing is the neighbors that can hear packets from this neighbor
+
 batctl network_coding
 =====================
 

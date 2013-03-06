@@ -55,6 +55,7 @@ const char *fs_compile_out_param[] = {
 	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+	batctl_debug_tables[BATCTL_TABLE_NETWORK_CODING_NODES].debugfs_name,
 	NULL,
 };
 

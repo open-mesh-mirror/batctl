@@ -76,6 +76,12 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.debugfs_name = "dat_cache",
 		.header_lines = 2,
 	},
+	{
+		.opt_long = "nc_nodes",
+		.opt_short = "nn",
+		.debugfs_name = "nc_nodes",
+		.header_lines = 0,
+	},
 };
 
 void debug_table_usage(int debug_table)

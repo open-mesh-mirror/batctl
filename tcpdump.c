@@ -545,14 +545,14 @@ static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int r
 static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
-	struct batadv_unicast_packet *unicast_4addr_packet;
+	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_packet), "BAT 4ADDR");
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_packet),
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_4addr_packet), "BAT 4ADDR");
+	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_4addr_packet),
 		sizeof(struct ether_header), "BAT 4ADDR (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
-	unicast_4addr_packet = (struct batadv_unicast_packet *)(packet_buff + sizeof(struct ether_header));
+	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)(packet_buff + sizeof(struct ether_header));
 
 	if (!time_printed)
 		time_printed = print_time();
@@ -561,11 +561,11 @@ static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int 
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
 	printf("%s: 4ADDR, ttvn %d, ttl %hhu, ",
-	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->dest, read_opt),
-	       unicast_4addr_packet->ttvn, unicast_4addr_packet->header.ttl);
+	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->u.dest, read_opt),
+	       unicast_4addr_packet->u.ttvn, unicast_4addr_packet->u.header.ttl);
 
-	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_packet),
-		      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_packet),
+	parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_4addr_packet),
+		      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_4addr_packet),
 		      read_opt, time_printed);
 }
 

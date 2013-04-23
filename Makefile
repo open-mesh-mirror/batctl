@@ -29,7 +29,7 @@ OBJ_BISECT = bisect_iv.o
 MANPAGE = man/batctl.8
 
 # batctl flags and options
-CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD
+CFLAGS += -Wall -W -std=gnu99 -fno-strict-aliasing -MD
 LDLIBS += -lm
 
 # disable verbose output

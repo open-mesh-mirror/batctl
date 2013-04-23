@@ -33,6 +33,14 @@
 #define DEBUG_TABLE_PATH_MAX_LEN 20
 #define SETTINGS_PATH_MAX_LEN 25
 
+#if BYTE_ORDER == BIG_ENDIAN
+#define __BIG_ENDIAN_BITFIELD
+#elif BYTE_ORDER == LITTLE_ENDIAN
+#define __LITTLE_ENDIAN_BITFIELD
+#else
+#error "unknown endianess"
+#endif
+
 #define __packed __attribute((packed))   /* linux kernel compat */
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 

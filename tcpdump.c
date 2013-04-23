@@ -325,47 +325,6 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 	parse_eth_hdr(packet_buff + 4, buff_len - 4, read_opt, time_printed);
 }
 
-static void dump_batman_tt(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
-{
-	struct batadv_tt_query_packet *tt_query_packet;
-	char *tt_desc, *tt_data, tt_type;
-
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_tt_query_packet), "BAT TT");
-
-	tt_query_packet = (struct batadv_tt_query_packet *)(packet_buff + sizeof(struct ether_header));
-
-	if (!time_printed)
-		print_time();
-
-	switch (tt_query_packet->flags & BATADV_TT_QUERY_TYPE_MASK) {
-	case BATADV_TT_REQUEST:
-		tt_desc = "request";
-		tt_data = "crc";
-		tt_type = 'Q';
-		break;
-	case BATADV_TT_RESPONSE:
-		tt_desc = "response";
-		tt_data = "entries";
-		tt_type = 'P';
-		break;
-	default:
-		tt_desc = "unknown";
-		tt_data = "unknown";
-		tt_type = '?';
-		break;
-	}
-
-	printf("BAT %s > ",
-	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->src, read_opt));
-
-	printf("%s: TT %s, ttvn %d, %s %u, ttl %2d, v %d, flags [%c%c], length %zu\n",
-	       get_name_by_macaddr((struct ether_addr *)tt_query_packet->dst, read_opt),
-	       tt_desc, tt_query_packet->ttvn, tt_data, ntohs(tt_query_packet->tt_data),
-	       tt_query_packet->header.ttl, tt_query_packet->header.version,
-	       tt_type, (tt_query_packet->flags & BATADV_TT_FULL_TABLE ? 'F' : '.'),
-	       (size_t)buff_len - sizeof(struct ether_header));
-}
-
 static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct batadv_roam_adv_packet *roam_adv_packet;
@@ -621,10 +580,6 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_UNICAST_FRAG:
 			if (dump_level & DUMP_TYPE_BATFRAG)
 				dump_batman_frag(packet_buff, buff_len, read_opt, time_printed);
-			break;
-		case BATADV_TT_QUERY:
-			if (dump_level & DUMP_TYPE_BATTT)
-				dump_batman_tt(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_ROAM_ADV:
 			if (dump_level & DUMP_TYPE_BATTT)

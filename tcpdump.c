@@ -55,7 +55,7 @@ if ((size_t)(buff_len) < (check_len)) { \
 }
 
 static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
-		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_BATFRAG | DUMP_TYPE_BATTT | DUMP_TYPE_NONBAT;
+		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -76,7 +76,6 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
 	fprintf(stderr, " \t\t%3d - batman vis packets\n", DUMP_TYPE_BATVIS);
 	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
-	fprintf(stderr, " \t\t%3d - batman tt / roaming packets\n", DUMP_TYPE_BATTT);
 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
@@ -325,29 +324,6 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 	parse_eth_hdr(packet_buff + 4, buff_len - 4, read_opt, time_printed);
 }
 
-static void dump_batman_roam(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
-{
-	struct batadv_roam_adv_packet *roam_adv_packet;
-
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_roam_adv_packet), "BAT ROAM");
-
-	roam_adv_packet = (struct batadv_roam_adv_packet *)(packet_buff + sizeof(struct ether_header));
-
-	if (!time_printed)
-		print_time();
-
-	printf("BAT %s > ",
-	       get_name_by_macaddr((struct ether_addr *)roam_adv_packet->src, read_opt));
-
-	printf("%s: ROAM, ",
-	       get_name_by_macaddr((struct ether_addr *)roam_adv_packet->dst, read_opt));
-
-	printf("client %s, ttl %2d, v %d, length %zu\n",
-	       get_name_by_macaddr((struct ether_addr *)roam_adv_packet->client, read_opt),
-	       roam_adv_packet->header.ttl, roam_adv_packet->header.version,
-	       (size_t)buff_len - sizeof(struct ether_header));
-}
-
 static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
@@ -580,10 +556,6 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_UNICAST_FRAG:
 			if (dump_level & DUMP_TYPE_BATFRAG)
 				dump_batman_frag(packet_buff, buff_len, read_opt, time_printed);
-			break;
-		case BATADV_ROAM_ADV:
-			if (dump_level & DUMP_TYPE_BATTT)
-				dump_batman_roam(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)

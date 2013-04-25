@@ -55,7 +55,7 @@ if ((size_t)(buff_len) < (check_len)) { \
 }
 
 static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
-		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATVIS | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
+		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -74,7 +74,6 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
 	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
 	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
-	fprintf(stderr, " \t\t%3d - batman vis packets\n", DUMP_TYPE_BATVIS);
 	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
@@ -340,13 +339,12 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
 
-	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c%c], length %zu\n",
+	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq,
 	       batman_ogm_packet->header.ttl, batman_ogm_packet->header.version,
 	       (batman_ogm_packet->flags & BATADV_NOT_BEST_NEXT_HOP ? 'N' : '.'),
 	       (batman_ogm_packet->flags & BATADV_DIRECTLINK ? 'D' : '.'),
-	       (batman_ogm_packet->flags & BATADV_VIS_SERVER ? 'V' : '.'),
 	       (batman_ogm_packet->flags & BATADV_PRIMARIES_FIRST_HOP ? 'F' : '.'),
 	       (size_t)buff_len - sizeof(struct ether_header));
 }
@@ -548,10 +546,6 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
-			break;
-		case BATADV_VIS:
-			if (dump_level & DUMP_TYPE_BATVIS)
-				fprintf(stderr, "Warning - batman vis packet received: function not implemented yet\n");
 			break;
 		case BATADV_UNICAST_FRAG:
 			if (dump_level & DUMP_TYPE_BATFRAG)

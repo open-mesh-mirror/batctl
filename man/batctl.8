@@ -72,9 +72,6 @@ this option won't be available.
 If no parameter is given the current distributed arp table setting is displayed. Otherwise the parameter is used to
 enable or disable the distributed arp table.
 .br
-.IP "\fBvis_mode|vm\fP [\fBclient|server\fP]\fP"
-If no parameter is given the current vis mode is displayed otherwise the parameter is used to set the vis mode.
-.br
 .IP "\fBaggregation\fP|\fBag\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current aggregation setting is displayed. Otherwise the parameter is used to enable or disable
 OGM packet aggregation.
@@ -153,12 +150,6 @@ chooses the gateway with the best link quality but switches to another gateway a
 least XX TQ better than the currently selected gateway (XX has to be a number between 3 and 256).
 .RE
 .RE
-.br
-.IP "\fBvis_data|vd dot\fP [\fB\-n\fP|\fB\-\-numbers\fP][\fB\-T\fP|\fB\-\-no-TT\fP][\fB\-2\fP|\fB\-\-no-2nd\fP]"
-Display the visualisation data in graphviz \fBdot\fP(1) format. If "\-\-numbers" or "\-n" is given batctl will not replace
-the MAC addresses with bat-host names in the output. With "\-\-no-TT" or "\-T" the TT entries are not displayed, so the pure
-mesh topology can be seen. With "\-\-no-2nd" or "\-2" a dot cluster is not formed around primary and secondary addresses
-from the same device.
 .br
 .PP
 .I \fBdebug tables:
@@ -267,9 +258,6 @@ except specified). The following packet types are available:
 .RE
 .RS 17
 8 - batman broadcast packets
-.RE
-.RS 16
-16 - batman vis packets
 .RE
 .RS 16
 32 - batman fragmented packets

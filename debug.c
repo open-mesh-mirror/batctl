@@ -173,6 +173,32 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 			 batctl_debug_tables[debug_table].header_lines);
 }
 
+int print_vis_info(char *mesh_iface)
+{
+	char full_path[MAX_PATH+1];
+	char *debugfs_mnt;
+	FILE *fp;
+
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt) {
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
+		return -1;
+	}
+
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/vis_data", mesh_iface, full_path, sizeof(full_path));
+	fp = fopen(full_path, "r");
+	if (fp) {
+		fclose(fp);
+		fprintf(stderr, "Error - batctl version is newer than kernel module - the kernel module still supports\n"
+				"vis, but later versions will not. The vis functionality has been moved to the userspace\n"
+				"daemon ''alfred''. Please either downgrade to an older (compatible) batctl version or use alfred.\n");
+	} else {
+		fprintf(stderr, "Error - The installed batctl version and kernel module don't have vis support. The vis functionality\n"
+				"has been moved to the userspace daemon ''alfred''.\n");
+	}
+	return 0;
+}
+
 static void log_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] log [parameters]\n");

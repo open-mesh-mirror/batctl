@@ -75,12 +75,6 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 		.params = sysfs_param_enable,
 	},
 	{
-		.opt_long = "vis_mode",
-		.opt_short = "vm",
-		.sysfs_name = "vis_mode",
-		.params = sysfs_param_server,
-	},
-	{
 		.opt_long = "aggregation",
 		.opt_short = "ag",
 		.sysfs_name = "aggregated_ogms",

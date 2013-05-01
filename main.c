@@ -36,7 +36,6 @@
 #include "traceroute.h"
 #include "tcpdump.h"
 #include "bisect_iv.h"
-#include "vis.h"
 #include "ioctl.h"
 #include "functions.h"
 #include <err.h>
@@ -74,7 +73,6 @@ void print_usage(void)
 	fprintf(stderr, " \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
 	fprintf(stderr, " \tlog|l                                        \tread the log produced by the kernel module\n");
 	fprintf(stderr, " \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
-	fprintf(stderr, " \tvis_data|vd                [dot|JSON]        \tdisplay the VIS data in dot or JSON format\n");
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
@@ -166,9 +164,11 @@ int main(int argc, char **argv)
 
 		ret = log_print(mesh_iface, argc - 1, argv + 1);
 
-	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0)) {
+        /* vis legacy support */
+	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0) ||
+	           (strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
 
-		ret = vis_data(mesh_iface, argc - 1, argv + 1);
+		ret = print_vis_info(mesh_iface);
 
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 

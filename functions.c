@@ -458,7 +458,7 @@ static void request_arp(uint32_t ipv4_addr)
 static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
 {
 	struct ether_addr mac_empty;
-	struct ether_addr *mac_result = NULL, *mac_tmp;
+	struct ether_addr *mac_result = NULL, *mac_tmp = NULL;
 	struct sockaddr_in inet4;
 	int ret;
 	FILE *f;

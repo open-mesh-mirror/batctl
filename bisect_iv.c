@@ -1525,13 +1525,13 @@ int bisect_iv(int argc, char **argv)
 	num_parsed_files = 0;
 
 	if ((rt_orig_ptr) && (trace_orig_ptr)) {
-		fprintf(stderr, "Error - the 'print routing table' option can't be used together with the the 'trace seqno' option\n");
+		fprintf(stderr, "Error - the 'print routing table' option can't be used together with the 'trace seqno' option\n");
 		goto err;
 	} else if ((loop_orig_ptr) && (trace_orig_ptr)) {
-		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the the 'trace seqno' option\n");
+		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the 'trace seqno' option\n");
 		goto err;
 	} else if ((loop_orig_ptr) && (rt_orig_ptr)) {
-		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the the 'print routing table' option\n");
+		fprintf(stderr, "Error - the 'loop detection' option can't be used together with the 'print routing table' option\n");
 		goto err;
 	} else if (rt_orig_ptr) {
 		res = get_orig_addr(rt_orig_ptr, orig);

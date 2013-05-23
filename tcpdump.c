@@ -445,35 +445,6 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
-static void dump_batman_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
-{
-	struct batadv_unicast_frag_packet *unicast_frag_packet;
-
-	LEN_CHECK((size_t)buff_len - ETH_HLEN, sizeof(struct batadv_unicast_frag_packet), "BAT FRAG");
-	LEN_CHECK((size_t)buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet), (size_t)ETH_HLEN, "BAT FRAG (unpacked)");
-
-	unicast_frag_packet = (struct batadv_unicast_frag_packet *)(packet_buff + ETH_HLEN);
-
-	if (!time_printed)
-		time_printed = print_time();
-
-	printf("BAT %s > ",
-	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->orig, read_opt));
-
-	printf("%s: FRAG, seq %hu, ttvn %d, ttl %hhu, flags [%c%c], ",
-	       get_name_by_macaddr((struct ether_addr *)unicast_frag_packet->dest, read_opt),
-	       ntohs(unicast_frag_packet->seqno), unicast_frag_packet->ttvn, unicast_frag_packet->header.ttl,
-	       (unicast_frag_packet->flags & BATADV_UNI_FRAG_HEAD ? 'H' : '.'),
-	       (unicast_frag_packet->flags & BATADV_UNI_FRAG_LARGETAIL ? 'L' : '.'));
-
-	if (unicast_frag_packet->flags & BATADV_UNI_FRAG_HEAD)
-		parse_eth_hdr(packet_buff + ETH_HLEN + sizeof(struct batadv_unicast_frag_packet),
-			      buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet),
-			      read_opt, time_printed);
-	else
-		printf("length %zu\n", (size_t)buff_len - ETH_HLEN - sizeof(struct batadv_unicast_frag_packet));
-}
-
 static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
@@ -546,10 +517,6 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
-			break;
-		case BATADV_UNICAST_FRAG:
-			if (dump_level & DUMP_TYPE_BATFRAG)
-				dump_batman_frag(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)

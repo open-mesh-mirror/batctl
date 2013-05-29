@@ -361,32 +361,39 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	if (!time_printed)
 		print_time();
 
-	printf("BAT %s > ", get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)icmp_packet->icmph.orig,
+				   read_opt));
 
-	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst, read_opt);
+	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->icmph.dst,
+				   read_opt);
 
-	switch (icmp_packet->msg_type) {
+	switch (icmp_packet->icmph.msg_type) {
 	case BATADV_ECHO_REPLY:
 		printf("%s: ICMP echo reply, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->header.ttl, icmp_packet->header.version,
+			name, icmp_packet->icmph.uid, ntohs(icmp_packet->seqno),
+			icmp_packet->icmph.header.ttl,
+			icmp_packet->icmph.header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_ECHO_REQUEST:
 		printf("%s: ICMP echo request, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->header.ttl, icmp_packet->header.version,
+			name, icmp_packet->icmph.uid, ntohs(icmp_packet->seqno),
+			icmp_packet->icmph.header.ttl,
+			icmp_packet->icmph.header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_TTL_EXCEEDED:
 		printf("%s: ICMP time exceeded in-transit, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->header.ttl, icmp_packet->header.version,
+			name, icmp_packet->icmph.uid, ntohs(icmp_packet->seqno),
+			icmp_packet->icmph.header.ttl,
+			icmp_packet->icmph.header.version,
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	default:
 		printf("%s: ICMP type %hhu, length %zu\n",
-			name, icmp_packet->msg_type, (size_t)buff_len - sizeof(struct ether_header));
+			name, icmp_packet->icmph.msg_type,
+			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	}
 }

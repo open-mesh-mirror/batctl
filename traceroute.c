@@ -129,17 +129,19 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		goto out;
 	}
 
-	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.header.version = BATADV_COMPAT_VERSION;
-	icmp_packet_out.header.packet_type = BATADV_ICMP;
-	icmp_packet_out.msg_type = BATADV_ECHO_REQUEST;
+	memcpy(&icmp_packet_out.icmph.dst, dst_mac, ETH_ALEN);
+	icmp_packet_out.icmph.header.version = BATADV_COMPAT_VERSION;
+	icmp_packet_out.icmph.header.packet_type = BATADV_ICMP;
+	icmp_packet_out.icmph.msg_type = BATADV_ECHO_REQUEST;
 	icmp_packet_out.seqno = 0;
 	icmp_packet_out.reserved = 0;
 
 	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
 		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
-	for (icmp_packet_out.header.ttl = 1; !dst_reached && icmp_packet_out.header.ttl < TTL_MAX; icmp_packet_out.header.ttl++) {
+	for (icmp_packet_out.icmph.header.ttl = 1;
+	     !dst_reached && icmp_packet_out.icmph.header.ttl < TTL_MAX;
+	     icmp_packet_out.icmph.header.ttl++) {
 		return_mac = NULL;
 		bat_host = NULL;
 
@@ -183,7 +185,7 @@ read_packet:
 			if (htons(seq_counter) != icmp_packet_in.seqno)
 				goto read_packet;
 
-			switch (icmp_packet_in.msg_type) {
+			switch (icmp_packet_in.icmph.msg_type) {
 			case BATADV_ECHO_REPLY:
 				dst_reached = 1;
 				/* fall through */
@@ -191,10 +193,10 @@ read_packet:
 				time_delta[i] = end_timer();
 
 				if (!return_mac) {
-					return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
+					return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.icmph.orig);
 
 					if (read_opt & USE_BAT_HOSTS)
-						bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.orig);
+						bat_host = bat_hosts_find_by_mac((char *)&icmp_packet_in.icmph.orig);
 				}
 
 				break;
@@ -203,19 +205,24 @@ read_packet:
 				goto out;
 			case BATADV_PARAMETER_PROBLEM:
 				fprintf(stderr, "Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-						icmp_packet_in.header.version, BATADV_COMPAT_VERSION);
+						icmp_packet_in.icmph.header.version,
+						BATADV_COMPAT_VERSION);
 				fprintf(stderr, "Please make sure to use compatible versions!\n");
 				goto out;
 			default:
-				printf("Unknown message type %d len %zd received\n", icmp_packet_in.msg_type, read_len);
+				printf("Unknown message type %d len %zd received\n",
+				       icmp_packet_in.icmph.msg_type, read_len);
 				break;
 			}
 		}
 
 		if (!bat_host)
-			printf("%2hhu: %s", icmp_packet_out.header.ttl, (return_mac ? return_mac : "*"));
+			printf("%2hhu: %s", icmp_packet_out.icmph.header.ttl,
+			       (return_mac ? return_mac : "*"));
 		else
-			printf("%2hhu: %s (%s)", icmp_packet_out.header.ttl, bat_host->name, return_mac);
+			printf("%2hhu: %s (%s)",
+			       icmp_packet_out.icmph.header.ttl,
+			       bat_host->name, return_mac);
 
 		for (i = 0; i < NUM_PACKETS; i++) {
 			if (time_delta[i])

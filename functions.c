@@ -124,7 +124,8 @@ int file_exists(const char *fpath)
 	return stat(fpath, &st) == 0;
 }
 
-static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
+static void file_open_problem_dbg(const char *dir, const char *fname,
+				  const char *full_path)
 {
 	const char **ptr;
 	struct stat st;
@@ -162,7 +163,7 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 	}
 }
 
-int read_file(char *dir, char *fname, int read_opt,
+int read_file(const char *dir, const char *fname, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines)
 {
 	struct ether_addr *mac_addr;
@@ -296,7 +297,8 @@ out:
 	return res;
 }
 
-int write_file(char *dir, char *fname, char *arg1, char *arg2)
+int write_file(const char *dir, const char *fname, const char *arg1,
+	       const char *arg2)
 {
 	int fd = 0, res = EXIT_FAILURE;
 	char full_path[500];

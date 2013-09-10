@@ -19,6 +19,9 @@
  *
  */
 
-
+#ifndef _BATCTL_PING_H
+#define _BATCTL_PING_H
 
 int ping(char *mesh_iface, int argc, char **argv);
+
+#endif

@@ -19,7 +19,8 @@
  *
  */
 
-
+#ifndef _BATCTL_FUNCTIONS_H
+#define _BATCTL_FUNCTIONS_H
 
 #include <netinet/if_ether.h>
 
@@ -55,3 +56,5 @@ enum {
 	COMPAT_FILTER = 0x80,
 	SKIP_HEADER = 0x100,
 };
+
+#endif

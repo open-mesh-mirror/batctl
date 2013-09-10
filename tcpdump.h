@@ -19,6 +19,8 @@
  *
  */
 
+#ifndef _BATCTL_TCPDUMP_H
+#define _BATCTL_TCPDUMP_H
 
 #include <netpacket/packet.h>
 #include <net/ethernet.h>
@@ -107,3 +109,5 @@ struct prism_header {
 #define RADIOTAP_HEADER_LEN sizeof(struct radiotap_header)
 
 int tcpdump(int argc, char **argv);
+
+#endif

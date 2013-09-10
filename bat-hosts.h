@@ -21,8 +21,8 @@
 
 
 
-#ifndef _BAT_HOSTS_H
-#define _BAT_HOSTS_H 1
+#ifndef _BATCTL_BAT_HOSTS_H
+#define _BATCTL_BAT_HOSTS_H
 
 #include <netinet/ether.h>
 

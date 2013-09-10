@@ -19,6 +19,9 @@
  *
  */
 
-
+#ifndef _BATCTL_TRACEROUTE_H
+#define _BATCTL_TRACEROUTE_H
 
 int traceroute(char *mesh_iface, int argc, char **argv);
+
+#endif

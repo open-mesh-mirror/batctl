@@ -19,6 +19,9 @@
  *
  */
 
-
+#ifndef _BATCTL_TRANSLATE_H
+#define _BATCTL_TRANSLATE_H
 
 int translate(char *mesh_iface, int argc, char **argv);
+
+#endif

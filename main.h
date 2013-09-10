@@ -19,6 +19,9 @@
  *
  */
 
+#ifndef _BATCTL_MAIN_H
+#define _BATCTL_MAIN_H
+
 #ifndef SOURCE_VERSION
 #define SOURCE_VERSION "2013.4.0"
 #endif
@@ -37,3 +40,5 @@
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
 extern char module_ver_path[];
+
+#endif

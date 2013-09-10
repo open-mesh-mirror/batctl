@@ -180,7 +180,7 @@ int read_file(char *dir, char *fname, int read_opt,
 
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
 
 open:
 	line = 0;
@@ -305,7 +305,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
 
 	fd = open(full_path, O_WRONLY);
 

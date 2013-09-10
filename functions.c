@@ -20,7 +20,6 @@
  */
 
 
-#define _GNU_SOURCE
 #include <netinet/ether.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>

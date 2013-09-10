@@ -30,6 +30,7 @@ MANPAGE = man/batctl.8
 
 # batctl flags and options
 CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD
+CPPFLAGS += -D_GNU_SOURCE
 LDLIBS += -lm
 
 # disable verbose output

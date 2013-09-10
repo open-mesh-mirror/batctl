@@ -84,7 +84,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 	},
 };
 
-void debug_table_usage(int debug_table)
+static void debug_table_usage(int debug_table)
 {
 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]\n",
 	       batctl_debug_tables[debug_table].opt_long, batctl_debug_tables[debug_table].opt_short);

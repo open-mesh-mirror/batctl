@@ -42,7 +42,7 @@
 char is_aborted = 0;
 
 
-void ping_usage(void)
+static void ping_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address \n");
 	fprintf(stderr, "parameters:\n");
@@ -54,7 +54,7 @@ void ping_usage(void)
 	fprintf(stderr, " \t -T don't try to translate mac to originator address\n");
 }
 
-void sig_handler(int sig)
+static void sig_handler(int sig)
 {
 	switch (sig) {
 	case SIGINT:

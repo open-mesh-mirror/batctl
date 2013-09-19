@@ -19,6 +19,8 @@
  *
  */
 
+#ifndef _BATCTL_DEBUG_H
+#define _BATCTL_DEBUG_H
 
 #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
 #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
@@ -48,3 +50,5 @@ extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
 int log_print(char *mesh_iface, int argc, char **argv);
 int print_vis_info(char *mesh_iface);
+
+#endif

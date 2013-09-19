@@ -41,7 +41,7 @@
 #define NUM_PACKETS 3
 
 
-void traceroute_usage(void)
+static void traceroute_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
 	fprintf(stderr, "parameters:\n");

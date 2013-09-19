@@ -231,7 +231,7 @@ int interface(char *mesh_iface, int argc, char **argv)
 
 			if (!file_exists(module_ver_path)) {
 				fprintf(stderr, "Error - batman-adv module has not been loaded\n");
-				goto err;
+				goto err_buff;
 			}
 
 			fprintf(stderr, "Error - interface type not supported by batman-adv: %s\n", argv[i]);

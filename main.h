@@ -19,8 +19,11 @@
  *
  */
 
+#ifndef _BATCTL_MAIN_H
+#define _BATCTL_MAIN_H
+
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2013.3.0"
+#define SOURCE_VERSION "2013.4.0"
 #endif
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
@@ -45,3 +48,5 @@
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
 extern char module_ver_path[];
+
+#endif

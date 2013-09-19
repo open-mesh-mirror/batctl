@@ -43,7 +43,7 @@
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";
 
-void print_usage(void)
+static void print_usage(void)
 {
 	int i, opt_indent;
 

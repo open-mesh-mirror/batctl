@@ -19,5 +19,9 @@
  *
  */
 
+#ifndef _BATCTL_IOCTL_H
+#define _BATCTL_IOCTL_H
 
 int ioctl_statistics_get(char *mesh_iface);
+
+#endif

@@ -20,7 +20,6 @@
  */
 
 
-#define _GNU_SOURCE
 #include <netinet/ether.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -125,7 +124,8 @@ int file_exists(const char *fpath)
 	return stat(fpath, &st) == 0;
 }
 
-static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
+static void file_open_problem_dbg(const char *dir, const char *fname,
+				  const char *full_path)
 {
 	const char **ptr;
 	struct stat st;
@@ -163,7 +163,7 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
 	}
 }
 
-int read_file(char *dir, char *fname, int read_opt,
+int read_file(const char *dir, const char *fname, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines)
 {
 	struct ether_addr *mac_addr;
@@ -180,7 +180,7 @@ int read_file(char *dir, char *fname, int read_opt,
 
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
 
 open:
 	line = 0;
@@ -297,7 +297,8 @@ out:
 	return res;
 }
 
-int write_file(char *dir, char *fname, char *arg1, char *arg2)
+int write_file(const char *dir, const char *fname, const char *arg1,
+	       const char *arg2)
 {
 	int fd = 0, res = EXIT_FAILURE;
 	char full_path[500];
@@ -305,7 +306,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
 
 	strncpy(full_path, dir, strlen(dir));
 	full_path[strlen(dir)] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
+	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
 
 	fd = open(full_path, O_WRONLY);
 

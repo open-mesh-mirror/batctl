@@ -1040,7 +1040,7 @@ static void seqno_trace_print(struct list_head_first *trace_list, char *trace_or
 static int _seqno_trace_neigh_add(struct seqno_trace_neigh *seqno_trace_mom,
 					struct seqno_trace_neigh *seqno_trace_child)
 {
-	struct seqno_trace_neigh *data_ptr;
+	struct seqno_trace_neigh **data_ptr;
 
 	data_ptr = malloc((seqno_trace_mom->num_neighbors + 1) * sizeof(struct seqno_trace_neigh *));
 	if (!data_ptr)
@@ -1053,7 +1053,7 @@ static int _seqno_trace_neigh_add(struct seqno_trace_neigh *seqno_trace_mom,
 	}
 
 	seqno_trace_mom->num_neighbors++;
-	seqno_trace_mom->seqno_trace_neigh = (void *)data_ptr;
+	seqno_trace_mom->seqno_trace_neigh = data_ptr;
 	seqno_trace_mom->seqno_trace_neigh[seqno_trace_mom->num_neighbors - 1] = seqno_trace_child;
 	return 1;
 }

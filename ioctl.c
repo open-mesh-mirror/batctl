@@ -30,12 +30,11 @@
 #include <linux/if.h>
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
+#include <stdint.h>
 
 #include "main.h"
 #include "ioctl.h"
 #include "debugfs.h"
-
-typedef unsigned long long u64;
 
 /* code borrowed from ethtool */
 static int statistics_custom_get(int fd, struct ifreq *ifr)
@@ -47,7 +46,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	int err, ret = EXIT_FAILURE;
 
 	drvinfo.cmd = ETHTOOL_GDRVINFO;
-	ifr->ifr_data = (caddr_t)&drvinfo;
+	ifr->ifr_data = (void *)&drvinfo;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
 		fprintf(stderr, "Error - can't open driver information: %s\n", strerror(errno));
@@ -59,7 +58,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 		goto success;
 
 	sz_str = n_stats * ETH_GSTRING_LEN;
-	sz_stats = n_stats * sizeof(u64);
+	sz_stats = n_stats * sizeof(uint64_t);
 
 	strings = calloc(1, sz_str + sizeof(struct ethtool_gstrings));
 	stats = calloc(1, sz_stats + sizeof(struct ethtool_stats));
@@ -71,7 +70,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	strings->cmd = ETHTOOL_GSTRINGS;
 	strings->string_set = ETH_SS_STATS;
 	strings->len = n_stats;
-	ifr->ifr_data = (caddr_t)strings;
+	ifr->ifr_data = (void *)strings;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
 		fprintf(stderr, "Error - can't get stats strings information: %s\n", strerror(errno));
@@ -80,7 +79,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 
 	stats->cmd = ETHTOOL_GSTATS;
 	stats->n_stats = n_stats;
-	ifr->ifr_data = (caddr_t) stats;
+	ifr->ifr_data = (void *) stats;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
 		fprintf(stderr, "Error - can't get stats information: %s\n", strerror(errno));

@@ -20,8 +20,8 @@
  */
 
 
-#ifndef _ALLOCATE_H
-#define _ALLOCATE_H 1
+#ifndef _BATCTL_ALLOCATE_H
+#define _BATCTL_ALLOCATE_H
 
 /* debug allocate wrapper to keep hash.c happy */
 

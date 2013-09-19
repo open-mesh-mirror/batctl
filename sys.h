@@ -19,6 +19,8 @@
  *
  */
 
+#ifndef _BATCTL_SYS_H
+#define _BATCTL_SYS_H
 
 #define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL "log_level"
@@ -64,3 +66,5 @@ int interface(char *mesh_iface, int argc, char **argv);
 int handle_loglevel(char *mesh_iface, int argc, char **argv);
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
 int handle_gw_setting(char *mesh_iface, int argc, char **argv);
+
+#endif

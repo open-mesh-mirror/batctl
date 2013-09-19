@@ -19,6 +19,9 @@
  *
  */
 
+#ifndef _BATCTL_BISECT_IV_H
+#define _BATCTL_BISECT_IV_H
+
 #include "list-batman.h"
 
 #define NAME_LEN 18
@@ -95,3 +98,5 @@ struct seqno_trace {
 	char print;
 	struct seqno_trace_neigh seqno_trace_neigh;
 };
+
+#endif

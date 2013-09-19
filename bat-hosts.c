@@ -21,7 +21,6 @@
 
 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -194,7 +193,7 @@ void bat_hosts_init(int read_opt)
 
 			strncpy(confdir, homedir, CONF_DIR_LEN);
 			confdir[CONF_DIR_LEN - 1] = '\0';
-			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir));
+			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir) - 1);
 		} else {
 			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
 			confdir[CONF_DIR_LEN - 1] = '\0';

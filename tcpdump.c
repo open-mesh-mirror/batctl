@@ -196,6 +196,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_print
 	struct tcphdr *tcphdr;
 	struct udphdr *udphdr, *tmp_udphdr;
 	struct icmphdr *icmphdr;
+	uint16_t tcp_header_len;
 
 	iphdr = (struct iphdr *)packet_buff;
 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
@@ -259,16 +260,18 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len, int time_print
 
 		break;
 	case IPPROTO_TCP:
-		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct tcphdr), "TCP");
-
 		tcphdr = (struct tcphdr *)(packet_buff + (iphdr->ihl * 4));
+		tcp_header_len = tcphdr->doff * 4;
+		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4),
+			  (size_t)tcp_header_len, "TCP");
+
 		printf("IP %s.%i > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr), ntohs(tcphdr->source));
 		printf("%s.%i: TCP, flags [%c%c%c%c%c%c], length %zu\n",
 			inet_ntoa(*(struct in_addr *)&iphdr->daddr), ntohs(tcphdr->dest),
 			(tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
 			(tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
 			(tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
-			(size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct tcphdr));
+			(size_t)buff_len - (iphdr->ihl * 4) - tcp_header_len);
 		break;
 	case IPPROTO_UDP:
 		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct udphdr), "UDP");

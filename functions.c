@@ -416,49 +416,68 @@ out:
 	return mac_result;
 }
 
-static uint32_t resolve_ipv4(const char *asc)
+static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 {
 	int ret;
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct sockaddr_in *inet4;
-	uint32_t addr = 0;
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
+	hints.ai_family = ai_family;
 	ret = getaddrinfo(asc, NULL, &hints, &res);
 	if (ret)
-		return 0;
+		return -EADDRNOTAVAIL;
 
 	if (res) {
-		inet4 = (struct sockaddr_in *)res->ai_addr;
-		addr = inet4->sin_addr.s_addr;
+		switch (ai_family) {
+		case AF_INET:
+			inet4 = (struct sockaddr_in *)res->ai_addr;
+			memcpy(l3addr, &inet4->sin_addr.s_addr,
+			       sizeof(inet4->sin_addr.s_addr));
+			break;
+		default:
+			ret = -EINVAL;
+		}
 	}
 
 	freeaddrinfo(res);
-	return addr;
+	return ret;
 }
 
-static void request_arp(uint32_t ipv4_addr)
+static void request_mac_resolve(int ai_family, const void *l3addr)
 {
+	const struct sockaddr *sockaddr;
 	struct sockaddr_in inet4;
+	size_t sockaddr_len;
 	int sock;
 	char t = 0;
 
-	memset(&inet4, 0, sizeof(inet4));
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0)
 		return;
 
-	inet4.sin_family = AF_INET;
-	inet4.sin_port = htons(9);
-	inet4.sin_addr.s_addr = ipv4_addr;
-	sendto(sock, &t, sizeof(t), 0, (const struct sockaddr *)&inet4,
-	       sizeof(inet4));
+	switch (ai_family) {
+	case AF_INET:
+		memset(&inet4, 0, sizeof(inet4));
+		inet4.sin_family = ai_family;
+		inet4.sin_port = htons(9);
+		memcpy(&inet4.sin_addr.s_addr, l3addr,
+		       sizeof(inet4.sin_addr.s_addr));
+		sockaddr = (const struct sockaddr *)&inet4;
+		sockaddr_len = sizeof(inet4);
+		break;
+	default:
+		close(sock);
+		return;
+	}
+
+	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
 	close(sock);
 }
 
-static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
+static struct ether_addr *resolve_mac_from_cache(int ai_family,
+						 const void *l3addr)
 {
 	struct ether_addr mac_empty;
 	struct ether_addr *mac_result = NULL, *mac_tmp = NULL;
@@ -471,7 +490,12 @@ static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
 	size_t column;
 	char *token, *input, *saveptr;
 	int line_invalid;
+	uint32_t ipv4_addr;
 
+	if (ai_family != AF_INET)
+		return NULL;
+
+	memcpy(&ipv4_addr, l3addr, sizeof(ipv4_addr));
 	memset(&mac_empty, 0, sizeof(mac_empty));
 
 	f = fopen("/proc/net/arp", "r");
@@ -527,20 +551,30 @@ static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
 	return mac_result;
 }
 
-static struct ether_addr *resolve_mac_from_ipv4(const char *asc)
+static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 {
-	uint32_t ipv4_addr;
+	uint8_t ipv4_addr[4];
+	void *l3addr;
+	int ret;
 	int retries = 5;
 	struct ether_addr *mac_result = NULL;
 
-	ipv4_addr = resolve_ipv4(asc);
-	if (!ipv4_addr)
+	switch (ai_family) {
+	case AF_INET:
+		l3addr = ipv4_addr;
+		break;
+	default:
+		return NULL;
+	}
+
+	ret = resolve_l3addr(ai_family, asc, l3addr);
+	if (ret < 0)
 		return NULL;
 
 	while (retries-- && !mac_result) {
-		mac_result = resolve_mac_from_arp(ipv4_addr);
+		mac_result = resolve_mac_from_cache(ai_family, l3addr);
 		if (!mac_result) {
-			request_arp(ipv4_addr);
+			request_mac_resolve(ai_family, l3addr);
 			usleep(200000);
 		}
 	}
@@ -551,12 +585,18 @@ static struct ether_addr *resolve_mac_from_ipv4(const char *asc)
 struct ether_addr *resolve_mac(const char *asc)
 {
 	struct ether_addr *mac_result = NULL;
+	static const int ai_families[] = {AF_INET};
+	size_t i;
 
 	mac_result = ether_aton(asc);
 	if (mac_result)
 		goto out;
 
-	mac_result = resolve_mac_from_ipv4(asc);
+	for (i = 0; i < sizeof(ai_families) / sizeof(*ai_families); i++) {
+		mac_result = resolve_mac_from_addr(ai_families[i], asc);
+		if (mac_result)
+			goto out;
+	}
 
 out:
 	return mac_result;

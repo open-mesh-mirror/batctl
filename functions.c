@@ -427,6 +427,7 @@ static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 	struct addrinfo hints;
 	struct addrinfo *res;
 	struct sockaddr_in *inet4;
+	struct sockaddr_in6 *inet6;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = ai_family;
@@ -441,6 +442,11 @@ static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 			memcpy(l3addr, &inet4->sin_addr.s_addr,
 			       sizeof(inet4->sin_addr.s_addr));
 			break;
+		case AF_INET6:
+			inet6 = (struct sockaddr_in6 *)res->ai_addr;
+			memcpy(l3addr, &inet6->sin6_addr.s6_addr,
+			       sizeof(inet6->sin6_addr.s6_addr));
+			break;
 		default:
 			ret = -EINVAL;
 		}
@@ -454,6 +460,7 @@ static void request_mac_resolve(int ai_family, const void *l3addr)
 {
 	const struct sockaddr *sockaddr;
 	struct sockaddr_in inet4;
+	struct sockaddr_in6 inet6;
 	size_t sockaddr_len;
 	int sock;
 	char t = 0;
@@ -471,6 +478,15 @@ static void request_mac_resolve(int ai_family, const void *l3addr)
 		       sizeof(inet4.sin_addr.s_addr));
 		sockaddr = (const struct sockaddr *)&inet4;
 		sockaddr_len = sizeof(inet4);
+		break;
+	case AF_INET6:
+		memset(&inet6, 0, sizeof(inet6));
+		inet6.sin6_family = ai_family;
+		inet6.sin6_port = htons(9);
+		memcpy(&inet6.sin6_addr.s6_addr, l3addr,
+		       sizeof(inet6.sin6_addr.s6_addr));
+		sockaddr = (const struct sockaddr *)&inet6;
+		sockaddr_len = sizeof(inet6);
 		break;
 	default:
 		close(sock);
@@ -630,6 +646,9 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
 	case AF_INET:
 		l3_len = 4;
 		break;
+	case AF_INET6:
+		l3_len = 16;
+		break;
 	default:
 		l3_len = 0;
 	}
@@ -679,6 +698,7 @@ err:
 static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 {
 	uint8_t ipv4_addr[4];
+	uint8_t ipv6_addr[16];
 	void *l3addr;
 	int ret;
 	int retries = 5;
@@ -687,6 +707,9 @@ static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 	switch (ai_family) {
 	case AF_INET:
 		l3addr = ipv4_addr;
+		break;
+	case AF_INET6:
+		l3addr = ipv6_addr;
 		break;
 	default:
 		return NULL;
@@ -710,7 +733,7 @@ static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 struct ether_addr *resolve_mac(const char *asc)
 {
 	struct ether_addr *mac_result = NULL;
-	static const int ai_families[] = {AF_INET};
+	static const int ai_families[] = {AF_INET, AF_INET6};
 	size_t i;
 
 	mac_result = ether_aton(asc);

@@ -28,6 +28,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <linux/if_ether.h>
+#include <stddef.h>
+#include <sys/select.h>
+#include <sys/time.h>
 
 #include "main.h"
 #include "traceroute.h"

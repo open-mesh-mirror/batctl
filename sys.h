@@ -22,6 +22,8 @@
 #ifndef _BATCTL_SYS_H
 #define _BATCTL_SYS_H
 
+#include "main.h"
+
 #define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL "log_level"
 #define SYS_LOG "log"

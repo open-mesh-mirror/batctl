@@ -19,9 +19,6 @@
  *
  */
 
-
-#include <stddef.h> /* offsetof() */
-
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 

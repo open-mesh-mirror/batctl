@@ -21,14 +21,15 @@
 
 
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <stddef.h>
+#include <netinet/ether.h>
 
-#include "main.h"
 #include "bat-hosts.h"
 #include "hash.h"
 #include "functions.h"

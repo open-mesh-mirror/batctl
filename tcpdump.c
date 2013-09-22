@@ -36,8 +36,12 @@
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/if_ether.h>
+#include <net/ethernet.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 
-#include "main.h"
 #include "tcpdump.h"
 #include "packet.h"
 #include "bat-hosts.h"

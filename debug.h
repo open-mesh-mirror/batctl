@@ -22,6 +22,9 @@
 #ifndef _BATCTL_DEBUG_H
 #define _BATCTL_DEBUG_H
 
+#include <stddef.h>
+#include "main.h"
+
 #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
 #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
 #define DEBUG_LOG "log"

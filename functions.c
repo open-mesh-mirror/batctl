@@ -33,6 +33,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <stdint.h>
 
 #include "main.h"
 #include "functions.h"

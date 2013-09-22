@@ -23,7 +23,10 @@
 #define _BATCTL_TCPDUMP_H
 
 #include <netpacket/packet.h>
-#include <net/ethernet.h>
+#include <linux/if_ether.h>
+#include <net/if_arp.h>
+#include <sys/types.h>
+#include "main.h"
 #include "list-batman.h"
 
 #ifndef ARPHRD_IEEE80211_PRISM

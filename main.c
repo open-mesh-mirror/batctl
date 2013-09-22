@@ -21,9 +21,7 @@
 
 
 
-#include <sys/types.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -38,7 +36,6 @@
 #include "bisect_iv.h"
 #include "ioctl.h"
 #include "functions.h"
-#include <err.h>
 
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";

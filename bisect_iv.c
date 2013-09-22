@@ -19,14 +19,15 @@
  *
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <netinet/ether.h>
 
-#include "main.h"
 #include "bisect_iv.h"
 #include "bat-hosts.h"
 #include "hash.h"

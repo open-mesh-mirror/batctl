@@ -22,7 +22,8 @@
 #ifndef _BATCTL_FUNCTIONS_H
 #define _BATCTL_FUNCTIONS_H
 
-#include <netinet/if_ether.h>
+#include <net/ethernet.h>
+#include <stddef.h>
 
 
 #define ETH_STR_LEN 17

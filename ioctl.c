@@ -26,15 +26,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <linux/if.h>
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
 #include <stdint.h>
 
-#include "main.h"
 #include "ioctl.h"
-#include "debugfs.h"
 
 /* code borrowed from ethtool */
 static int statistics_custom_get(int fd, struct ifreq *ifr)

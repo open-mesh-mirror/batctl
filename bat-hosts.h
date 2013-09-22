@@ -24,7 +24,7 @@
 #ifndef _BATCTL_BAT_HOSTS_H
 #define _BATCTL_BAT_HOSTS_H
 
-#include <netinet/ether.h>
+#include <net/ethernet.h>
 
 #define HOST_NAME_MAX_LEN 50
 #define CONF_DIR_LEN 256

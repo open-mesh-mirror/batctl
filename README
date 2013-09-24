@@ -78,10 +78,10 @@ $ batctl statistics
 batctl translate
 ================
 
-Translates a destination (hostname, IPv4, MAC, bat_host-name) to the originator
-mac address responsible for it.
+Translates a destination (hostname, IPv4, IPv6, MAC, bat_host-name) to the
+originator mac address responsible for it.
 
-Usage: batctl translate mac|bat-host|host-name|IPv4-address
+Usage: batctl translate mac|bat-host|host-name|IP-address
 
 Example:
 
@@ -93,13 +93,15 @@ $ batctl translate 192.168.1.2
 02:ca:fe:af:fe:05
 $ batctl translate fe:fe:00:00:09:01
 02:ca:fe:af:fe:05
+$ batctl translate 2001::1
+02:ca:fe:af:fe:05
 
 batctl ping
 ============
 
 Sends a Layer 2 batman-adv ping to check round trip time and connectivity
 
-Usage: batctl ping [parameters] mac|bat-host|host-name|IPv4-address
+Usage: batctl ping [parameters] mac|bat-host|host-name|IP-address
 parameters:
          -c ping packet count
          -h print this help
@@ -125,7 +127,7 @@ batctl traceroute
 Traceroute sends 3 packets to each hop, awaits the answers and prints out the
 response times.
 
-Usage: batctl traceroute [parameters] mac|bat-host|host-name|IPv4-address
+Usage: batctl traceroute [parameters] mac|bat-host|host-name|IP-address
 
 Example:
 

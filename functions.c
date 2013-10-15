@@ -683,6 +683,7 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
 			if (parsed) {
 				if (memcmp(&l3addr_tmp, l3addr, l3_len) == 0) {
 					mac_result = &mac_tmp;
+					finished = 1;
 					break;
 				}
 			}

@@ -637,7 +637,7 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
 	size_t buflen;
 	struct nlmsghdr *nh;
 	ssize_t len;
-	size_t l3_len;
+	size_t l3_len, mlen;
 	int socknl;
 	int parsed;
 	int finished = 0;
@@ -667,8 +667,9 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
 		len = resolve_mac_from_cache_dump(socknl, &buf, &buflen);
 		if (len < 0)
 			goto err_sock;
+		mlen = len;
 
-		for (nh = buf; NLMSG_OK(nh, len); nh = NLMSG_NEXT(nh, len)) {
+		for (nh = buf; NLMSG_OK(nh, mlen); nh = NLMSG_NEXT(nh, mlen)) {
 			if (nh->nlmsg_type == NLMSG_DONE) {
 				finished = 1;
 				break;

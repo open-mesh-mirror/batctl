@@ -630,8 +630,8 @@ static int resolve_mac_from_cache_parse(struct ndmsg *ndmsg, size_t len_payload,
 static struct ether_addr *resolve_mac_from_cache(int ai_family,
 						 const void *l3addr)
 {
-	static uint8_t l3addr_tmp[16];
-	struct ether_addr mac_tmp;
+	uint8_t l3addr_tmp[16];
+	static struct ether_addr mac_tmp;
 	struct ether_addr *mac_result = NULL;
 	void *buf = NULL;
 	size_t buflen;

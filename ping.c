@@ -177,10 +177,10 @@ int ping(char *mesh_iface, int argc, char **argv)
 	packet_len = sizeof(struct batadv_icmp_packet);
 
 	memcpy(&icmp_packet_out.icmph.dst, dst_mac, ETH_ALEN);
-	icmp_packet_out.icmph.header.packet_type = BATADV_ICMP;
-	icmp_packet_out.icmph.header.version = BATADV_COMPAT_VERSION;
+	icmp_packet_out.icmph.packet_type = BATADV_ICMP;
+	icmp_packet_out.icmph.version = BATADV_COMPAT_VERSION;
 	icmp_packet_out.icmph.msg_type = BATADV_ECHO_REQUEST;
-	icmp_packet_out.icmph.header.ttl = 50;
+	icmp_packet_out.icmph.ttl = 50;
 	icmp_packet_out.seqno = 0;
 
 	if (rr) {
@@ -256,7 +256,7 @@ read_packet:
 			printf("%zd bytes from %s icmp_seq=%hu ttl=%d time=%.2f ms",
 					read_len, dst_string,
 					ntohs(icmp_packet_in.seqno),
-					icmp_packet_in.icmph.header.ttl,
+					icmp_packet_in.icmph.ttl,
 					time_delta);
 
 			if (read_len == sizeof(struct batadv_icmp_packet_rr)) {
@@ -306,8 +306,7 @@ read_packet:
 			break;
 		case BATADV_PARAMETER_PROBLEM:
 			fprintf(stderr, "Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
-					icmp_packet_in.icmph.header.version,
-					BATADV_COMPAT_VERSION);
+				icmp_packet_in.icmph.version, BATADV_COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");
 			goto out;
 		default:

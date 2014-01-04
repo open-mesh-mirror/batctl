@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2006-2013 B.A.T.M.A.N. contributors:
+ * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner
  *

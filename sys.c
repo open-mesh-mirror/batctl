@@ -372,8 +372,8 @@ static void settings_usage(int setting)
 
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 {
-	int optchar, res = EXIT_FAILURE;
-	char *path_buff;
+	int vid, optchar, res = EXIT_FAILURE;
+	char *path_buff, *base_dev = NULL;
 	const char **ptr;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
@@ -387,9 +387,19 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 		}
 	}
 
+	/* prepare the classic path */
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 	path_buff[PATH_BUFF_LEN - 1] = '\0';
+
+	/* if the specified interface is a VLAN then change the path to point
+	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
+	 */
+	vid = vlan_get_link(mesh_iface, &base_dev);
+	if (vid >= 0) {
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+		path_buff[PATH_BUFF_LEN - 1] = '\0';
+	}
 
 	if (argc == 1) {
 		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
@@ -425,6 +435,7 @@ write_file:
 
 out:
 	free(path_buff);
+	free(base_dev);
 	return res;
 }
 

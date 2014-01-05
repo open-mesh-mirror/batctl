@@ -24,16 +24,18 @@
 
 #include "main.h"
 
-#define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
-#define SYS_LOG_LEVEL "log_level"
-#define SYS_LOG "log"
-#define SYS_GW_MODE "gw_mode"
-#define SYS_GW_SEL "gw_sel_class"
-#define SYS_GW_BW "gw_bandwidth"
-#define SYS_IFACE_PATH "/sys/class/net"
-#define SYS_IFACE_DIR SYS_IFACE_PATH"/%s/"
-#define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
-#define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+#define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
+#define SYS_LOG_LEVEL		"log_level"
+#define SYS_LOG			"log"
+#define SYS_GW_MODE		"gw_mode"
+#define SYS_GW_SEL		"gw_sel_class"
+#define SYS_GW_BW		"gw_bandwidth"
+#define SYS_IFACE_PATH		"/sys/class/net"
+#define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
+#define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+#define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
+#define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+#define VLAN_ID_MAX_LEN		4
 
 enum batctl_settings_list {
 	BATCTL_SETTINGS_ORIG_INTERVAL,

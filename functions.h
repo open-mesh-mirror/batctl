@@ -42,6 +42,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 	       const char *arg2);
 struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
+int vlan_get_link(const char *ifname, char **parent);
 
 extern char *line_ptr;
 

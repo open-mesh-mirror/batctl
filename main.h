@@ -23,7 +23,7 @@
 #define _BATCTL_MAIN_H
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2014.0.0"
+#define SOURCE_VERSION "2014.1.0"
 #endif
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"

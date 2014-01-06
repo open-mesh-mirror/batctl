@@ -499,13 +499,13 @@ static void request_mac_resolve(int ai_family, const void *l3addr)
 }
 
 /**
- * rtnl_open - open a socket to rtnl and send a request
+ * batadv_rtnl_open - open a socket to rtnl and send a request
  * @nh: the header of the request to send
  * @protocol: the protocol to use when opening the socket
  *
  * Return 0 on success or a negative error code otherwise
  */
-static int rtnl_open(void *req, int protocol)
+static int batadv_rtnl_open(void *req, int protocol)
 {
 	static uint32_t nr_call = 0;
 	uint32_t pid = (++nr_call + getpid()) & 0x3FFFFF;
@@ -555,7 +555,7 @@ static int resolve_mac_from_cache_open(int ai_family)
 	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
 	nlreq.msg.ndm_family = ai_family;
 
-	return rtnl_open(&nlreq, NETLINK_ROUTE);
+	return batadv_rtnl_open(&nlreq, NETLINK_ROUTE);
 }
 
 static ssize_t resolve_mac_from_cache_dump(int sock, void **buf, size_t *buflen)
@@ -890,7 +890,7 @@ static int vlan_get_link_open(const char *ifname)
 	nlreq.ifi.ifi_family = AF_UNSPEC;
 	nlreq.ifi.ifi_index = if_nametoindex(ifname);
 
-	return rtnl_open(&nlreq, 0);
+	return batadv_rtnl_open(&nlreq, 0);
 }
 
 /**

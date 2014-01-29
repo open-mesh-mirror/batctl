@@ -25,10 +25,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <net/if.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/if.h>
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
 #include <stdint.h>

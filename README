@@ -399,6 +399,19 @@ display or modify the packet aggregation setting
 
 Usage: batctl aggregation|ag [0|1]
 
+batctl isolation_mark
+=====================
+
+display or modify the isolation mark.
+This value is used by Extended Isolation feature.
+
+Usage: batctl isolation_mark|mark $value[/0x$mask]
+
+Example 1: batctl mark 0x00000001/0xffffffff
+Example 2: batctl mark 0x00040000/0xffff0000
+Example 3: batctl mark 16
+Example 4: batctl mark 0x0f
+
 batctl translocal
 =================
 

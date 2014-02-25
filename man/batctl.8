@@ -151,6 +151,26 @@ least XX TQ better than the currently selected gateway (XX has to be a number be
 .RE
 .RE
 .br
+.IP "\fBisolation_mark\fP|\fBmark\fP"
+If no parameter is given the current isolation mark value is displayed.
+Otherwise the parameter is used to set or unset the isolation mark used by the
+Extended Isolation feature.
+.br
+The input is supposed to be of the form $value/$mask, where $value can be any
+32bit long integer (expressed in decimal or hex base) and $mask is a generic
+bitmask (expressed in hex base) that selects the bits to take into consideration
+from $value. It is also possible to enter the input using only $value and in
+this case the full bitmask is used by default.
+
+.br
+.br
+Example 1: 0x00000001/0xffffffff
+.br
+Example 2: 0x00040000/0xffff0000
+.br
+Example 3: 16 or 0x0F
+.br
+.br
 .PP
 .I \fBdebug tables:
 .IP

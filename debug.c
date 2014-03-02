@@ -46,7 +46,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_long = "translocal",
 		.opt_short = "tl",
 		.debugfs_name = "transtable_local",
-		.header_lines = 1,
+		.header_lines = 2,
 	},
 	{
 		.opt_long = "transglobal",

@@ -175,6 +175,14 @@ static void file_open_problem_dbg(const char *dir, const char *fname,
 	}
 }
 
+static int str_is_mcast_addr(char *addr)
+{
+	struct ether_addr *mac_addr = ether_aton(addr);
+
+	return !mac_addr ? 0 :
+		mac_addr->ether_addr_octet[0] & 0x01;
+}
+
 int read_file(const char *dir, const char *fname, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines)
 {
@@ -223,6 +231,20 @@ read:
 			if (sscanf(line_ptr, "%*s %f", &last_seen)
 			    && (last_seen > orig_timeout))
 				continue;
+
+		/* translation table: skip multicast */
+		if (line > header_lines &&
+		    read_opt & UNICAST_ONLY &&
+		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
+		    str_is_mcast_addr(line_ptr+3))
+			continue;
+
+		/* translation table: skip unicast */
+		if (line > header_lines &&
+		    read_opt & MULTICAST_ONLY &&
+		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
+		    !str_is_mcast_addr(line_ptr+3))
+			continue;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
 			printf("%s", line_ptr);

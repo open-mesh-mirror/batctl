@@ -417,6 +417,13 @@ Usage: batctl network_coding|nc [0|1]
 
 Note that network coding requires a working promiscuous mode on all interfaces.
 
+batctl multicast_mode
+=====================
+
+display or modify the multicast mode setting
+
+Usage: batctl multicast_mode|mm [0|1]
+
 batctl aggregation
 ==================
 

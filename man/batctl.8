@@ -88,6 +88,10 @@ disable fragmentation.
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.
 .br
+.IP "\fBmulticast_mode\fP|\fBmm\fP [\fB0\fP|\fB1\fP]"
+If no parameter is given the current multicast mode setting is displayed. Otherwise the parameter is used to enable or
+disable multicast optimizations (i.e. disabling means always sending own multicast frames via classic flooding).
+.br
 .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
 If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
 level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
@@ -195,6 +199,8 @@ The originator table also supports the "\-t" filter option to remove all origina
 for the specified amount of seconds (with optional decimal places). It furthermore supports the "\-i" parameter to specify an
 interface for which the originator table should be printed. If this parameter is not supplied, the default originator table
 is printed.
+
+The local and global translation tables also support the "\-u" and "\-m" option to only display unicast or multicast translation table announcements respectively.
 
 List of debug tables:
 .RS 10

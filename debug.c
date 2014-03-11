@@ -94,6 +94,11 @@ static void debug_table_usage(int debug_table)
 		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
 		fprintf(stderr, " \t -i [interface] - show multiif originator table for a specific interface\n");
 	}
+
+	if (debug_table == BATCTL_TABLE_TRANSLOCAL ||
+	    debug_table == BATCTL_TABLE_TRANSGLOBAL) {
+		fprintf(stderr, " \t -u|-m print unicast or multicast mac addresses only\n");
+	}
 }
 
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
@@ -106,7 +111,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 	float watch_interval = 1;
 	opterr = 0;
 
-	while ((optchar = getopt(argc, argv, "hnw:t:Hi:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(debug_table);
@@ -142,6 +147,26 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 		case 'H':
 			read_opt |= SKIP_HEADER;
 			break;
+		case 'u':
+			if (debug_table != BATCTL_TABLE_TRANSLOCAL &&
+			    debug_table != BATCTL_TABLE_TRANSGLOBAL) {
+				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
+				debug_table_usage(debug_table);
+				return EXIT_FAILURE;
+			}
+
+			read_opt |= UNICAST_ONLY;
+			break;
+		case 'm':
+			if (debug_table != BATCTL_TABLE_TRANSLOCAL &&
+			    debug_table != BATCTL_TABLE_TRANSGLOBAL) {
+				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
+				debug_table_usage(debug_table);
+				return EXIT_FAILURE;
+			}
+
+			read_opt |= MULTICAST_ONLY;
+			break;
 		case 'i':
 			if (debug_table != BATCTL_TABLE_ORIGINATORS) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
@@ -171,6 +196,12 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 			debug_table_usage(debug_table);
 			return EXIT_FAILURE;
 		}
+	}
+
+	if (read_opt & UNICAST_ONLY && read_opt & MULTICAST_ONLY) {
+		fprintf(stderr, "Error - '-u' and '-m' are exclusive options\n");
+		debug_table_usage(debug_table);
+		return EXIT_FAILURE;
 	}
 
 	debugfs_mnt = debugfs_mount(NULL);

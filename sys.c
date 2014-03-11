@@ -103,6 +103,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 		.sysfs_name = "isolation_mark",
 		.params = NULL,
 	},
+	{
+		.opt_long = "multicast_mode",
+		.opt_short = "mm",
+		.sysfs_name = "multicast_mode",
+		.params = sysfs_param_enable,
+	},
 };
 
 static void interface_usage(void)

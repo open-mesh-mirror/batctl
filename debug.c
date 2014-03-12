@@ -27,6 +27,7 @@
 #include "debug.h"
 #include "debugfs.h"
 #include "functions.h"
+#include "sys.h"
 
 const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 	{
@@ -89,8 +90,10 @@ static void debug_table_usage(int debug_table)
 	fprintf(stderr, " \t -H don't show the header\n");
 	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
 
-	if (debug_table == BATCTL_TABLE_ORIGINATORS)
+	if (debug_table == BATCTL_TABLE_ORIGINATORS) {
 		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
+		fprintf(stderr, " \t -i [interface] - show multiif originator table for a specific interface\n");
+	}
 }
 
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
@@ -98,11 +101,12 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 	int optchar, read_opt = USE_BAT_HOSTS;
 	char full_path[MAX_PATH+1];
 	char *debugfs_mnt;
+	char *orig_iface = NULL;
 	float orig_timeout;
 	float watch_interval = 1;
 	opterr = 0;
 
-	while ((optchar = getopt(argc, argv, "hnw:t:H")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw:t:Hi:")) != -1) {
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(debug_table);
@@ -138,11 +142,24 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 		case 'H':
 			read_opt |= SKIP_HEADER;
 			break;
-		case '?':
-			if (optopt == 't')
-				fprintf(stderr, "Error - option '-t' needs a number as argument\n");
+		case 'i':
+			if (debug_table != BATCTL_TABLE_ORIGINATORS) {
+				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
+				debug_table_usage(debug_table);
+				return EXIT_FAILURE;
+			}
 
-			else if (optopt == 'w') {
+			if (check_mesh_iface_ownership(mesh_iface, optarg) != EXIT_SUCCESS)
+				return EXIT_FAILURE;
+
+			orig_iface = optarg;
+			break;
+		case '?':
+			if (optopt == 't') {
+				fprintf(stderr, "Error - option '-t' needs a number as argument\n");
+			} else if (optopt == 'i') {
+				fprintf(stderr, "Error - option '-i' needs an interface as argument\n");
+			} else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
 			}
@@ -162,7 +179,10 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
+	if (orig_iface)
+		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface, full_path, sizeof(full_path));
+	else
+		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
 	return read_file(full_path, (char *)batctl_debug_tables[debug_table].debugfs_name,
 			 read_opt, orig_timeout, watch_interval,
 			 batctl_debug_tables[debug_table].header_lines);

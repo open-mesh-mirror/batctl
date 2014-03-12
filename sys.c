@@ -566,3 +566,33 @@ out:
 	free(path_buff);
 	return res;
 }
+
+int check_mesh_iface(char *mesh_iface)
+{
+	char *base_dev = NULL;
+	char path_buff[PATH_BUFF_LEN];
+	int ret = -1, vid;
+	DIR *dir;
+
+	/* use the parent interface if this is a VLAN */
+	vid = vlan_get_link(mesh_iface, &base_dev);
+	if (vid >= 0)
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+	else
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+	path_buff[PATH_BUFF_LEN - 1] = '\0';
+
+	/* try to open the mesh sys directory */
+	dir = opendir(path_buff);
+	if (!dir)
+		goto out;
+
+	closedir(dir);
+
+	ret = 0;
+out:
+	if (base_dev)
+		free(base_dev);
+
+	return ret;
+}

@@ -137,21 +137,29 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
+	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
+
+		ret = interface(mesh_iface, argc - 1, argv + 1);
+
+	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
+
+		ret = tcpdump(argc - 1, argv + 1);
+
+#ifdef BATCTL_BISECT
+	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
+
+		ret = bisect_iv(argc - 1, argv + 1);
+#endif
+	} else if (check_mesh_iface(mesh_iface) < 0) {
+		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+		exit(EXIT_FAILURE);
+	} else if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
 
 		ret = ping(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
 
 		ret = traceroute(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
-
-		ret = tcpdump(argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
-
-		ret = interface(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
@@ -178,12 +186,6 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "translate") == 0) || (strcmp(argv[1], "t") == 0)) {
 
 		ret = translate(mesh_iface, argc - 1, argv + 1);
-
-#ifdef BATCTL_BISECT
-	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
-
-		ret = bisect_iv(argc - 1, argv + 1);
-#endif
 
 	} else {
 

@@ -305,6 +305,31 @@ fe:fe:00:00:06:01    0.830s   (213) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:
 fe:fe:00:00:02:01    0.240s   (255) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 81) fe:fe:00:00:02:01 (255)
 fe:fe:00:00:07:01    0.670s   (200) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 68) fe:fe:00:00:02:01 (200)
 
+Since 2014.1.0, each batman interface has an individual originator table as well which is only used for routing.
+These table explain to which neighbor a packet is forwarded when the packet is received on the specified interface.
+
+Example:
+
+$ batctl originators -i eth0
+[B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth0/fe:f0:00:00:02:01 (bat0 BATMAN_IV)]
+  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+fe:f1:00:00:03:01    0.170s   (255) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (255)
+fe:f1:00:00:01:01    0.510s   (253) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (253)
+fe:f0:00:00:05:01    0.660s   (222) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (198) fe:f1:00:00:03:01 (222)
+fe:f0:00:00:03:01    0.560s   (252) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (252) fe:f0:00:00:03:01 (240)
+fe:f0:00:00:04:01    0.250s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (211)
+fe:f0:00:00:01:01    0.850s   (255) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (255) fe:f0:00:00:01:01 (238)
+$ batctl originators -i eth1
+[B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth1/fe:f1:00:00:02:01 (bat0 BATMAN_IV)]
+  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+fe:f1:00:00:03:01    0.880s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240)
+fe:f1:00:00:01:01    0.250s   (239) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (239)
+fe:f0:00:00:05:01    0.340s   (211) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (210) fe:f1:00:00:03:01 (211)
+fe:f0:00:00:03:01    0.260s   (253) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (253)
+fe:f0:00:00:04:01    0.010s   (225) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (224) fe:f0:00:00:03:01 (225)
+fe:f0:00:00:01:01    0.510s   (255) fe:f0:00:00:01:01 [      eth0]: fe:f1:00:00:01:01 (240) fe:f0:00:00:01:01 (255)
+
+
 batctl interface
 ================
 

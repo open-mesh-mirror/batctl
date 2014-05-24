@@ -107,7 +107,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 	char full_path[MAX_PATH+1];
 	char *debugfs_mnt;
 	char *orig_iface = NULL;
-	float orig_timeout;
+	float orig_timeout = 0.0f;
 	float watch_interval = 1;
 	opterr = 0;
 

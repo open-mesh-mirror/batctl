@@ -320,7 +320,8 @@ written:
 		goto open;
 	}
 
-	res = EXIT_SUCCESS;
+	if (line_ptr)
+		res = EXIT_SUCCESS;
 
 out:
 	if (fp)

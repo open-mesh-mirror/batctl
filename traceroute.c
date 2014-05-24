@@ -63,7 +63,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	fd_set read_socket;
 	ssize_t read_len;
 	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
-	int ret = EXIT_FAILURE, res, trace_fd = 0, i;
+	int ret = EXIT_FAILURE, res, trace_fd = -1, i;
 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta[NUM_PACKETS];
 	char *debugfs_mnt;
@@ -241,7 +241,7 @@ read_packet:
 
 out:
 	bat_hosts_free();
-	if (trace_fd)
+	if (trace_fd >= 0)
 		close(trace_fd);
 	return ret;
 }

@@ -335,7 +335,7 @@ out:
 int write_file(const char *dir, const char *fname, const char *arg1,
 	       const char *arg2)
 {
-	int fd = 0, res = EXIT_FAILURE;
+	int fd = -1, res = EXIT_FAILURE;
 	char full_path[500];
 	ssize_t write_len;
 
@@ -363,7 +363,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 	res = EXIT_SUCCESS;
 
 out:
-	if (fd)
+	if (fd >= 0)
 		close(fd);
 	return res;
 }

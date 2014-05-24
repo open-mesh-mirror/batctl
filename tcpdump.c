@@ -846,6 +846,7 @@ int tcpdump(int argc, char **argv)
 
 		dump_if = malloc(sizeof(struct dump_if));
 		memset(dump_if, 0, sizeof(struct dump_if));
+		dump_if->raw_sock = -1;
 		INIT_LIST_HEAD(&dump_if->list);
 
 		dump_if->dev = argv[found_args];
@@ -971,7 +972,7 @@ int tcpdump(int argc, char **argv)
 
 out:
 	list_for_each_entry_safe(dump_if, dump_if_tmp, &dump_if_list, list) {
-		if (dump_if->raw_sock)
+		if (dump_if->raw_sock >= 0)
 			close(dump_if->raw_sock);
 
 		list_del((struct list_head *)&dump_if_list, &dump_if->list, &dump_if_list);

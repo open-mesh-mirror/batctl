@@ -79,7 +79,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	struct bat_host *bat_host, *rr_host;
 	ssize_t read_len;
 	fd_set read_socket;
-	int ret = EXIT_FAILURE, ping_fd = 0, res, optchar, found_args = 1;
+	int ret = EXIT_FAILURE, ping_fd = -1, res, optchar, found_args = 1;
 	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
 	char *dst_string, *mac_string, *rr_string;
@@ -353,7 +353,7 @@ sleep:
 
 out:
 	bat_hosts_free();
-	if (ping_fd)
+	if (ping_fd >= 0)
 		close(ping_fd);
 	return ret;
 }

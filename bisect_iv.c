@@ -1304,8 +1304,10 @@ static void trace_seqnos(char *trace_orig, long long seqno_min, long long seqno_
 
 				res = seqno_trace_add(&trace_list, bat_node, seqno_event, print_trace);
 
-				if (res < 1)
+				if (res < 1) {
+					hash_iterate_free(hashit);
 					goto out;
+				}
 			}
 		}
 	}

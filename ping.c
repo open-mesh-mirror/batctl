@@ -176,6 +176,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 
 	packet_len = sizeof(struct batadv_icmp_packet);
 
+	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
 	icmp_packet_out.packet_type = BATADV_ICMP;
 	icmp_packet_out.version = BATADV_COMPAT_VERSION;

@@ -105,7 +105,8 @@ int ioctl_statistics_get(char *mesh_iface)
 	int fd = -1, ret = EXIT_FAILURE;
 
 	memset(&ifr, 0, sizeof(ifr));
-	strcpy(ifr.ifr_name, mesh_iface);
+	strncpy(ifr.ifr_name, mesh_iface, sizeof(ifr.ifr_name));
+	ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {

@@ -91,6 +91,7 @@ static struct bat_node *node_get(char *name)
 	}
 
 	strncpy(bat_node->name, name, NAME_LEN);
+	bat_node->name[NAME_LEN - 1] = '\0';
 	INIT_LIST_HEAD_FIRST(bat_node->orig_event_list);
 	INIT_LIST_HEAD_FIRST(bat_node->rt_table_list);
 	memset(bat_node->loop_magic, 0, sizeof(bat_node->loop_magic));
@@ -1438,6 +1439,7 @@ static int get_orig_addr(char *orig_name, char *orig_addr)
 
 copy_name:
 	strncpy(orig_addr, orig_name_tmp, NAME_LEN);
+	orig_addr[NAME_LEN - 1] = '\0';
 	return 1;
 
 err:

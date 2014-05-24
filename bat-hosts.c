@@ -108,7 +108,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 			if (read_opt & USE_BAT_HOSTS)
 				fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
 					bat_host->name, name, mac_str);
-			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
+			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN);
+			bat_host->name[HOST_NAME_MAX_LEN - 1] = '\0';
 			continue;
 		}
 
@@ -132,7 +133,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 		}
 
 		memcpy(&bat_host->mac_addr, mac_addr, sizeof(struct ether_addr));
-		strncpy(bat_host->name, name, HOST_NAME_MAX_LEN - 1);
+		strncpy(bat_host->name, name, HOST_NAME_MAX_LEN);
+		bat_host->name[HOST_NAME_MAX_LEN - 1] = '\0';
 
 		hash_add(*hash, bat_host);
 

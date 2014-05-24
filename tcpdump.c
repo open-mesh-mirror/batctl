@@ -865,6 +865,7 @@ int tcpdump(int argc, char **argv)
 
 		memset(&req, 0, sizeof (struct ifreq));
 		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
 		res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
 		if (res < 0) {
@@ -887,6 +888,7 @@ int tcpdump(int argc, char **argv)
 
 		memset(&req, 0, sizeof (struct ifreq));
 		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
 		res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
 

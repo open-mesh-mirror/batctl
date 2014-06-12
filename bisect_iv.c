@@ -365,6 +365,7 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 	if ((rt_table->num_entries == 1) || (rt_table->num_entries != j + 1)) {
 		i = rt_table->num_entries;
 		strncpy(rt_table->entries[i - 1].orig, orig, NAME_LEN);
+		rt_table->entries[i - 1].orig[NAME_LEN - 1] = '\0';
 		rt_table->entries[i - 1].next_hop = next_hop_node;
 		rt_table->entries[i - 1].flags = rt_flag;
 	}

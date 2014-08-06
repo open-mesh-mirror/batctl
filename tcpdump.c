@@ -148,7 +148,7 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
 		break;
 	case BATADV_CLAIM_TYPE_REQUEST:
 		printf("BLA REQUEST, src backbone %s, ",
-		       get_name_by_macaddr((struct ether_addr *)hw_src, read_opt));
+		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt));
 		printf("dst backbone %s\n",
 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_dhost, read_opt));
 		break;

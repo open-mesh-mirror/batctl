@@ -63,7 +63,7 @@ if ((size_t)(buff_len) < (check_len)) { \
 }
 
 static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
-		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
+		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -83,6 +83,7 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
 	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
 	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
+	fprintf(stderr, " \t\t%3d - batman unicast tvlv packets\n", DUMP_TYPE_BATUTVLV);
 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
@@ -97,6 +98,138 @@ static int print_time(void)
 
 	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
 	return 1;
+}
+
+static void batctl_tvlv_parse_gw_v1(void *buff,
+				    ssize_t (buff_len)__attribute__((unused)))
+{
+	struct batadv_tvlv_gateway_data *tvlv = buff;
+	uint32_t down, up;
+
+	down = ntohl(tvlv->bandwidth_down);
+	up = ntohl(tvlv->bandwidth_up);
+
+	printf("\tTVLV GWv1: down %d.%.1dMbps, up %d.%1dMbps\n",
+	       down / 10, down % 10, up / 10, up % 10);
+}
+
+static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
+				     ssize_t (buff_len)__attribute__((unused)))
+{
+	printf("\tTVLV DATv1: enabled\n");
+}
+
+static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
+				    ssize_t (buff_len)__attribute__((unused)))
+{
+	printf("\tTVLV NCv1: enabled\n");
+}
+
+static void batctl_tvlv_parse_tt_v1(void *buff,
+				    ssize_t (buff_len)__attribute__((unused)))
+{
+	struct batadv_tvlv_tt_data *tvlv = buff;
+	struct batadv_tvlv_tt_vlan_data *vlan;
+	int i, num_vlan, num_entry;
+	const char *type;
+
+	if (tvlv->flags & BATADV_TT_OGM_DIFF)
+		type = "OGM DIFF";
+	else if (tvlv->flags & BATADV_TT_REQUEST)
+		type = "TT REQUEST";
+	else if (tvlv->flags & BATADV_TT_RESPONSE)
+		type = "TT RESPONSE";
+	else
+		type = "UNKNOWN";
+
+	num_vlan = ntohs(tvlv->num_vlan);
+	buff_len -= sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
+	num_entry = buff_len / sizeof(struct batadv_tvlv_tt_change);
+
+	printf("\tTVLV TTv1: %s [%c] ttvn=%hhu vlan_num=%hu entry_num=%hu\n",
+	       type, tvlv->flags & BATADV_TT_FULL_TABLE ? 'F' : '.',
+	       tvlv->ttvn, num_vlan, num_entry);
+
+	vlan = (struct batadv_tvlv_tt_vlan_data *)(tvlv + 1);
+	for (i = 0; i < num_vlan; i++) {
+		printf("\t\tVLAN ID %hd, crc %#.8x\n",
+		       BATADV_PRINT_VID(ntohs(vlan->vid)),
+		       ntohl(vlan->crc));
+		vlan++;
+	}
+}
+
+static void batctl_tvlv_parse_roam_v1(void *buff,
+				      ssize_t (buff_len)__attribute__((unused)))
+{
+	struct batadv_tvlv_roam_adv *tvlv = buff;
+
+	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
+	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),
+	       BATADV_PRINT_VID(ntohs(tvlv->vid)));
+}
+
+typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
+
+/* location [i][j] contains the parsing function for TVLV of type 'i' and
+ * version 'j + 1'
+ */
+batctl_tvlv_parser_t tvlv_parsers[][1] = {
+	[BATADV_TVLV_GW][0] = batctl_tvlv_parse_gw_v1,
+	[BATADV_TVLV_DAT][0] = batctl_tvlv_parse_dat_v1,
+	[BATADV_TVLV_NC][0] = batctl_tvlv_parse_nc_v1,
+	[BATADV_TVLV_TT][0] = batctl_tvlv_parse_tt_v1,
+	[BATADV_TVLV_ROAM][0] = batctl_tvlv_parse_roam_v1,
+};
+
+static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
+				   int read_opt, int time_printed)
+{
+	struct batadv_unicast_tvlv_packet *tvlv_packet;
+	struct batadv_tvlv_hdr *tvlv_hdr;
+	struct ether_header *ether_header;
+	struct ether_addr *src, *dst;
+	batctl_tvlv_parser_t parser;
+	ssize_t check_len, tvlv_len, len;
+	uint8_t *ptr;
+
+	check_len = (size_t)buff_len - sizeof(struct ether_header);
+
+	LEN_CHECK(check_len, sizeof(*tvlv_packet), "BAT TVLV");
+	check_len -= sizeof(*tvlv_packet);
+
+	ether_header = (struct ether_header *)packet_buff;
+	tvlv_packet = (struct batadv_unicast_tvlv_packet *)(ether_header + 1);
+
+	LEN_CHECK(check_len, (size_t)ntohs(tvlv_packet->tvlv_len),
+		  "BAT TVLV (containers)");
+
+	if (!time_printed)
+		time_printed = print_time();
+
+	src = (struct ether_addr *)tvlv_packet->src;
+	printf("BAT %s > ", get_name_by_macaddr(src, read_opt));
+
+	dst = (struct ether_addr *)tvlv_packet->dst;
+	tvlv_len = ntohs(tvlv_packet->tvlv_len);
+	printf("%s: TVLV, len %zu, tvlv_len %zu, ttl %hhu\n",
+	       get_name_by_macaddr(dst, read_opt),
+	       buff_len - sizeof(struct ether_header), tvlv_len,
+	       tvlv_packet->ttl);
+
+	ptr = (uint8_t *)(tvlv_packet + 1);
+
+	while (tvlv_len > 0) {
+		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
+		len = ntohs(tvlv_hdr->len);
+
+		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
+		parser(tvlv_hdr + 1, len);
+
+		/* go to the next container */
+		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
+		tvlv_len -= sizeof(*tvlv_hdr) + len;
+	}
 }
 
 static int dump_bla2_claim(struct ether_header *eth_hdr,
@@ -482,8 +615,13 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 {
 	struct ether_header *ether_header;
 	struct batadv_ogm_packet *batman_ogm_packet;
+	struct batadv_tvlv_hdr *tvlv_hdr;
+	ssize_t tvlv_len, len, check_len;
+	batctl_tvlv_parser_t parser;
+	uint8_t *ptr;
 
-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_ogm_packet), "BAT IV OGM");
+	check_len = (size_t)buff_len - sizeof(struct ether_header);
+	LEN_CHECK(check_len, sizeof(struct batadv_ogm_packet), "BAT IV OGM");
 
 	ether_header = (struct ether_header *)packet_buff;
 	batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + sizeof(struct ether_header));
@@ -494,14 +632,32 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 	printf("BAT %s: ",
 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
 
-	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
+	tvlv_len = ntohs(batman_ogm_packet->tvlv_len);
+	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu, tvlv_len %zu\n",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq,
 	       batman_ogm_packet->ttl, batman_ogm_packet->version,
 	       (batman_ogm_packet->flags & BATADV_NOT_BEST_NEXT_HOP ? 'N' : '.'),
 	       (batman_ogm_packet->flags & BATADV_DIRECTLINK ? 'D' : '.'),
 	       (batman_ogm_packet->flags & BATADV_PRIMARIES_FIRST_HOP ? 'F' : '.'),
-	       (size_t)buff_len - sizeof(struct ether_header));
+	       check_len, tvlv_len);
+
+	check_len -= sizeof(struct batadv_ogm_packet);
+	LEN_CHECK(check_len, (size_t)tvlv_len, "BAT OGM TVLV (containers)");
+
+	ptr = (uint8_t *)(batman_ogm_packet + 1);
+
+	while (tvlv_len > 0) {
+		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
+		len = ntohs(tvlv_hdr->len);
+
+		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
+		parser(tvlv_hdr + 1, len);
+
+		/* go to the next container */
+		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
+		tvlv_len -= sizeof(*tvlv_hdr) + len;
+	}
 }
 
 static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
@@ -683,6 +839,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)
 				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
+		case BATADV_UNICAST_TVLV:
+			if ((dump_level & DUMP_TYPE_BATUCAST) ||
+			    (dump_level & DUMP_TYPE_BATUTVLV))
+				dump_batman_ucast_tvlv(packet_buff, buff_len,
+						       read_opt, time_printed);
 			break;
 		default:
 			fprintf(stderr, "Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->packet_type);

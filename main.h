@@ -49,4 +49,11 @@
 
 extern char module_ver_path[];
 
+#ifndef VLAN_VID_MASK
+#define VLAN_VID_MASK   0xfff
+#endif
+
+#define BATADV_PRINT_VID(vid) (vid & BATADV_VLAN_HAS_TAG ? \
+			       (int)(vid & VLAN_VID_MASK) : -1)
+
 #endif

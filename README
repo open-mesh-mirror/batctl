@@ -161,6 +161,7 @@ packet types:
                   2 - batman icmp packets
                   4 - batman unicast packets
                   8 - batman broadcast packets
+                 16 - batman unicast tvlv packets
                  32 - batman fragmented packets
                  64 - batman tt / roaming packets
                 128 - non batman packets

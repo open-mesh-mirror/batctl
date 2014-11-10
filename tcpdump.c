@@ -917,6 +917,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)
 				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
+			break;
 		case BATADV_UNICAST_TVLV:
 			if ((dump_level & DUMP_TYPE_BATUCAST) ||
 			    (dump_level & DUMP_TYPE_BATUTVLV))

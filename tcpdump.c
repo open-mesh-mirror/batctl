@@ -100,11 +100,16 @@ static int print_time(void)
 	return 1;
 }
 
-static void batctl_tvlv_parse_gw_v1(void *buff,
-				    ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_gateway_data *tvlv = buff;
 	uint32_t down, up;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV GWv1", sizeof(*tvlv), buff_len);
+		return;
+	}
 
 	down = ntohl(tvlv->bandwidth_down);
 	up = ntohl(tvlv->bandwidth_up);
@@ -114,14 +119,26 @@ static void batctl_tvlv_parse_gw_v1(void *buff,
 }
 
 static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
-				     ssize_t (buff_len)__attribute__((unused)))
+				     ssize_t buff_len)
 {
+	if (buff_len != 0) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+			"TVLV DATv1", buff_len);
+		return;
+	}
+
 	printf("\tTVLV DATv1: enabled\n");
 }
 
 static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
-				    ssize_t (buff_len)__attribute__((unused)))
+				    ssize_t buff_len)
 {
+	if (buff_len != 0) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+			"TVLV NCv1", buff_len);
+		return;
+	}
+
 	printf("\tTVLV NCv1: enabled\n");
 }
 
@@ -159,10 +176,15 @@ static void batctl_tvlv_parse_tt_v1(void *buff,
 	}
 }
 
-static void batctl_tvlv_parse_roam_v1(void *buff,
-				      ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_roam_adv *tvlv = buff;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV ROAMv1", sizeof(*tvlv), buff_len);
+		return;
+	}
 
 	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
 	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),

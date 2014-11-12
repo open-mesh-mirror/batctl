@@ -256,7 +256,7 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 
 	ptr = (uint8_t *)(tvlv_packet + 1);
 
-	while (tvlv_len > 0) {
+	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
 		len = ntohs(tvlv_hdr->len);
 
@@ -685,7 +685,7 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 
 	ptr = (uint8_t *)(batman_ogm_packet + 1);
 
-	while (tvlv_len > 0) {
+	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
 		len = ntohs(tvlv_hdr->len);
 

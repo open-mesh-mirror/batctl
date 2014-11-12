@@ -142,13 +142,15 @@ static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
 	printf("\tTVLV NCv1: enabled\n");
 }
 
-static void batctl_tvlv_parse_tt_v1(void *buff,
-				    ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_tt_data *tvlv = buff;
 	struct batadv_tvlv_tt_vlan_data *vlan;
 	int i, num_vlan, num_entry;
 	const char *type;
+	size_t vlan_len;
+
+	LEN_CHECK(buff_len, sizeof(*tvlv), "TVLV TTv1")
 
 	if (tvlv->flags & BATADV_TT_OGM_DIFF)
 		type = "OGM DIFF";
@@ -160,7 +162,10 @@ static void batctl_tvlv_parse_tt_v1(void *buff,
 		type = "UNKNOWN";
 
 	num_vlan = ntohs(tvlv->num_vlan);
-	buff_len -= sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
+	vlan_len = sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
+	LEN_CHECK(buff_len, vlan_len, "TVLV TTv1 VLAN")
+
+	buff_len -= vlan_len;
 	num_entry = buff_len / sizeof(struct batadv_tvlv_tt_change);
 
 	printf("\tTVLV TTv1: %s [%c] ttvn=%hhu vlan_num=%hu entry_num=%hu\n",

@@ -258,15 +258,21 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 
 	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
+
+		/* data after TVLV header */
+		ptr = (uint8_t *)(tvlv_hdr + 1);
+		tvlv_len -= sizeof(*tvlv_hdr);
+
 		len = ntohs(tvlv_hdr->len);
+		LEN_CHECK(tvlv_len, (size_t)len, "BAT UCAST TVLV");
 
 		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
 		if (parser)
-			parser(tvlv_hdr + 1, len);
+			parser(ptr, len);
 
 		/* go to the next container */
-		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
-		tvlv_len -= sizeof(*tvlv_hdr) + len;
+		ptr += len;
+		tvlv_len -= len;
 	}
 }
 
@@ -687,15 +693,21 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 
 	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
+
+		/* data after TVLV header */
+		ptr = (uint8_t *)(tvlv_hdr + 1);
+		tvlv_len -= sizeof(*tvlv_hdr);
+
 		len = ntohs(tvlv_hdr->len);
+		LEN_CHECK(tvlv_len, (size_t)len, "BAT IV OGM TVLV");
 
 		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
 		if (parser)
-			parser(tvlv_hdr + 1, len);
+			parser(ptr, len);
 
 		/* go to the next container */
-		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
-		tvlv_len -= sizeof(*tvlv_hdr) + len;
+		ptr += len;
+		tvlv_len -= len;
 	}
 }
 

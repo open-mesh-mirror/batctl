@@ -100,11 +100,16 @@ static int print_time(void)
 	return 1;
 }
 
-static void batctl_tvlv_parse_gw_v1(void *buff,
-				    ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_gateway_data *tvlv = buff;
 	uint32_t down, up;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV GWv1", sizeof(*tvlv), buff_len);
+		return;
+	}
 
 	down = ntohl(tvlv->bandwidth_down);
 	up = ntohl(tvlv->bandwidth_up);
@@ -114,24 +119,38 @@ static void batctl_tvlv_parse_gw_v1(void *buff,
 }
 
 static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
-				     ssize_t (buff_len)__attribute__((unused)))
+				     ssize_t buff_len)
 {
+	if (buff_len != 0) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+			"TVLV DATv1", buff_len);
+		return;
+	}
+
 	printf("\tTVLV DATv1: enabled\n");
 }
 
 static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
-				    ssize_t (buff_len)__attribute__((unused)))
+				    ssize_t buff_len)
 {
+	if (buff_len != 0) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+			"TVLV NCv1", buff_len);
+		return;
+	}
+
 	printf("\tTVLV NCv1: enabled\n");
 }
 
-static void batctl_tvlv_parse_tt_v1(void *buff,
-				    ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_tt_data *tvlv = buff;
 	struct batadv_tvlv_tt_vlan_data *vlan;
 	int i, num_vlan, num_entry;
 	const char *type;
+	size_t vlan_len;
+
+	LEN_CHECK(buff_len, sizeof(*tvlv), "TVLV TTv1")
 
 	if (tvlv->flags & BATADV_TT_OGM_DIFF)
 		type = "OGM DIFF";
@@ -143,7 +162,10 @@ static void batctl_tvlv_parse_tt_v1(void *buff,
 		type = "UNKNOWN";
 
 	num_vlan = ntohs(tvlv->num_vlan);
-	buff_len -= sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
+	vlan_len = sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
+	LEN_CHECK(buff_len, vlan_len, "TVLV TTv1 VLAN")
+
+	buff_len -= vlan_len;
 	num_entry = buff_len / sizeof(struct batadv_tvlv_tt_change);
 
 	printf("\tTVLV TTv1: %s [%c] ttvn=%hhu vlan_num=%hu entry_num=%hu\n",
@@ -159,10 +181,15 @@ static void batctl_tvlv_parse_tt_v1(void *buff,
 	}
 }
 
-static void batctl_tvlv_parse_roam_v1(void *buff,
-				      ssize_t (buff_len)__attribute__((unused)))
+static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_roam_adv *tvlv = buff;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV ROAMv1", sizeof(*tvlv), buff_len);
+		return;
+	}
 
 	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
 	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),
@@ -171,16 +198,53 @@ static void batctl_tvlv_parse_roam_v1(void *buff,
 
 typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
 
-/* location [i][j] contains the parsing function for TVLV of type 'i' and
- * version 'j + 1'
- */
-batctl_tvlv_parser_t tvlv_parsers[][1] = {
-	[BATADV_TVLV_GW][0] = batctl_tvlv_parse_gw_v1,
-	[BATADV_TVLV_DAT][0] = batctl_tvlv_parse_dat_v1,
-	[BATADV_TVLV_NC][0] = batctl_tvlv_parse_nc_v1,
-	[BATADV_TVLV_TT][0] = batctl_tvlv_parse_tt_v1,
-	[BATADV_TVLV_ROAM][0] = batctl_tvlv_parse_roam_v1,
-};
+static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
+{
+	switch (type) {
+	case BATADV_TVLV_GW:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_gw_v1;
+		default:
+			return NULL;
+		}
+
+	case BATADV_TVLV_DAT:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_dat_v1;
+		default:
+			return NULL;
+		}
+
+	case BATADV_TVLV_NC:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_nc_v1;
+		default:
+			return NULL;
+		}
+
+	case BATADV_TVLV_TT:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_tt_v1;
+		default:
+			return NULL;
+		}
+
+	case BATADV_TVLV_ROAM:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_roam_v1;
+		default:
+			return NULL;
+		}
+
+	default:
+		return NULL;
+	}
+}
 
 static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 				   int read_opt, int time_printed)
@@ -219,16 +283,23 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 
 	ptr = (uint8_t *)(tvlv_packet + 1);
 
-	while (tvlv_len > 0) {
+	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
-		len = ntohs(tvlv_hdr->len);
 
-		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
-		parser(tvlv_hdr + 1, len);
+		/* data after TVLV header */
+		ptr = (uint8_t *)(tvlv_hdr + 1);
+		tvlv_len -= sizeof(*tvlv_hdr);
+
+		len = ntohs(tvlv_hdr->len);
+		LEN_CHECK(tvlv_len, (size_t)len, "BAT UCAST TVLV");
+
+		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
+		if (parser)
+			parser(ptr, len);
 
 		/* go to the next container */
-		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
-		tvlv_len -= sizeof(*tvlv_hdr) + len;
+		ptr += len;
+		tvlv_len -= len;
 	}
 }
 
@@ -647,16 +718,23 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 
 	ptr = (uint8_t *)(batman_ogm_packet + 1);
 
-	while (tvlv_len > 0) {
+	while (tvlv_len >= (ssize_t)sizeof(*tvlv_hdr)) {
 		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
-		len = ntohs(tvlv_hdr->len);
 
-		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
-		parser(tvlv_hdr + 1, len);
+		/* data after TVLV header */
+		ptr = (uint8_t *)(tvlv_hdr + 1);
+		tvlv_len -= sizeof(*tvlv_hdr);
+
+		len = ntohs(tvlv_hdr->len);
+		LEN_CHECK(tvlv_len, (size_t)len, "BAT IV OGM TVLV");
+
+		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
+		if (parser)
+			parser(ptr, len);
 
 		/* go to the next container */
-		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
-		tvlv_len -= sizeof(*tvlv_hdr) + len;
+		ptr += len;
+		tvlv_len -= len;
 	}
 }
 

@@ -146,7 +146,6 @@ static int print_interfaces(char *mesh_iface)
 
 	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
-		path_buff[PATH_BUFF_LEN - 1] = '\0';
 		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if (res != EXIT_SUCCESS)
 			continue;
@@ -164,7 +163,6 @@ static int print_interfaces(char *mesh_iface)
 		line_ptr = NULL;
 
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
-		path_buff[PATH_BUFF_LEN - 1] = '\0';
 		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 		if (res != EXIT_SUCCESS) {
 			fprintf(stderr, "<error reading status>\n");
@@ -228,11 +226,9 @@ int interface(char *mesh_iface, int argc, char **argv)
 
 	for (i = 2; i < argc; i++) {
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
-		path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 		if (!file_exists(path_buff)) {
 			snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_DIR, argv[i]);
-			path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 			if (!file_exists(path_buff)) {
 				fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
@@ -303,7 +299,6 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-	path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 	if (argc != 1) {
 		for (i = 1; i < argc; i++) {
@@ -332,7 +327,6 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 		}
 
 		snprintf(str, sizeof(str), "%i", log_level);
-		str[sizeof(str) - 1] = '\0';
 		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
 		goto out;
 	}
@@ -401,16 +395,13 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 	/* prepare the classic path */
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-	path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 	/* if the specified interface is a VLAN then change the path to point
 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
 	 */
 	vid = vlan_get_link(mesh_iface, &base_dev);
-	if (vid >= 0) {
+	if (vid >= 0)
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
-		path_buff[PATH_BUFF_LEN - 1] = '\0';
-	}
 
 	if (argc == 1) {
 		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
@@ -476,7 +467,6 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-	path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 	if (argc == 1) {
 		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
@@ -586,7 +576,6 @@ int check_mesh_iface(char *mesh_iface)
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
 	else
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-	path_buff[PATH_BUFF_LEN - 1] = '\0';
 
 	/* try to open the mesh sys directory */
 	dir = opendir(path_buff);
@@ -610,7 +599,6 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
 
 	/* check if this device actually belongs to the mesh interface */
 	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-	path_buff[sizeof(path_buff) - 1] = '\0';
 	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 	if (res != EXIT_SUCCESS) {
 		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",

@@ -644,7 +644,6 @@ static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *ds
 
 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli", src_node->name,
 	         dst_node->name, seqno, seqno_rand);
-	curr_loop_magic[sizeof(curr_loop_magic) - 1] = '\0';
 
 	printf("Path towards %s (seqno %lli ",
 	       get_name_by_macstr(dst_node->name, read_opt), seqno);
@@ -725,7 +724,6 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli",
 	         src_node->name, dst_node->name,
 	         seqno_min_tmp, seqno_rand);
-	curr_loop_magic[sizeof(curr_loop_magic) - 1] = '\0';
 
 	orig_event = orig_event_get_by_ptr(curr_node, dst_node);
 	if (!orig_event)
@@ -982,7 +980,6 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 		         (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
 		         (strlen(head) == 1 ? "   " :
 		         num_sisters == 0 ? "    " : "|   "));
-		new_head[sizeof(new_head) - 1] = '\0';
 
 		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i], seqno_trace_neigh->seqno_event,
 		                        seqno_trace_neigh->num_neighbors - i - 1, new_head, read_opt);
@@ -1028,7 +1025,6 @@ static void seqno_trace_print(struct list_head_first *trace_list, char *trace_or
 
 			snprintf(head, sizeof(head), "%c",
 			         (seqno_trace->seqno_trace_neigh.num_neighbors == i + 1 ? '\\' : '|'));
-			head[sizeof(head) - 1] = '\0';
 
 			seqno_trace_print_neigh(seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i],
 			                        NULL,

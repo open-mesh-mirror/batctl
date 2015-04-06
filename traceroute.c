@@ -22,13 +22,13 @@
 
 
 #include <netinet/in.h>
+#include <netinet/if_ether.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
-#include <linux/if_ether.h>
 #include <stddef.h>
 #include <sys/select.h>
 #include <sys/time.h>

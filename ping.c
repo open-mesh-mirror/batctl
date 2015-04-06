@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include <sys/time.h>
-#include <linux/if_ether.h>
+#include <netinet/if_ether.h>
 
 #include "main.h"
 #include "ping.h"

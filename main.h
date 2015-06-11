@@ -22,6 +22,8 @@
 #ifndef _BATCTL_MAIN_H
 #define _BATCTL_MAIN_H
 
+#include <stdint.h>
+
 #ifndef SOURCE_VERSION
 #define SOURCE_VERSION "2015.1"
 #endif
@@ -46,6 +48,9 @@
 
 #define __packed __attribute((packed))   /* linux kernel compat */
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
+
+typedef uint8_t u8; /* linux kernel compat */
+typedef uint16_t u16; /* linux kernel compat */
 
 extern char module_ver_path[];
 

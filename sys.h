@@ -35,6 +35,8 @@
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
+#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
 #define VLAN_ID_MAX_LEN		4
 
 enum batctl_settings_list {
@@ -72,6 +74,7 @@ int interface(char *mesh_iface, int argc, char **argv);
 int handle_loglevel(char *mesh_iface, int argc, char **argv);
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
 int handle_gw_setting(char *mesh_iface, int argc, char **argv);
+int handle_ra_setting(int argc, char **argv);
 int check_mesh_iface(char *mesh_iface);
 int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
 

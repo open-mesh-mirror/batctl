@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH "BATCTL" "8" "Jan 06, 2013" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
+.TH "BATCTL" "8" "July 17, 2015" "Linux" "B.A.T.M.A.N. Advanced Control Tool"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -154,6 +154,12 @@ chooses the gateway with the best link quality but switches to another gateway a
 least XX TQ better than the currently selected gateway (XX has to be a number between 3 and 256).
 .RE
 .RE
+.br
+.IP "\fBrouting_algo\fP|\fBra\fP [\fBalgorithm\fP]\fP"
+If no parameter is given the current routing algorithm configuration as well as
+supported routing algorithms are displayed.
+Otherwise the parameter is used to select the routing algorithm for the following
+batX interface to be created.
 .br
 .IP "\fBisolation_mark\fP|\fBmark\fP"
 If no parameter is given the current isolation mark value is displayed.

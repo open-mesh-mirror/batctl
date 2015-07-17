@@ -70,6 +70,7 @@ static void print_usage(void)
 	fprintf(stderr, " \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
 	fprintf(stderr, " \tlog|l                                        \tread the log produced by the kernel module\n");
 	fprintf(stderr, " \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
+	fprintf(stderr, " \trouting_algo|ra            [mode]            \tdisplay or modify the routing algorithm\n");
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
@@ -150,6 +151,10 @@ int main(int argc, char **argv)
 
 		ret = bisect_iv(argc - 1, argv + 1);
 #endif
+	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
+
+		ret = handle_ra_setting(argc - 1, argv + 1);
+
 	} else if (check_mesh_iface(mesh_iface) < 0) {
 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
 		exit(EXIT_FAILURE);

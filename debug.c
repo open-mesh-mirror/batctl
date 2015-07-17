@@ -219,6 +219,20 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 			 batctl_debug_tables[debug_table].header_lines);
 }
 
+int print_routing_algos(void) {
+	char full_path[MAX_PATH+1];
+	char *debugfs_mnt;
+
+	debugfs_mnt = debugfs_mount(NULL);
+	if (!debugfs_mnt) {
+		fprintf(stderr, "Error - can't mount or find debugfs\n");
+		return -1;
+	}
+
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
+	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
+}
+
 int print_vis_info(char *mesh_iface)
 {
 	char full_path[MAX_PATH+1];

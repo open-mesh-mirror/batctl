@@ -31,6 +31,12 @@
 
 const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 	{
+		.opt_long = "neighbors",
+		.opt_short = "n",
+		.debugfs_name = "neighbors",
+		.header_lines = 2,
+	},
+	{
 		.opt_long = "originators",
 		.opt_short = "o",
 		.debugfs_name = "originators",

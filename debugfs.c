@@ -42,19 +42,12 @@ static const char *debugfs_known_mountpoints[] = {
 /* construct a full path to a debugfs element */
 int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
 {
-	int len;
-
 	if (strlen(debugfs_mountpoint) == 0) {
 		buffer[0] = '\0';
 		return -1;
 	}
 
-	len = strlen(debugfs_mountpoint) + strlen(fmt) + 1;
-	if (len >= size)
-		return len+1;
-
-	snprintf(buffer, size-1, fmt, debugfs_mountpoint, mesh_iface);
-	return 0;
+	return snprintf(buffer, size, fmt, debugfs_mountpoint, mesh_iface);
 }
 
 static int debugfs_found;

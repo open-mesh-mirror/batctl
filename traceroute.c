@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
+ * Copyright (C) 2007-2016  B.A.T.M.A.N. contributors:
  *
  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
  *

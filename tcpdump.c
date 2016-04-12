@@ -366,6 +366,12 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
 		printf("dst backbone %s\n",
 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_dhost, read_opt));
 		break;
+	case BATADV_CLAIM_TYPE_LOOPDETECT:
+		printf("BLA LOOPDETECT, src backbone %s, ",
+		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt));
+		printf("dst backbone %s\n",
+		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_dhost, read_opt));
+		break;
 	default:
 		printf("BLA UNKNOWN, type %hhu\n", bla_dst->type);
 		break;

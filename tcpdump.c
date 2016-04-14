@@ -64,10 +64,11 @@ if ((size_t)(buff_len) < (check_len)) { \
 	return; \
 }
 
-static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATELP |
-				       DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
-				       DUMP_TYPE_BATBCAST | DUMP_TYPE_BATUTVLV |
-				       DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
+static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
+				       DUMP_TYPE_BATELP | DUMP_TYPE_BATICMP |
+				       DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST |
+				       DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG |
+				       DUMP_TYPE_NONBAT;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -82,8 +83,8 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t -p dump specific packet type\n");
 	fprintf(stderr, " \t -x dump all packet types except specified\n");
 	fprintf(stderr, "packet types:\n");
-	fprintf(stderr, " \t\t%3d - batman ogm/ogmv2 packets\n",
-		DUMP_TYPE_BATOGM);
+	fprintf(stderr, " \t\t%3d - batman ogm packets\n", DUMP_TYPE_BATOGM);
+	fprintf(stderr, " \t\t%3d - batman ogmv2 packets\n", DUMP_TYPE_BATOGM2);
 	fprintf(stderr, " \t\t%3d - batman elp packets\n", DUMP_TYPE_BATELP);
 	fprintf(stderr, " \t\t%3d - batman icmp packets\n", DUMP_TYPE_BATICMP);
 	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
@@ -969,7 +970,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 				dump_batman_iv_ogm(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_OGM2:
-			if (dump_level & DUMP_TYPE_BATOGM)
+			if (dump_level & DUMP_TYPE_BATOGM2)
 				dump_batman_ogm2(packet_buff, buff_len,
 						 read_opt, time_printed);
 			break;

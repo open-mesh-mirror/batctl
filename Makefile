@@ -24,7 +24,19 @@ export CONFIG_BATCTL_BISECT=n
 
 # batctl build
 BINARY_NAME = batctl
-OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o  hash.o debugfs.o ioctl.o list-batman.o translate.o
+OBJ += bat-hosts.o
+OBJ += debugfs.o
+OBJ += debug.o
+OBJ += functions.o
+OBJ += hash.o
+OBJ += ioctl.o
+OBJ += list-batman.o
+OBJ += main.o
+OBJ += ping.o
+OBJ += sys.o
+OBJ += tcpdump.o
+OBJ += traceroute.o
+OBJ += translate.o
 OBJ_BISECT = bisect_iv.o
 MANPAGE = man/batctl.8
 

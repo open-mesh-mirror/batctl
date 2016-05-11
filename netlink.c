@@ -22,7 +22,23 @@
 #include "netlink.h"
 #include "main.h"
 
+#include <net/ethernet.h>
+
 #include "batman_adv.h"
 
 struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+	[BATADV_ATTR_VERSION]		= { .type = NLA_STRING },
+	[BATADV_ATTR_ALGO_NAME]		= { .type = NLA_STRING },
+	[BATADV_ATTR_MESH_IFINDEX]	= { .type = NLA_U32 },
+	[BATADV_ATTR_MESH_IFNAME]	= { .type = NLA_STRING,
+					    .maxlen = IFNAMSIZ },
+	[BATADV_ATTR_MESH_ADDRESS]	= { .type = NLA_UNSPEC,
+					    .minlen = ETH_ALEN,
+					    .maxlen = ETH_ALEN },
+	[BATADV_ATTR_HARD_IFINDEX]	= { .type = NLA_U32 },
+	[BATADV_ATTR_HARD_IFNAME]	= { .type = NLA_STRING,
+					    .maxlen = IFNAMSIZ },
+	[BATADV_ATTR_HARD_ADDRESS]	= { .type = NLA_UNSPEC,
+					    .minlen = ETH_ALEN,
+					    .maxlen = ETH_ALEN },
 };

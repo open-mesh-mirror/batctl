@@ -84,6 +84,12 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.debugfs_name = "nc_nodes",
 		.header_lines = 0,
 	},
+	{
+		.opt_long = "mcast_flags",
+		.opt_short = "mf",
+		.debugfs_name = "mcast_flags",
+		.header_lines = 6,
+	},
 };
 
 static void debug_table_usage(int debug_table)

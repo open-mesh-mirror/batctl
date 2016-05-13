@@ -426,6 +426,40 @@ display or modify the multicast mode setting
 
 Usage: batctl multicast_mode|mm [0|1]
 
+batctl mcast_flags
+=================
+
+display local and remote multicast flags
+
+Usage batctl mcast_flags|mf
+
+Example:
+
+Multicast flags (own flags: [U46])
+* Bridged [U]                           U
+* No IGMP/MLD Querier [4/6]:            ./.
+* Shadowing IGMP/MLD Querier [4/6]:     4/6
+-------------------------------------------
+       Originator Flags
+02:04:64:a4:39:c1 [U..]
+02:04:64:a4:39:c2 [U..]
+02:04:64:a4:39:c3 [...]
+
+where:
+- Originator: the MAC address of the originating (primary interface)
+		batman-adv node
+- Flags: multicast flags of the according node
+- U: wants all unsnoopable multicast traffic, meaning other nodes need to always
+	forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
+- 4: wants all IPv4 multicast traffic, meaning other nodes need to always
+	forward any IPv4 multicast traffic to it
+- 6: wants all IPv6 multicast traffic, meaning other nodes need to always
+	forward any IPv6 multicast traffic to it
+
+If a node does not have multicast optimizations available (e.g. old batman-adv
+version or optimizations not compiled in), therefore not announcing any
+multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
+
 batctl aggregation
 ==================
 

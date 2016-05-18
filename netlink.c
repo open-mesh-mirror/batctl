@@ -41,4 +41,12 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
 	[BATADV_ATTR_HARD_ADDRESS]	= { .type = NLA_UNSPEC,
 					    .minlen = ETH_ALEN,
 					    .maxlen = ETH_ALEN },
+	[BATADV_ATTR_ORIG_ADDRESS]	= { .type = NLA_UNSPEC,
+					    .minlen = ETH_ALEN,
+					    .maxlen = ETH_ALEN },
+	[BATADV_ATTR_TPMETER_RESULT]	= { .type = NLA_U8 },
+	[BATADV_ATTR_TPMETER_TEST_TIME]	= { .type = NLA_U32 },
+	[BATADV_ATTR_TPMETER_BYTES]	= { .type = NLA_U64 },
+	[BATADV_ATTR_TPMETER_COOKIE]	= { .type = NLA_U32 },
+	[BATADV_ATTR_PAD]		= { .type = NLA_UNSPEC },
 };

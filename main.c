@@ -33,6 +33,7 @@
 #include "translate.h"
 #include "traceroute.h"
 #include "tcpdump.h"
+#include "tp_meter.h"
 #include "bisect_iv.h"
 #include "ioctl.h"
 #include "functions.h"
@@ -82,6 +83,7 @@ static void print_usage(void)
 	fprintf(stderr, " \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
 	fprintf(stderr, " \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
 	fprintf(stderr, " \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
+	printf(" \tthroughputmeter|tp         <destination>     \tstart a throughput measurement\n");
 	fprintf(stderr, " \ttranslate|t                <destination>     \ttranslate a destination to the originator responsible for it\n");
 #ifdef BATCTL_BISECT
 	fprintf(stderr, " \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
@@ -161,6 +163,10 @@ int main(int argc, char **argv)
 	} else if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
 
 		ret = ping(mesh_iface, argc - 1, argv + 1);
+
+	} else if ((strcmp(argv[1], "throughputmeter") == 0) || (strcmp(argv[1], "tp") == 0)) {
+
+		ret = tp_meter (mesh_iface, argc -1, argv + 1);
 
 	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
 

@@ -808,11 +808,14 @@ static void dump_batman_elp(unsigned char *packet_buff, ssize_t buff_len,
 static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct batadv_icmp_packet *icmp_packet;
+	struct batadv_icmp_tp_packet *tp;
+
 	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");
 
 	icmp_packet = (struct batadv_icmp_packet *)(packet_buff + sizeof(struct ether_header));
+	tp = (struct batadv_icmp_tp_packet *)icmp_packet;
 
 	if (!time_printed)
 		print_time();
@@ -820,7 +823,8 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
 
-	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst, read_opt);
+	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst,
+				    read_opt);
 
 	switch (icmp_packet->msg_type) {
 	case BATADV_ECHO_REPLY:
@@ -840,6 +844,14 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
 			icmp_packet->ttl, icmp_packet->version,
 			(size_t)buff_len - sizeof(struct ether_header));
+		break;
+	case BATADV_TP:
+		printf("%s: ICMP TP type %s (%hhu), id %hhu, seq %u, ttl %2d, v %d, length %zu\n",
+		       name, tp->subtype == BATADV_TP_MSG ? "MSG" :
+			     tp->subtype == BATADV_TP_ACK ? "ACK" : "N/A",
+		       tp->subtype, tp->uid, ntohl(tp->seqno), tp->ttl,
+		       tp->version,
+		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	default:
 		printf("%s: ICMP type %hhu, length %zu\n",

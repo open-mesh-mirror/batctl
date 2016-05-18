@@ -36,9 +36,11 @@ B.A.T.M.A.N. advanced operates on layer 2. Thus all hosts participating in the v
 connected together for all protocols above layer 2. Therefore the common diagnosis tools do not work as expected. To
 overcome these problems batctl contains the commands \fBping\fP, \fBtraceroute\fP, \fBtcpdump\fP which provide similar
 functionality to the normal \fBping\fP(1), \fBtraceroute\fP(1), \fBtcpdump\fP(1) commands, but modified to layer 2
-behaviour or using the B.A.T.M.A.N. advanced protocol.
+behaviour or using the B.A.T.M.A.N. advanced protocol. For similar reasons, \fBthroughputmeter\fP, a command to test network
+performances, is also included.
+
 .PP
-.PP
+.Pp
 .SH OPTIONS
 .TP
 .I \fBoptions:
@@ -322,6 +324,24 @@ for routing loops. Use "\-t" to trace OGMs of a host throughout the network. Use
 nodes. The option "\-s" can be used to limit the output to a range of sequence numbers, between min and max, or to one
 specific sequence number, min. Furthermore using "\-o" you can filter the output to a specified originator. If "\-n" is
 given batctl will not replace the MAC addresses with bat\-host names in the output.
+.RE
+.br
+.IP "\fBthroughputmeter\fP|\fBtp\fP \fBMAC\fP"
+This command starts a throughput test entirely controlled by batman module in
+kernel space: the computational resources needed to align memory and copy data
+between user and kernel space that are required by other user space tools may
+represent a bootleneck on some low profile device.
+
+The test consist of the transfer of 14 MB of data between the two nodes. The
+protocol used to transfer the data is somehow similar to TCP, but simpler: some
+TCP features are still missing, thus protocol performances could be worst. Since
+a fixed amount of data is transferred the experiment duration depends on the
+network conditions. The experiment can be interrupted with CTRL + C. At the end
+of a succesful experiment the throughput in KBytes per second is returned,
+togheter with the experiment duration in millisecond and the amount of bytes
+transferred. If too many packets are lost or the specified MAC address is not
+reachable, a message notifing the error is returned instead of the result.
+.RE
 .br
 .SH FILES
 .TP

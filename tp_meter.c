@@ -524,8 +524,8 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
 				(float)throughput / (1<<10),
 				(float)throughput * 8 / 1000);
 		else
-			printf("%lu Bytes/s (%lu Bps)\n",
-				throughput, throughput * 8);
+			printf("%" PRIu64 " Bytes/s (%" PRIu64 " Bps)\n",
+			       throughput, throughput * 8);
 
 		ret = 0;
 		break;

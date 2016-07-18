@@ -49,13 +49,15 @@ struct debug_table_data {
        const char opt_short[OPT_SHORT_MAX_LEN];
        const char debugfs_name[DEBUG_TABLE_PATH_MAX_LEN];
        size_t header_lines;
+       int (*netlink_fn)(char *mesh_iface, char *hard_iface, int read_opt,
+			 float orig_timeout, float watch_interval);
 };
 
 extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
 
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
 int log_print(char *mesh_iface, int argc, char **argv);
-int print_routing_algos(void);
+int debug_print_routing_algos(void);
 int print_vis_info(char *mesh_iface);
 
 #endif

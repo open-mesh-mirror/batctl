@@ -44,6 +44,7 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
 int vlan_get_link(const char *ifname, char **parent);
 
+int print_routing_algos(void);
 extern char *line_ptr;
 
 enum {
@@ -59,6 +60,7 @@ enum {
 	SKIP_HEADER = 0x100,
 	UNICAST_ONLY = 0x200,
 	MULTICAST_ONLY = 0x400,
+	PARSE_ONLY = 0x800,
 };
 
 #endif

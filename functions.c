@@ -52,6 +52,7 @@
 #include "sys.h"
 #include "debug.h"
 #include "debugfs.h"
+#include "netlink.h"
 
 static struct timeval start_time;
 static char *host_name;
@@ -849,4 +850,14 @@ err:
 		nl_socket_free(sock);
 
 	return arg.vid;
+}
+
+int print_routing_algos(void)
+{
+	int err;
+
+	err = netlink_print_routing_algos();
+	if (err == -EOPNOTSUPP)
+		err = debug_print_routing_algos();
+	return err;
 }

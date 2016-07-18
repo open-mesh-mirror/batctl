@@ -23,10 +23,12 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "debug.h"
 #include "debugfs.h"
 #include "functions.h"
+#include "netlink.h"
 #include "sys.h"
 
 const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
@@ -35,36 +37,42 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_short = "n",
 		.debugfs_name = "neighbors",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_neighbors,
 	},
 	{
 		.opt_long = "originators",
 		.opt_short = "o",
 		.debugfs_name = "originators",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_originators,
 	},
 	{
 		.opt_long = "gateways",
 		.opt_short = "gwl",
 		.debugfs_name = "gateways",
 		.header_lines = 1,
+		.netlink_fn = netlink_print_gateways,
 	},
 	{
 		.opt_long = "translocal",
 		.opt_short = "tl",
 		.debugfs_name = "transtable_local",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_translocal,
 	},
 	{
 		.opt_long = "transglobal",
 		.opt_short = "tg",
 		.debugfs_name = "transtable_global",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_transglobal,
 	},
 	{
 		.opt_long = "claimtable",
 		.opt_short = "cl",
 		.debugfs_name = "bla_claim_table",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_bla_claim,
 	},
 	{
 		.opt_long = "backbonetable",
@@ -121,7 +129,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 	char *orig_iface = NULL;
 	float orig_timeout = 0.0f;
 	float watch_interval = 1;
-	opterr = 0;
+	int err;
 
 	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {
 		switch (optchar) {
@@ -222,16 +230,26 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	if (batctl_debug_tables[debug_table].netlink_fn) {
+		err = batctl_debug_tables[debug_table].netlink_fn(
+			mesh_iface, orig_iface, read_opt, orig_timeout,
+			watch_interval);
+		if (err != -EOPNOTSUPP)
+			return err;
+	}
+
 	if (orig_iface)
 		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface, full_path, sizeof(full_path));
 	else
 		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
+
 	return read_file(full_path, (char *)batctl_debug_tables[debug_table].debugfs_name,
 			 read_opt, orig_timeout, watch_interval,
 			 batctl_debug_tables[debug_table].header_lines);
 }
 
-int print_routing_algos(void) {
+int debug_print_routing_algos(void)
+{
 	char full_path[MAX_PATH+1];
 	char *debugfs_mnt;
 

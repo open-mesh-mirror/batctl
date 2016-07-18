@@ -463,6 +463,7 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	struct ether_addr in_mac;
 	static struct ether_addr out_mac;
 	struct ether_addr *mac_result;
+	int ret;
 
 	/* input mac has to be copied because it could be in the shared
 	 * ether_aton buffer
@@ -471,7 +472,10 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	memcpy(&out_mac, mac, sizeof(out_mac));
 	mac_result = &out_mac;
 
-	translate_mac_debugfs(mesh_iface, &in_mac, mac_result);
+	ret = translate_mac_netlink(mesh_iface, &in_mac, mac_result);
+
+	if (ret == -EOPNOTSUPP)
+		translate_mac_debugfs(mesh_iface, &in_mac, mac_result);
 
 	return mac_result;
 }

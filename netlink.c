@@ -794,7 +794,6 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
 
 static const int gateways_mandatory[] = {
 	BATADV_ATTR_ORIG_ADDRESS,
-	BATADV_ATTR_TQ,
 	BATADV_ATTR_ROUTER,
 	BATADV_ATTR_HARD_IFNAME,
 	BATADV_ATTR_BANDWIDTH_DOWN,
@@ -811,6 +810,7 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
 	const char *primary_if;
 	uint32_t bandwidth_down;
 	uint32_t bandwidth_up;
+	uint32_t throughput;
 	uint8_t *router;
 	uint8_t *orig;
 	char c = ' ';
@@ -842,7 +842,6 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
 		c = '*';
 
 	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
-	tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
 	router = nla_data(attrs[BATADV_ATTR_ROUTER]);
 	primary_if = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
 	bandwidth_down = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_DOWN]);
@@ -858,7 +857,13 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
 	else
 		printf("%17s ", bat_host->name);
 
-	printf("(%3i) ", tq);
+	if (attrs[BATADV_ATTR_THROUGHPUT]) {
+		throughput = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
+		printf("(%9u.%1u) ", throughput / 10, throughput % 10);
+	} else if (attrs[BATADV_ATTR_TQ]) {
+		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
+		printf("(%3i) ", tq);
+	}
 
 	bat_host = bat_hosts_find_by_mac((char *)router);
 	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
@@ -1168,10 +1173,31 @@ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
 int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
 			   float orig_timeout,
 			   float watch_interval)
-{
+{	char *header;
+	int ifindex;
+
+	ifindex = if_nametoindex(mesh_iface);
+	if (!ifindex) {
+		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
+		return -ENODEV;
+	}
+
+	netlink_print_info(ifindex, BATADV_CMD_GET_ORIGINATORS, PARSE_ONLY);
+
+	if (strlen(algo_name_buf) == 0)
+		return -EINVAL;
+
+	if (!strcmp("BATMAN_IV", algo_name_buf))
+		header = "  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth\n";
+	if (!strcmp("BATMAN_V", algo_name_buf))
+		header = "  Router            ( throughput) Next Hop          [outgoingIf]  Bandwidth\n";
+
+	if (!header)
+		return -EINVAL;
+
 	return netlink_print_common(mesh_iface, orig_iface, read_opts,
 				    orig_timeout, watch_interval,
-				    "    Router           TQ      Next Hop        outgoingIf   Bandwidth\n",
+				    header,
 				    BATADV_CMD_GET_GATEWAYS,
 				    gateways_callback);
 }

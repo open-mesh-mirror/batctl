@@ -40,7 +40,8 @@ int read_file(const char *dir, const char *path, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines);
 int write_file(const char *dir, const char *fname, const char *arg1,
 	       const char *arg2);
-struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+struct ether_addr *translate_mac(const char *mesh_iface,
+				 const struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
 int vlan_get_link(const char *ifname, char **parent);
 

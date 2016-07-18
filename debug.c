@@ -79,6 +79,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_short = "bbt",
 		.debugfs_name = "bla_backbone_table",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_bla_backbone,
 	},
 	{
 		.opt_long = "dat_cache",

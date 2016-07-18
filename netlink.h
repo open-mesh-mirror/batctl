@@ -40,6 +40,8 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
 			   float orig_timeout, float watch_interval);
 int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
 			    float orig_timeout, float watch_interval);
+int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
+			       float orig_timeout, float watch_interval);
 
 extern struct nla_policy batadv_netlink_policy[];
 

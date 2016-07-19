@@ -46,6 +46,7 @@
 #include <netlink/handlers.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>
+#include <time.h>
 
 #include "main.h"
 #include "functions.h"
@@ -55,7 +56,7 @@
 #include "debugfs.h"
 #include "netlink.h"
 
-static struct timeval start_time;
+static struct timespec start_time;
 static char *host_name;
 char *line_ptr = NULL;
 
@@ -76,23 +77,23 @@ const char *fs_compile_out_param[] = {
 
 void start_timer(void)
 {
-	gettimeofday(&start_time, NULL);
+	clock_gettime(CLOCK_MONOTONIC, &start_time);
 }
 
 double end_timer(void)
 {
-	struct timeval end_time, diff;
+	struct timespec end_time, diff;
 
-	gettimeofday(&end_time, NULL);
+	clock_gettime(CLOCK_MONOTONIC, &end_time);
 	diff.tv_sec = end_time.tv_sec - start_time.tv_sec;
-	diff.tv_usec = end_time.tv_usec - start_time.tv_usec;
+	diff.tv_nsec = end_time.tv_nsec - start_time.tv_nsec;
 
-	if (diff.tv_usec < 0) {
+	if (diff.tv_nsec < 0) {
 		diff.tv_sec--;
-		diff.tv_usec += 1000000;
+		diff.tv_nsec += 1000000000;
 	}
 
-	return (((double)diff.tv_sec * 1000) + ((double)diff.tv_usec / 1000));
+	return (((double)diff.tv_sec * 1000) + ((double)diff.tv_nsec / 1000000));
 }
 
 char *ether_ntoa_long(const struct ether_addr *addr)

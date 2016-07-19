@@ -27,7 +27,7 @@
 #include <net/if_arp.h>
 #include <sys/types.h>
 #include "main.h"
-#include "list-batman.h"
+#include "list.h"
 
 #ifndef ARPHRD_IEEE80211_PRISM
 #define ARPHRD_IEEE80211_PRISM 802

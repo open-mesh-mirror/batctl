@@ -1118,7 +1118,7 @@ int tcpdump(int argc, char **argv)
 	struct ifreq req;
 	struct timeval tv;
 	struct dump_if *dump_if, *dump_if_tmp;
-	struct list_head_first dump_if_list;
+	struct list_head dump_if_list;
 	fd_set wait_sockets, tmp_wait_sockets;
 	ssize_t read_len;
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
@@ -1168,7 +1168,7 @@ int tcpdump(int argc, char **argv)
 	bat_hosts_init(read_opt);
 
 	/* init interfaces list */
-	INIT_LIST_HEAD_FIRST(dump_if_list);
+	INIT_LIST_HEAD(&dump_if_list);
 	FD_ZERO(&wait_sockets);
 
 	while (argc > found_args) {
@@ -1176,7 +1176,6 @@ int tcpdump(int argc, char **argv)
 		dump_if = malloc(sizeof(struct dump_if));
 		memset(dump_if, 0, sizeof(struct dump_if));
 		dump_if->raw_sock = -1;
-		INIT_LIST_HEAD(&dump_if->list);
 
 		dump_if->dev = argv[found_args];
 
@@ -1306,7 +1305,7 @@ out:
 		if (dump_if->raw_sock >= 0)
 			close(dump_if->raw_sock);
 
-		list_del((struct list_head *)&dump_if_list, &dump_if->list, &dump_if_list);
+		list_del(&dump_if->list);
 		free(dump_if);
 	}
 

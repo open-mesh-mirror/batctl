@@ -31,7 +31,6 @@ OBJ += functions.o
 OBJ += genl.o
 OBJ += hash.o
 OBJ += ioctl.o
-OBJ += list-batman.o
 OBJ += main.o
 OBJ += netlink.o
 OBJ += ping.o

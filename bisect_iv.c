@@ -92,8 +92,8 @@ static struct bat_node *node_get(char *name)
 
 	strncpy(bat_node->name, name, NAME_LEN);
 	bat_node->name[NAME_LEN - 1] = '\0';
-	INIT_LIST_HEAD_FIRST(bat_node->orig_event_list);
-	INIT_LIST_HEAD_FIRST(bat_node->rt_table_list);
+	INIT_LIST_HEAD(&bat_node->orig_event_list);
+	INIT_LIST_HEAD(&bat_node->rt_table_list);
 	memset(bat_node->loop_magic, 0, sizeof(bat_node->loop_magic));
 	memset(bat_node->loop_magic2, 0, sizeof(bat_node->loop_magic2));
 	hash_add(node_hash, bat_node);
@@ -112,9 +112,8 @@ static struct orig_event *orig_event_new(struct bat_node *bat_node, struct bat_n
 		return NULL;
 	}
 
-	INIT_LIST_HEAD(&orig_event->list);
-	INIT_LIST_HEAD_FIRST(orig_event->event_list);
-	INIT_LIST_HEAD_FIRST(orig_event->rt_hist_list);
+	INIT_LIST_HEAD(&orig_event->event_list);
+	INIT_LIST_HEAD(&orig_event->rt_hist_list);
 	orig_event->orig_node = orig_node;
 	list_add_tail(&orig_event->list, &bat_node->orig_event_list);
 
@@ -166,21 +165,21 @@ static void node_free(void *data)
 
 	list_for_each_entry_safe(orig_event, orig_event_tmp, &bat_node->orig_event_list, list) {
 		list_for_each_entry_safe(seqno_event, seqno_event_tmp, &orig_event->event_list, list) {
-			list_del((struct list_head *)&orig_event->event_list, &seqno_event->list, &orig_event->event_list);
+			list_del(&seqno_event->list);
 			free(seqno_event);
 		}
 
 		list_for_each_entry_safe(rt_hist, rt_hist_tmp, &orig_event->rt_hist_list, list) {
-			list_del((struct list_head *)&orig_event->rt_hist_list, &rt_hist->list, &orig_event->rt_hist_list);
+			list_del(&rt_hist->list);
 			free(rt_hist);
 		}
 
-		list_del((struct list_head *)&bat_node->orig_event_list, &orig_event->list, &bat_node->orig_event_list);
+		list_del(&orig_event->list);
 		free(orig_event);
 	}
 
 	list_for_each_entry_safe(rt_table, rt_table_tmp, &bat_node->rt_table_list, list) {
-		list_del((struct list_head *)&bat_node->rt_table_list, &rt_table->list, &bat_node->rt_table_list);
+		list_del(&rt_table->list);
 
 		free(rt_table->entries);
 		free(rt_table);
@@ -248,10 +247,8 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 		goto table_free;
 	}
 
-	INIT_LIST_HEAD(&rt_table->list);
 	rt_table->num_entries = 1;
 
-	INIT_LIST_HEAD(&rt_hist->list);
 	rt_hist->prev_rt_hist = NULL;
 	rt_hist->next_hop = next_hop_node;
 	rt_hist->flags = rt_flag;
@@ -310,7 +307,6 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 				goto rt_hist_free;
 			}
 
-			INIT_LIST_HEAD(&seqno_event->list);
 			seqno_event->orig = node_get(orig);
 			seqno_event->neigh = NULL;
 			seqno_event->prev_sender = NULL;
@@ -449,7 +445,6 @@ static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char
 		goto err;
 	}
 
-	INIT_LIST_HEAD(&seqno_event->list);
 	seqno_event->orig = orig_node;
 	seqno_event->neigh = neigh_node;
 	seqno_event->prev_sender = prev_sender_node;
@@ -986,7 +981,7 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 	}
 }
 
-static void seqno_trace_print(struct list_head_first *trace_list, char *trace_orig,
+static void seqno_trace_print(struct list_head *trace_list, char *trace_orig,
                               long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
 	struct seqno_trace *seqno_trace;
@@ -1180,7 +1175,6 @@ static struct seqno_trace *seqno_trace_new(struct seqno_event *seqno_event)
 		return NULL;
 	}
 
-	INIT_LIST_HEAD(&seqno_trace->list);
 	seqno_trace->seqno = seqno_event->seqno;
 	seqno_trace->print = 0;
 
@@ -1199,7 +1193,7 @@ static void seqno_trace_free(struct seqno_trace *seqno_trace)
 	free(seqno_trace);
 }
 
-static int seqno_trace_add(struct list_head_first *trace_list, struct bat_node *bat_node,
+static int seqno_trace_add(struct list_head *trace_list, struct bat_node *bat_node,
 		           struct seqno_event *seqno_event, char print_trace)
 {
 	struct seqno_trace *seqno_trace = NULL, *seqno_trace_tmp = NULL, *seqno_trace_prev = NULL;
@@ -1223,12 +1217,12 @@ static int seqno_trace_add(struct list_head_first *trace_list, struct bat_node *
 			goto err;
 
 		if ((list_empty(trace_list)) ||
-		    (seqno_event->seqno > ((struct seqno_trace *)trace_list->prev)->seqno))
+		    (seqno_event->seqno > list_last_entry(trace_list, struct seqno_trace, list)->seqno))
 			list_add_tail(&seqno_trace->list, trace_list);
-		else if (seqno_event->seqno < ((struct seqno_trace *)trace_list->next)->seqno)
-			list_add_before((struct list_head *)trace_list, trace_list->next, &seqno_trace->list);
+		else if (seqno_event->seqno < list_first_entry(trace_list, struct seqno_trace, list)->seqno)
+			list_add(&seqno_trace->list, trace_list);
 		else
-			list_add_before(&seqno_trace_prev->list, &seqno_trace_tmp->list, &seqno_trace->list);
+			list_add_behind(&seqno_trace->list, &seqno_trace_prev->list);
 	}
 
 	if (print_trace)
@@ -1260,14 +1254,14 @@ static void trace_seqnos(char *trace_orig, long long seqno_min, long long seqno_
 	struct orig_event *orig_event;
 	struct seqno_event *seqno_event;
 	struct hash_it_t *hashit = NULL;
-	struct list_head_first trace_list;
+	struct list_head trace_list;
 	struct seqno_trace *seqno_trace, *seqno_trace_tmp;
 	char check_orig[NAME_LEN], print_trace;
 	int res;
 
 	/* if no option was given filter_orig is empty */
 	memset(check_orig, 0, NAME_LEN);
-	INIT_LIST_HEAD_FIRST(trace_list);
+	INIT_LIST_HEAD(&trace_list);
 
 	while (NULL != (hashit = hash_iterate(node_hash, hashit))) {
 		bat_node = hashit->bucket->data;
@@ -1313,7 +1307,7 @@ static void trace_seqnos(char *trace_orig, long long seqno_min, long long seqno_
 
 out:
 	list_for_each_entry_safe(seqno_trace, seqno_trace_tmp, &trace_list, list) {
-		list_del((struct list_head *)&trace_list, &seqno_trace->list, &trace_list);
+		list_del(&seqno_trace->list);
 		seqno_trace_free(seqno_trace);
 	}
 

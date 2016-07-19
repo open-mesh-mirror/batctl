@@ -22,7 +22,7 @@
 #ifndef _BATCTL_BISECT_IV_H
 #define _BATCTL_BISECT_IV_H
 
-#include "list-batman.h"
+#include "list.h"
 
 #define NAME_LEN 18
 #define MAX_LINE 256
@@ -38,8 +38,8 @@ int bisect_iv(int argc, char **argv);
 
 struct bat_node {
 	char name[NAME_LEN];
-	struct list_head_first orig_event_list;
-	struct list_head_first rt_table_list;
+	struct list_head orig_event_list;
+	struct list_head rt_table_list;
 	char loop_magic[LOOP_MAGIC_LEN];
 	char loop_magic2[LOOP_MAGIC_LEN];
 };
@@ -47,8 +47,8 @@ struct bat_node {
 struct orig_event {
 	struct list_head list;
 	struct bat_node *orig_node;
-	struct list_head_first event_list;
-	struct list_head_first rt_hist_list;
+	struct list_head event_list;
+	struct list_head rt_hist_list;
 };
 
 struct rt_table {

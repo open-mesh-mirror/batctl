@@ -1,0 +1,9 @@
+batctl 2016.3
+
+ * synchronize common headers with batman-adv
+ * support multicast logging and debug table
+ * split tcpdump OGM packet filter in OGM and OGMv2 filter
+ * add infrastructure to communicate with batadv netlink family
+ * integrate command to control new kernel throughput meter
+
+ -- Thu, 01 Sep 2016 16:18:35 +0200

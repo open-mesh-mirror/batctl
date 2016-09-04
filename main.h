@@ -47,7 +47,7 @@
 #endif
 
 #define __packed __attribute((packed))   /* linux kernel compat */
-#define __unused __attribute__((unused))
+#define __maybe_unused __attribute__((unused))
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
 typedef uint8_t u8; /* linux kernel compat */

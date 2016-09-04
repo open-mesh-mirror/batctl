@@ -66,7 +66,7 @@ struct tp_cookie {
 	uint32_t cookie;
 };
 
-static int tpmeter_nl_print_error(struct sockaddr_nl *nla __unused,
+static int tpmeter_nl_print_error(struct sockaddr_nl *nla __maybe_unused,
 				  struct nlmsgerr *nlerr,
 				  void *arg)
 {
@@ -236,7 +236,8 @@ out:
 	return err;
 }
 
-static int no_seq_check(struct nl_msg *msg __unused, void *arg __unused)
+static int no_seq_check(struct nl_msg *msg __maybe_unused,
+			void *arg __maybe_unused)
 {
 	return NL_OK;
 }

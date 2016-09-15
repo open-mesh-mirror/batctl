@@ -396,7 +396,7 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
 	int ret = EXIT_FAILURE;
 	int found_args = 1, read_opt = USE_BAT_HOSTS;
 	uint32_t time = 0;
-	char optchar;
+	int optchar;
 	struct nl_sock *listen_sock = NULL;
 	struct tp_result result = {
 		.error = 0,

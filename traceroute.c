@@ -39,6 +39,7 @@
 #include "packet.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
+#include "icmp_helper.h"
 
 
 #define TTL_MAX 50
@@ -60,14 +61,12 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 	struct bat_host *bat_host;
 	struct ether_addr *dst_mac = NULL;
 	struct timeval tv;
-	fd_set read_socket;
 	ssize_t read_len;
 	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
-	int ret = EXIT_FAILURE, res, trace_fd = -1, i;
+	int ret = EXIT_FAILURE, res, i;
 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta[NUM_PACKETS];
 	char *debugfs_mnt;
-	char icmp_socket[MAX_PATH+1];
 	int disable_translate_mac = 0;
 
 	while ((optchar = getopt(argc, argv, "hnT")) != -1) {
@@ -122,16 +121,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 		goto out;
 	}
 
-	debugfs_make_path(SOCKET_PATH_FMT, mesh_iface, icmp_socket, sizeof(icmp_socket));
-
-	trace_fd = open(icmp_socket, O_RDWR);
-
-	if (trace_fd < 0) {
-		fprintf(stderr, "Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-				icmp_socket, strerror(errno));
-		fprintf(stderr, "Check whether the module is loaded and active.\n");
-		goto out;
-	}
+	icmp_interfaces_init();
 
 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
@@ -154,8 +144,11 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 			icmp_packet_out.seqno = htons(++seq_counter);
 			time_delta[i] = 0.0;
 
-			if (write(trace_fd, (char *)&icmp_packet_out, sizeof(icmp_packet_out)) < 0) {
-				fprintf(stderr, "Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+			res = icmp_interface_write(mesh_iface,
+					   (struct batadv_icmp_header *)&icmp_packet_out,
+					   sizeof(icmp_packet_out));
+			if (res < 0) {
+				fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(res));
 				continue;
 			}
 
@@ -165,20 +158,10 @@ read_packet:
 			tv.tv_sec = 2;
 			tv.tv_usec = 0;
 
-			FD_ZERO(&read_socket);
-			FD_SET(trace_fd, &read_socket);
-
-			res = select(trace_fd + 1, &read_socket, NULL, NULL, &tv);
-
-			if (res <= 0)
+			read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
+						       sizeof(icmp_packet_in), &tv);
+			if (read_len <= 0)
 				continue;
-
-			read_len = read(trace_fd, (char *)&icmp_packet_in, sizeof(icmp_packet_in));
-
-			if (read_len < 0) {
-				fprintf(stderr, "Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
-				continue;
-			}
 
 			if ((size_t)read_len < sizeof(icmp_packet_in)) {
 				printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
@@ -241,8 +224,7 @@ read_packet:
 	ret = EXIT_SUCCESS;
 
 out:
+	icmp_interfaces_clean();
 	bat_hosts_free();
-	if (trace_fd >= 0)
-		close(trace_fd);
 	return ret;
 }

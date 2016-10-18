@@ -42,6 +42,7 @@
 #include "packet.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
+#include "icmp_helper.h"
 
 
 char is_aborted = 0;
@@ -78,8 +79,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 	struct ether_addr *dst_mac = NULL, *rr_mac = NULL;
 	struct bat_host *bat_host, *rr_host;
 	ssize_t read_len;
-	fd_set read_socket;
-	int ret = EXIT_FAILURE, ping_fd = -1, res, optchar, found_args = 1;
+	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
 	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
 	char *dst_string, *mac_string, *rr_string;
@@ -88,7 +88,6 @@ int ping(char *mesh_iface, int argc, char **argv)
 	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
 	size_t packet_len;
 	char *debugfs_mnt;
-	char icmp_socket[MAX_PATH+1];
 	int disable_translate_mac = 0;
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
@@ -163,17 +162,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 		goto out;
 	}
 
-	debugfs_make_path(SOCKET_PATH_FMT, mesh_iface, icmp_socket, sizeof(icmp_socket));
-
-	ping_fd = open(icmp_socket, O_RDWR);
-
-	if (ping_fd < 0) {
-		fprintf(stderr, "Error - can't open a connection to the batman adv kernel module via the socket '%s': %s\n",
-				icmp_socket, strerror(errno));
-		printf("Check whether the module is loaded and active.\n");
-		goto out;
-	}
-
+	icmp_interfaces_init();
 	packet_len = sizeof(struct batadv_icmp_packet);
 
 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
@@ -208,36 +197,32 @@ int ping(char *mesh_iface, int argc, char **argv)
 
 		icmp_packet_out.seqno = htons(++seq_counter);
 
-		if (write(ping_fd, (char *)&icmp_packet_out, packet_len) < 0) {
-			fprintf(stderr, "Error - can't write to batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+		res = icmp_interface_write(mesh_iface,
+					   (struct batadv_icmp_header *)&icmp_packet_out,
+					   packet_len);
+		if (res < 0) {
+			fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(res));
 			goto sleep;
 		}
 
 read_packet:
 		start_timer();
 
-		FD_ZERO(&read_socket);
-		FD_SET(ping_fd, &read_socket);
-
-		res = select(ping_fd + 1, &read_socket, NULL, NULL, &tv);
+		read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
+					       packet_len, &tv);
 
 		if (is_aborted)
 			break;
 
 		packets_out++;
 
-		if (res == 0) {
+		if (read_len == 0) {
 			printf("Reply from host %s timed out\n", dst_string);
 			goto sleep;
 		}
 
-		if (res < 0)
-			goto sleep;
-
-		read_len = read(ping_fd, (char *)&icmp_packet_in, packet_len);
-
 		if (read_len < 0) {
-			fprintf(stderr, "Error - can't read from batman adv kernel file '%s': %s\n", icmp_socket, strerror(errno));
+			fprintf(stderr, "Error - can't receive icmp packets: %s\n", strerror(read_len));
 			goto sleep;
 		}
 
@@ -353,8 +338,7 @@ sleep:
 		ret = EXIT_NOSUCCESS;
 
 out:
+	icmp_interfaces_clean();
 	bat_hosts_free();
-	if (ping_fd >= 0)
-		close(ping_fd);
 	return ret;
 }

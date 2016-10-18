@@ -1309,7 +1309,7 @@ static int nlquery_stop_cb(struct nl_msg *msg, void *arg)
 }
 
 static int netlink_query_common(const char *mesh_iface, uint8_t nl_cmd,
-				nl_recvmsg_msg_cb_t callback,
+				nl_recvmsg_msg_cb_t callback, int flags,
 				struct nlquery_opts *query_opts)
 {
 	struct nl_sock *sock;
@@ -1359,7 +1359,7 @@ static int netlink_query_common(const char *mesh_iface, uint8_t nl_cmd,
 		goto err_free_cb;
 	}
 
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, flags,
 		    nl_cmd, 1);
 
 	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
@@ -1448,7 +1448,8 @@ int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 
 	ret = netlink_query_common(mesh_iface,
 				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-			           translate_mac_netlink_cb, &opts.query_opts);
+			           translate_mac_netlink_cb, NLM_F_DUMP,
+				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
 
@@ -1456,6 +1457,177 @@ int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 		return -ENOENT;
 
 	memcpy(mac_out, &opts.mac, ETH_ALEN);
+
+	return 0;
+}
+
+static const int get_nexthop_netlink_mandatory[] = {
+	BATADV_ATTR_ORIG_ADDRESS,
+	BATADV_ATTR_NEIGH_ADDRESS,
+	BATADV_ATTR_HARD_IFINDEX,
+};
+
+struct get_nexthop_netlink_opts {
+	struct ether_addr mac;
+	uint8_t *nexthop;
+	char *ifname;
+	bool found;
+	struct nlquery_opts query_opts;
+};
+
+static int get_nexthop_netlink_cb(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct nlquery_opts *query_opts = arg;
+	struct get_nexthop_netlink_opts *opts;
+	struct genlmsghdr *ghdr;
+	const uint8_t *orig;
+	const uint8_t *neigh;
+	uint32_t index;
+	const char *ifname;
+
+	opts = container_of(query_opts, struct get_nexthop_netlink_opts,
+			    query_opts);
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (ghdr->cmd != BATADV_CMD_GET_ORIGINATORS)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		return NL_OK;
+	}
+
+	if (missing_mandatory_attrs(attrs, get_nexthop_netlink_mandatory,
+				    ARRAY_SIZE(get_nexthop_netlink_mandatory)))
+		return NL_OK;
+
+	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
+	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+	index = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
+
+	if (!attrs[BATADV_ATTR_FLAG_BEST])
+		return NL_OK;
+
+	if (memcmp(&opts->mac, orig, ETH_ALEN) != 0)
+		return NL_OK;
+
+	/* save result */
+	memcpy(opts->nexthop, neigh, ETH_ALEN);
+	ifname = if_indextoname(index, opts->ifname);
+	if (!ifname)
+		return NL_OK;
+
+	opts->found = true;
+	opts->query_opts.err = 0;
+
+	return NL_STOP;
+}
+
+int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
+			uint8_t *nexthop, char *ifname)
+{
+	struct get_nexthop_netlink_opts opts = {
+		.nexthop = 0,
+		.found = false,
+		.query_opts = {
+			.err = 0,
+		},
+	};
+	int ret;
+
+	memcpy(&opts.mac, mac, ETH_ALEN);
+	opts.nexthop = nexthop;
+	opts.ifname = ifname;
+
+	ret = netlink_query_common(mesh_iface,  BATADV_CMD_GET_ORIGINATORS,
+			           get_nexthop_netlink_cb, NLM_F_DUMP,
+				   &opts.query_opts);
+	if (ret < 0)
+		return ret;
+
+	if (!opts.found)
+		return -ENOENT;
+
+	return 0;
+}
+
+static const int get_primarymac_netlink_mandatory[] = {
+	BATADV_ATTR_HARD_ADDRESS,
+};
+
+struct get_primarymac_netlink_opts {
+	uint8_t *primarymac;
+	bool found;
+	struct nlquery_opts query_opts;
+};
+
+static int get_primarymac_netlink_cb(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct nlquery_opts *query_opts = arg;
+	struct get_primarymac_netlink_opts *opts;
+	struct genlmsghdr *ghdr;
+	const uint8_t *primary_mac;
+
+	opts = container_of(query_opts, struct get_primarymac_netlink_opts,
+			    query_opts);
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (ghdr->cmd != BATADV_CMD_GET_MESH_INFO)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		return NL_OK;
+	}
+
+	if (missing_mandatory_attrs(attrs, get_primarymac_netlink_mandatory,
+				    ARRAY_SIZE(get_primarymac_netlink_mandatory)))
+		return NL_OK;
+
+	primary_mac = nla_data(attrs[BATADV_ATTR_HARD_ADDRESS]);
+
+	/* save result */
+	memcpy(opts->primarymac, primary_mac, ETH_ALEN);
+
+	opts->found = true;
+	opts->query_opts.err = 0;
+
+	return NL_STOP;
+}
+
+int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
+{
+	struct get_primarymac_netlink_opts opts = {
+		.primarymac = 0,
+		.found = false,
+		.query_opts = {
+			.err = 0,
+		},
+	};
+	int ret;
+
+	opts.primarymac = primarymac;
+
+	ret = netlink_query_common(mesh_iface, BATADV_CMD_GET_MESH_INFO,
+			           get_primarymac_netlink_cb, 0,
+				   &opts.query_opts);
+	if (ret < 0)
+		return ret;
+
+	if (!opts.found)
+		return -ENOENT;
 
 	return 0;
 }

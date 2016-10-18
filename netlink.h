@@ -47,6 +47,9 @@ int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
 
 int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 			  struct ether_addr *mac_out);
+int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
+			uint8_t *nexthop, char *ifname);
+int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac);
 
 extern struct nla_policy batadv_netlink_policy[];
 

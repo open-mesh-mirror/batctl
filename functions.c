@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <linux/netlink.h>
 #include <net/ethernet.h>
+#include <linux/if_link.h>
 #include <linux/rtnetlink.h>
 #include <linux/neighbour.h>
 #include <errno.h>
@@ -888,5 +889,68 @@ int print_routing_algos(void)
 	err = netlink_print_routing_algos();
 	if (err == -EOPNOTSUPP)
 		err = debug_print_routing_algos();
+	return err;
+}
+
+int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg)
+{
+	struct ifinfomsg rt_hdr = {
+		.ifi_family = IFLA_UNSPEC,
+	};
+	struct nl_sock *sock;
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+	int err = 0;
+	int ret;
+
+	sock = nl_socket_alloc();
+	if (!sock)
+		return -ENOMEM;
+
+	ret = nl_connect(sock, NETLINK_ROUTE);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_sock;
+	}
+
+	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb) {
+		err = -ENOMEM;
+		goto err_free_sock;
+	}
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, func, arg);
+
+	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_REQUEST | NLM_F_DUMP);
+	if (!msg) {
+		err = -ENOMEM;
+		goto err_free_cb;
+	}
+
+	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	ret = nla_put_u32(msg, IFLA_MASTER, ifindex);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	ret = nl_send_auto_complete(sock, msg);
+	if (ret < 0)
+		goto err_free_msg;
+
+	nl_recvmsgs(sock, cb);
+
+err_free_msg:
+	nlmsg_free(msg);
+err_free_cb:
+	nl_cb_put(cb);
+err_free_sock:
+	nl_socket_free(sock);
+
 	return err;
 }

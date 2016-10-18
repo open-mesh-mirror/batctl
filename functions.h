@@ -23,6 +23,8 @@
 #define _BATCTL_FUNCTIONS_H
 
 #include <net/ethernet.h>
+#include <netlink/netlink.h>
+#include <netlink/handlers.h>
 #include <stddef.h>
 
 
@@ -43,7 +45,8 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 struct ether_addr *translate_mac(const char *mesh_iface,
 				 const struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
-int vlan_get_link(const char *ifname, char **parent);
+int vlan_get_link(const char *ifname, char **parent);\
+int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
 
 int print_routing_algos(void);
 extern char *line_ptr;

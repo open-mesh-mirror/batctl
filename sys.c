@@ -383,6 +383,8 @@ int interface(char *mesh_iface, int argc, char **argv)
 	unsigned int ifmaster;
 	const char *long_op;
 	unsigned int cnt;
+	int rest_argc;
+	char **rest_argv;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -395,38 +397,41 @@ int interface(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
-	if (argc == 1)
+	rest_argc = argc - optind;
+	rest_argv = &argv[optind];
+
+	if (rest_argc == 0)
 		return print_interfaces(mesh_iface);
 
-	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
-	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0) &&
-	    (strcmp(argv[1], "create") != 0) && (strcmp(argv[1], "c") != 0) &&
-	    (strcmp(argv[1], "destroy") != 0) && (strcmp(argv[1], "D") != 0)) {
-		fprintf(stderr, "Error - unknown argument specified: %s\n", argv[1]);
+	if ((strcmp(rest_argv[0], "add") != 0) && (strcmp(rest_argv[0], "a") != 0) &&
+	    (strcmp(rest_argv[0], "del") != 0) && (strcmp(rest_argv[0], "d") != 0) &&
+	    (strcmp(rest_argv[0], "create") != 0) && (strcmp(rest_argv[0], "c") != 0) &&
+	    (strcmp(rest_argv[0], "destroy") != 0) && (strcmp(rest_argv[0], "D") != 0)) {
+		fprintf(stderr, "Error - unknown argument specified: %s\n", rest_argv[0]);
 		interface_usage();
 		goto err;
 	}
 
-	if (strcmp(argv[1], "destroy") == 0)
-		argv[1][0] = 'D';
+	if (strcmp(rest_argv[0], "destroy") == 0)
+		rest_argv[0][0] = 'D';
 
-	switch (argv[1][0]) {
+	switch (rest_argv[0][0]) {
 	case 'a':
 	case 'd':
-		if (argc == 2) {
+		if (rest_argc == 1) {
 			fprintf(stderr,
 				"Error - missing interface name(s) after '%s'\n",
-				argv[1]);
+				rest_argv[0]);
 			interface_usage();
 			goto err;
 		}
 		break;
 	case 'c':
 	case 'D':
-		if (argc != 2) {
+		if (rest_argc != 1) {
 			fprintf(stderr,
 				"Error - extra parameter after '%s'\n",
-				argv[1]);
+				rest_argv[0]);
 			interface_usage();
 			goto err;
 		}
@@ -435,7 +440,7 @@ int interface(char *mesh_iface, int argc, char **argv)
 		break;
 	}
 
-	switch (argv[1][0]) {
+	switch (rest_argv[0][0]) {
 	case 'c':
 		ret = create_interface(mesh_iface);
 		if (ret < 0) {
@@ -460,7 +465,7 @@ int interface(char *mesh_iface, int argc, char **argv)
 
 	/* get index of batman-adv interface - or try to create it */
 	ifmaster = if_nametoindex(mesh_iface);
-	if (!ifmaster && argv[1][0] == 'a') {
+	if (!ifmaster && rest_argv[0][0] == 'a') {
 		ret = create_interface(mesh_iface);
 		if (ret < 0) {
 			fprintf(stderr,
@@ -486,34 +491,34 @@ int interface(char *mesh_iface, int argc, char **argv)
 		goto err;
 	}
 
-	for (i = 2; i < argc; i++) {
-		ifindex = if_nametoindex(argv[i]);
+	for (i = 1; i < rest_argc; i++) {
+		ifindex = if_nametoindex(rest_argv[i]);
 
 		if (!ifindex) {
-			fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
+			fprintf(stderr, "Error - interface does not exist: %s\n", rest_argv[i]);
 			continue;
 		}
 
-		if (argv[1][0] == 'a')
+		if (rest_argv[0][0] == 'a')
 			ifindex = ifmaster;
 		else
 			ifindex = 0;
 
-		ret = set_master_interface(argv[i], ifindex);
+		ret = set_master_interface(rest_argv[i], ifindex);
 		if (ret < 0) {
-			if (argv[1][0] == 'a')
+			if (rest_argv[0][0] == 'a')
 				long_op = "add";
 			else
 				long_op = "delete";
 
 			fprintf(stderr, "Error - failed to %s interface %s: %s\n",
-				long_op, argv[i], strerror(-ret));
+				long_op, rest_argv[i], strerror(-ret));
 			goto err;
 		}
 	}
 
 	/* check if there is no interface left and then destroy mesh_iface */
-	if (argv[1][0] == 'd') {
+	if (rest_argv[0][0] == 'd') {
 		cnt = count_interfaces(mesh_iface);
 		if (cnt == 0)
 			destroy_interface(mesh_iface);

@@ -52,10 +52,12 @@ performances, is also included.
 .br
 .TP
 .I \fBcommands:
-.IP "\fBinterface\fP|\fBif\fP [\fBadd\fP|\fBdel iface(s)\fP]"
+.IP "\fBinterface\fP|\fBif\fP [\fB-M\fP] [\fBadd\fP|\fBdel iface(s)\fP]"
 If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
 In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to
 add or delete. Multiple interfaces can be specified.
+The "\-M" option tells batctl to not automatically create the batman-adv interface on "add" or to destroy it when "del"
+removed all interfaces which belonged to it.
 .IP "\fBinterface\fP|\fBif\fP [\fBcreate\fP|\fBdestroy\fP]"
 A batman-adv interface without attached interfaces can be created using "create". The parameter "destroy" can be used to
 free all attached interfaces and remove batman-adv interface.

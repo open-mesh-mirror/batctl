@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -122,6 +123,7 @@ static void interface_usage(void)
 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
 	fprintf(stderr, "       batctl [options] interface [parameters] [create|destroy]\n");
 	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -M disable automatic creation/removal of batman-adv interface\n");
 	fprintf(stderr, " \t -h print this help\n");
 }
 
@@ -385,12 +387,16 @@ int interface(char *mesh_iface, int argc, char **argv)
 	unsigned int cnt;
 	int rest_argc;
 	char **rest_argv;
+	bool manual_mode = false;
 
-	while ((optchar = getopt(argc, argv, "h")) != -1) {
+	while ((optchar = getopt(argc, argv, "hM")) != -1) {
 		switch (optchar) {
 		case 'h':
 			interface_usage();
 			return EXIT_SUCCESS;
+		case 'M':
+			manual_mode = true;
+			break;
 		default:
 			interface_usage();
 			return EXIT_FAILURE;
@@ -465,7 +471,7 @@ int interface(char *mesh_iface, int argc, char **argv)
 
 	/* get index of batman-adv interface - or try to create it */
 	ifmaster = if_nametoindex(mesh_iface);
-	if (!ifmaster && rest_argv[0][0] == 'a') {
+	if (!manual_mode && !ifmaster && rest_argv[0][0] == 'a') {
 		ret = create_interface(mesh_iface);
 		if (ret < 0) {
 			fprintf(stderr,
@@ -518,7 +524,7 @@ int interface(char *mesh_iface, int argc, char **argv)
 	}
 
 	/* check if there is no interface left and then destroy mesh_iface */
-	if (rest_argv[0][0] == 'd') {
+	if (!manual_mode && rest_argv[0][0] == 'd') {
 		cnt = count_interfaces(mesh_iface);
 		if (cnt == 0)
 			destroy_interface(mesh_iface);

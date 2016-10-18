@@ -66,7 +66,7 @@ struct tp_cookie {
 	uint32_t cookie;
 };
 
-static int tpmeter_nl_print_error(struct sockaddr_nl *nla __unused,
+static int tpmeter_nl_print_error(struct sockaddr_nl *nla __maybe_unused,
 				  struct nlmsgerr *nlerr,
 				  void *arg)
 {
@@ -236,7 +236,8 @@ out:
 	return err;
 }
 
-static int no_seq_check(struct nl_msg *msg __unused, void *arg __unused)
+static int no_seq_check(struct nl_msg *msg __maybe_unused,
+			void *arg __maybe_unused)
 {
 	return NL_OK;
 }
@@ -395,7 +396,7 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
 	int ret = EXIT_FAILURE;
 	int found_args = 1, read_opt = USE_BAT_HOSTS;
 	uint32_t time = 0;
-	char optchar;
+	int optchar;
 	struct nl_sock *listen_sock = NULL;
 	struct tp_result result = {
 		.error = 0,

@@ -34,7 +34,7 @@
 
 #include "batman_adv.h"
 
-static int mcast_error_handler(struct sockaddr_nl *nla __unused,
+static int mcast_error_handler(struct sockaddr_nl *nla __maybe_unused,
 			       struct nlmsgerr *err, void *arg)
 {
 	int *ret = arg;
@@ -42,7 +42,7 @@ static int mcast_error_handler(struct sockaddr_nl *nla __unused,
 	return NL_STOP;
 }
 
-static int mcast_ack_handler(struct nl_msg *msg __unused, void *arg)
+static int mcast_ack_handler(struct nl_msg *msg __maybe_unused, void *arg)
 {
 	int *ret = arg;
 	*ret = 0;

@@ -134,9 +134,9 @@ static int missing_mandatory_attrs(struct nlattr *attrs[],
 	return 0;
 }
 
-static int print_error(struct sockaddr_nl *nla __unused,
+static int print_error(struct sockaddr_nl *nla __maybe_unused,
 		       struct nlmsgerr *nlerr,
-		       void *arg __unused)
+		       void *arg __maybe_unused)
 {
 	if (nlerr->error != -EOPNOTSUPP)
 		fprintf(stderr, "Error received: %s\n",
@@ -147,7 +147,7 @@ static int print_error(struct sockaddr_nl *nla __unused,
 	return NL_STOP;
 }
 
-static int stop_callback(struct nl_msg *msg, void *arg __unused)
+static int stop_callback(struct nl_msg *msg, void *arg __maybe_unused)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int *error = nlmsg_data(nlh);
@@ -345,7 +345,7 @@ static const int routing_algos_mandatory[] = {
 	BATADV_ATTR_ALGO_NAME,
 };
 
-static int routing_algos_callback(struct nl_msg *msg, void *arg __unused)
+static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
 {
 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
@@ -1286,7 +1286,7 @@ int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opts
 				    bla_backbone_callback);
 }
 
-static int nlquery_error_cb(struct sockaddr_nl *nla __unused,
+static int nlquery_error_cb(struct sockaddr_nl *nla __maybe_unused,
 			    struct nlmsgerr *nlerr, void *arg)
 {
 	struct nlquery_opts *query_opts = arg;

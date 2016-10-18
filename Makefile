@@ -30,6 +30,7 @@ OBJ += debug.o
 OBJ += functions.o
 OBJ += genl.o
 OBJ += hash.o
+OBJ += interface.o
 OBJ += ioctl.o
 OBJ += main.o
 OBJ += netlink.o

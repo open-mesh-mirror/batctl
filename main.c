@@ -29,6 +29,7 @@
 #include "main.h"
 #include "sys.h"
 #include "debug.h"
+#include "interface.h"
 #include "ping.h"
 #include "translate.h"
 #include "traceroute.h"

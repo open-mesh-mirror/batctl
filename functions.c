@@ -41,6 +41,7 @@
 #include <linux/if_link.h>
 #include <linux/rtnetlink.h>
 #include <linux/neighbour.h>
+#include <sys/syscall.h>
 #include <errno.h>
 #include <net/if.h>
 #include <netlink/socket.h>
@@ -1071,4 +1072,69 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
 	}
 
 	return EXIT_SUCCESS;
+}
+
+static int get_random_bytes_syscall(void *buf __maybe_unused,
+				    size_t buflen __maybe_unused)
+{
+#ifdef SYS_getrandom
+	return syscall(SYS_getrandom, buf, buflen, 0);
+#else
+	return -EOPNOTSUPP;
+#endif
+}
+
+static int get_random_bytes_urandom(void *buf, size_t buflen)
+{
+	int fd;
+	ssize_t r;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0)
+		return -EOPNOTSUPP;
+
+	r = read(fd, buf, buflen);
+	close(fd);
+	if (r < 0)
+		return -EOPNOTSUPP;
+
+	if ((size_t)r != buflen)
+		return -EOPNOTSUPP;
+
+	return 0;
+}
+
+static int get_random_bytes_fallback(void *buf, size_t buflen)
+{
+	struct timespec now;
+	static int initialized = 0;
+	size_t i;
+	uint8_t *bufc = buf;
+
+	/* this is not a good source for randomness */
+	if (!initialized) {
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		srand(now.tv_sec ^ now.tv_nsec);
+		initialized = 1;
+	}
+
+	for (i = 0; i < buflen; i++)
+		bufc[i] = rand() & 0xff;
+
+	return 0;
+}
+
+void get_random_bytes(void *buf, size_t buflen)
+{
+	int ret;
+
+	ret = get_random_bytes_syscall(buf, buflen);
+	if (ret != -EOPNOTSUPP)
+		return;
+
+	ret = get_random_bytes_urandom(buf, buflen);
+	if (ret != -EOPNOTSUPP)
+		return;
+
+	get_random_bytes_fallback(buf, buflen);
 }

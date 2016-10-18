@@ -32,6 +32,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <stdint.h>
@@ -56,6 +57,8 @@
 #include "debug.h"
 #include "debugfs.h"
 #include "netlink.h"
+
+#define PATH_BUFF_LEN 200
 
 static struct timespec start_time;
 static char *host_name;
@@ -1012,4 +1015,60 @@ err_free_sock:
 	nl_socket_free(sock);
 
 	return err;
+}
+
+int check_mesh_iface(char *mesh_iface)
+{
+	char *base_dev = NULL;
+	char path_buff[PATH_BUFF_LEN];
+	int ret = -1, vid;
+	DIR *dir;
+
+	/* use the parent interface if this is a VLAN */
+	vid = vlan_get_link(mesh_iface, &base_dev);
+	if (vid >= 0)
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+	else
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+
+	/* try to open the mesh sys directory */
+	dir = opendir(path_buff);
+	if (!dir)
+		goto out;
+
+	closedir(dir);
+
+	ret = 0;
+out:
+	if (base_dev)
+		free(base_dev);
+
+	return ret;
+}
+
+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
+{
+	char path_buff[PATH_BUFF_LEN];
+	int res;
+
+	/* check if this device actually belongs to the mesh interface */
+	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
+	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	if (res != EXIT_SUCCESS) {
+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
+			path_buff, strerror(errno));
+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
+		return EXIT_FAILURE;
+	}
+
+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	if (strcmp(line_ptr, mesh_iface) != 0) {
+		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
+			hard_iface, line_ptr, mesh_iface);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

@@ -50,6 +50,8 @@ struct ether_addr *resolve_mac(const char *asc);
 int vlan_get_link(const char *ifname, char **parent);\
 int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
 int netlink_simple_request(struct nl_msg *msg);
+int check_mesh_iface(char *mesh_iface);
+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
 
 int print_routing_algos(void);
 extern char *line_ptr;

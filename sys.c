@@ -120,6 +120,7 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
 static void interface_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
+	fprintf(stderr, "       batctl [options] interface [parameters] [create|destroy]\n");
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -h print this help\n");
 }
@@ -198,10 +199,95 @@ static int print_interfaces(char *mesh_iface)
 	return EXIT_SUCCESS;
 }
 
+static int create_interface(const char *mesh_iface)
+{
+	struct ifinfomsg rt_hdr = {
+		.ifi_family = IFLA_UNSPEC,
+	};
+	struct nlattr *linkinfo;
+	struct nl_msg *msg;
+	int err = 0;
+	int ret;
+
+	msg = nlmsg_alloc_simple(RTM_NEWLINK,
+				 NLM_F_REQUEST | NLM_F_CREATE | NLM_F_EXCL | NLM_F_ACK);
+	if (!msg) {
+		return -ENOMEM;
+	}
+
+	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	ret = nla_put_string(msg, IFLA_IFNAME, mesh_iface);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	linkinfo = nla_nest_start(msg, IFLA_LINKINFO);
+	if (!linkinfo) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	ret = nla_put_string(msg, IFLA_INFO_KIND, "batadv");
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	nla_nest_end(msg, linkinfo);
+
+	err = netlink_simple_request(msg);
+
+err_free_msg:
+	nlmsg_free(msg);
+
+	return err;
+}
+
+static int destroy_interface(const char *mesh_iface)
+{
+	struct ifinfomsg rt_hdr = {
+		.ifi_family = IFLA_UNSPEC,
+	};
+	struct nl_msg *msg;
+	int err = 0;
+	int ret;
+
+	msg = nlmsg_alloc_simple(RTM_DELLINK, NLM_F_REQUEST | NLM_F_ACK);
+	if (!msg) {
+		return -ENOMEM;
+	}
+
+	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	ret = nla_put_string(msg, IFLA_IFNAME, mesh_iface);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	err = netlink_simple_request(msg);
+
+err_free_msg:
+	nlmsg_free(msg);
+
+	return err;
+}
+
 int interface(char *mesh_iface, int argc, char **argv)
 {
 	char *path_buff;
 	int i, res, optchar;
+	int ret;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -218,16 +304,63 @@ int interface(char *mesh_iface, int argc, char **argv)
 		return print_interfaces(mesh_iface);
 
 	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
-	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
+	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0) &&
+	    (strcmp(argv[1], "create") != 0) && (strcmp(argv[1], "c") != 0) &&
+	    (strcmp(argv[1], "destroy") != 0) && (strcmp(argv[1], "D") != 0)) {
 		fprintf(stderr, "Error - unknown argument specified: %s\n", argv[1]);
 		interface_usage();
 		goto err;
 	}
 
-	if (argc == 2) {
-		fprintf(stderr, "Error - missing interface name(s) after '%s'\n", argv[1]);
-		interface_usage();
-		goto err;
+	if (strcmp(argv[1], "destroy") == 0)
+		argv[1][0] = 'D';
+
+	switch (argv[1][0]) {
+	case 'a':
+	case 'd':
+		if (argc == 2) {
+			fprintf(stderr,
+				"Error - missing interface name(s) after '%s'\n",
+				argv[1]);
+			interface_usage();
+			goto err;
+		}
+		break;
+	case 'c':
+	case 'D':
+		if (argc != 2) {
+			fprintf(stderr,
+				"Error - extra parameter after '%s'\n",
+				argv[1]);
+			interface_usage();
+			goto err;
+		}
+		break;
+	default:
+		break;
+	}
+
+	switch (argv[1][0]) {
+	case 'c':
+		ret = create_interface(mesh_iface);
+		if (ret < 0) {
+			fprintf(stderr,
+				"Error - failed to create batman-adv interface: %s\n",
+				strerror(-ret));
+			goto err;
+		}
+		return EXIT_SUCCESS;
+	case 'D':
+		ret = destroy_interface(mesh_iface);
+		if (ret < 0) {
+			fprintf(stderr,
+				"Error - failed to destroy batman-adv interface: %s\n",
+				strerror(-ret));
+			goto err;
+		}
+		return EXIT_SUCCESS;
+	default:
+		break;
 	}
 
 	path_buff = malloc(PATH_BUFF_LEN);

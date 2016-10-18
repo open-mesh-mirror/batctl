@@ -56,6 +56,9 @@ performances, is also included.
 If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
 In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to
 add or delete. Multiple interfaces can be specified.
+.IP "\fBinterface\fP|\fBif\fP [\fBcreate\fP|\fBdestroy\fP]"
+A batman-adv interface without attached interfaces can be created using "create". The parameter "destroy" can be used to
+free all attached interfaces and remove batman-adv interface.
 .br
 .IP "\fBorig_interval\fP|\fBit\fP [\fBinterval\fP]"
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the

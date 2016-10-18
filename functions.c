@@ -954,3 +954,62 @@ err_free_sock:
 
 	return err;
 }
+
+static int ack_errno_handler(struct sockaddr_nl *nla __maybe_unused,
+			     struct nlmsgerr *nlerr,
+			     void *arg)
+{
+	int *err = arg;
+
+	*err = nlerr->error;
+
+	return NL_STOP;
+}
+
+static int ack_wait_handler(struct nl_msg *msg __maybe_unused,
+			    void *arg __maybe_unused)
+{
+	return NL_STOP;
+}
+
+int netlink_simple_request(struct nl_msg *msg)
+{
+	struct nl_sock *sock;
+	struct nl_cb *cb;
+	int err = 0;
+	int ret;
+
+	sock = nl_socket_alloc();
+	if (!sock)
+		return -ENOMEM;
+
+	ret = nl_connect(sock, NETLINK_ROUTE);
+	if (ret < 0) {
+		err = -ENOMEM;
+		goto err_free_sock;
+	}
+
+	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb) {
+		err = -ENOMEM;
+		goto err_free_sock;
+	}
+
+	nl_cb_err(cb, NL_CB_CUSTOM, ack_errno_handler, &err);
+	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_wait_handler, NULL);
+
+	ret = nl_send_auto_complete(sock, msg);
+	if (ret < 0)
+		goto err_free_cb;
+
+	// ack_errno_handler sets err on errors
+	err = 0;
+	nl_recvmsgs(sock, cb);
+
+err_free_cb:
+	nl_cb_put(cb);
+err_free_sock:
+	nl_socket_free(sock);
+
+	return err;
+}

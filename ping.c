@@ -201,7 +201,7 @@ int ping(char *mesh_iface, int argc, char **argv)
 					   (struct batadv_icmp_header *)&icmp_packet_out,
 					   packet_len);
 		if (res < 0) {
-			fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(res));
+			fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(-res));
 			goto sleep;
 		}
 

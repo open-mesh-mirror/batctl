@@ -222,7 +222,7 @@ read_packet:
 		}
 
 		if (read_len < 0) {
-			fprintf(stderr, "Error - can't receive icmp packets: %s\n", strerror(read_len));
+			fprintf(stderr, "Error - can't receive icmp packets: %s\n", strerror(-read_len));
 			goto sleep;
 		}
 

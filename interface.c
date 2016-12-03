@@ -30,6 +30,7 @@
 #include <dirent.h>
 #include <net/if.h>
 #include <linux/if_link.h>
+#include <linux/rtnetlink.h>
 #include <netlink/netlink.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>

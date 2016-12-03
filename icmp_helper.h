@@ -24,7 +24,6 @@
 
 #include "main.h"
 
-#include <linux/if_link.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netlink/netlink.h>

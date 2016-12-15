@@ -1,3 +1,11 @@
+batctl 2016.5
+
+ * reimplement traceroute/ping commands in userspace without debugfs
+ * switch interface manipulation from (legacy) sysfs to rtnetlink
+ * coding style cleanups
+
+ -- Thu, 15 Dec 2016 18:11:55 +0100
+
 batctl 2016.4:
 
  * integrate support for batman-adv netlink

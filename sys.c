@@ -328,8 +328,6 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl gw_mode");
-
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
@@ -385,6 +383,8 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 		line_ptr = NULL;
 		goto out;
 	}
+
+	check_root_or_die("batctl gw_mode");
 
 	if (strcmp(argv[1], "client") == 0)
 		gw_mode = GW_MODE_CLIENT;

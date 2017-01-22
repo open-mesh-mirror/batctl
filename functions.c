@@ -1141,7 +1141,7 @@ void get_random_bytes(void *buf, size_t buflen)
 
 void check_root_or_die(const char *cmd)
 {
-	if (getuid() || getgid()) {
+	if (geteuid() != 0) {
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", cmd);
 		exit(EXIT_FAILURE);
 	}

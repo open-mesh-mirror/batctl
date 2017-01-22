@@ -1177,11 +1177,12 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
 	}
 
 	/* only parse routing algorithm name */
+	last_err = -EINVAL;
 	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
 	free(info_header);
 
 	if (strlen(algo_name_buf) == 0)
-		return -EOPNOTSUPP;
+		return last_err;
 
 	if (!strcmp("BATMAN_IV", algo_name_buf))
 		header = "   Originator        last-seen (#/255) Nexthop           [outgoingIF]\n";
@@ -1244,11 +1245,12 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
 	}
 
 	/* only parse routing algorithm name */
+	last_err = -EINVAL;
 	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
 	free(info_header);
 
 	if (strlen(algo_name_buf) == 0)
-		return -EOPNOTSUPP;
+		return last_err;
 
 	if (!strcmp("BATMAN_IV", algo_name_buf))
 		header = "  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth\n";

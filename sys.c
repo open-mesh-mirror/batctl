@@ -253,8 +253,6 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl");
-
 	/* prepare the classic path */
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
@@ -271,6 +269,8 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 				NO_FLAGS, 0, 0, 0);
 		goto out;
 	}
+
+	check_root_or_die("batctl");
 
 	if (!batctl_settings[setting].params)
 		goto write_file;

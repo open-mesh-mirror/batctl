@@ -324,13 +324,13 @@ int interface(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl interface");
-
 	rest_argc = argc - optind;
 	rest_argv = &argv[optind];
 
 	if (rest_argc == 0)
 		return print_interfaces(mesh_iface);
+
+	check_root_or_die("batctl interface");
 
 	if ((strcmp(rest_argv[0], "add") != 0) && (strcmp(rest_argv[0], "a") != 0) &&
 	    (strcmp(rest_argv[0], "del") != 0) && (strcmp(rest_argv[0], "d") != 0) &&

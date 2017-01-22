@@ -105,8 +105,6 @@ int ioctl_statistics_get(char *mesh_iface)
 	struct ifreq ifr;
 	int fd = -1, ret = EXIT_FAILURE;
 
-	check_root_or_die("batctl statistics");
-
 	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, mesh_iface, sizeof(ifr.ifr_name));
 	ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';

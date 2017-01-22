@@ -1113,9 +1113,84 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int rea
 	parse_eth_hdr(packet_buff, buff_len, read_opt, time_printed);
 }
 
+static struct dump_if *create_dump_interface(char *iface)
+{
+	struct dump_if *dump_if;
+	struct ifreq req;
+	int res;
+
+	dump_if = malloc(sizeof(struct dump_if));
+	if (!dump_if)
+		return NULL;
+
+	memset(dump_if, 0, sizeof(struct dump_if));
+
+	dump_if->dev = iface;
+	if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
+		fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
+		goto free_dumpif;
+	}
+
+	dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	if (dump_if->raw_sock < 0) {
+		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
+		goto free_dumpif;
+	}
+
+	memset(&req, 0, sizeof (struct ifreq));
+	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+
+	res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
+	if (res < 0) {
+		fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
+		goto close_socket;
+	}
+
+	dump_if->hw_type = req.ifr_hwaddr.sa_family;
+
+	switch (dump_if->hw_type) {
+	case ARPHRD_ETHER:
+	case ARPHRD_IEEE80211_PRISM:
+	case ARPHRD_IEEE80211_RADIOTAP:
+		break;
+	default:
+		fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
+		goto close_socket;
+	}
+
+	memset(&req, 0, sizeof (struct ifreq));
+	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+
+	res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
+	if (res < 0) {
+		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
+		goto close_socket;
+	}
+
+	dump_if->addr.sll_family   = AF_PACKET;
+	dump_if->addr.sll_protocol = htons(ETH_P_ALL);
+	dump_if->addr.sll_ifindex  = req.ifr_ifindex;
+
+	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
+	if (res < 0) {
+		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
+		goto close_socket;
+	}
+
+	return dump_if;
+
+close_socket:
+	close(dump_if->raw_sock);
+free_dumpif:
+	free(dump_if);
+
+	return NULL;
+}
+
 int tcpdump(int argc, char **argv)
 {
-	struct ifreq req;
 	struct timeval tv;
 	struct dump_if *dump_if, *dump_if_tmp;
 	struct list_head dump_if_list;
@@ -1172,71 +1247,9 @@ int tcpdump(int argc, char **argv)
 	FD_ZERO(&wait_sockets);
 
 	while (argc > found_args) {
-
-		dump_if = malloc(sizeof(struct dump_if));
-		memset(dump_if, 0, sizeof(struct dump_if));
-		dump_if->raw_sock = -1;
-
-		dump_if->dev = argv[found_args];
-
-		if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
-			fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
+		dump_if = create_dump_interface(argv[found_args]);
+		if (!dump_if)
 			goto out;
-		}
-
-		dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-
-		if (dump_if->raw_sock < 0) {
-			fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
-			goto out;
-		}
-
-		memset(&req, 0, sizeof (struct ifreq));
-		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
-		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
-
-		res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
-		if (res < 0) {
-			fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
-			close(dump_if->raw_sock);
-			goto out;
-		}
-
-		dump_if->hw_type = req.ifr_hwaddr.sa_family;
-
-		switch (dump_if->hw_type) {
-		case ARPHRD_ETHER:
-		case ARPHRD_IEEE80211_PRISM:
-		case ARPHRD_IEEE80211_RADIOTAP:
-			break;
-		default:
-			fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
-			goto out;
-		}
-
-		memset(&req, 0, sizeof (struct ifreq));
-		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
-		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
-
-		res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
-
-		if (res < 0) {
-			fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
-			close(dump_if->raw_sock);
-			goto out;
-		}
-
-		dump_if->addr.sll_family   = AF_PACKET;
-		dump_if->addr.sll_protocol = htons(ETH_P_ALL);
-		dump_if->addr.sll_ifindex  = req.ifr_ifindex;
-
-		res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
-
-		if (res < 0) {
-			fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
-			close(dump_if->raw_sock);
-			goto out;
-		}
 
 		if (dump_if->raw_sock > max_sock)
 			max_sock = dump_if->raw_sock;

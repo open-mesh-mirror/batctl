@@ -152,12 +152,12 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl loglevel");
-
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc != 1) {
+		check_root_or_die("batctl loglevel");
+
 		for (i = 1; i < argc; i++) {
 			if (strcmp(argv[i], "none") == 0) {
 				log_level = 0;

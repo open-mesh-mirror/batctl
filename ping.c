@@ -45,7 +45,7 @@
 #include "icmp_helper.h"
 
 
-char is_aborted = 0;
+static volatile sig_atomic_t is_aborted = 0;
 
 
 static void ping_usage(void)

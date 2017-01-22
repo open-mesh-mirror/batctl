@@ -152,6 +152,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
+	check_root_or_die("batctl loglevel");
+
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
@@ -251,6 +253,8 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 		}
 	}
 
+	check_root_or_die("batctl");
+
 	/* prepare the classic path */
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
@@ -323,6 +327,8 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
+
+	check_root_or_die("batctl gw_mode");
 
 	path_buff = malloc(PATH_BUFF_LEN);
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
@@ -448,6 +454,8 @@ int handle_ra_setting(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
+
+	check_root_or_die("batctl routing_algo");
 
 	if (argc == 2) {
 		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);

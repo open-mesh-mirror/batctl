@@ -219,6 +219,8 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
 		}
 	}
 
+	check_root_or_die("batctl");
+
 	if (read_opt & UNICAST_ONLY && read_opt & MULTICAST_ONLY) {
 		fprintf(stderr, "Error - '-u' and '-m' are exclusive options\n");
 		debug_table_usage(debug_table);
@@ -270,6 +272,8 @@ int print_vis_info(char *mesh_iface)
 	char *debugfs_mnt;
 	FILE *fp;
 
+	check_root_or_die("batctl vis_data");
+
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {
 		fprintf(stderr, "Error - can't mount or find debugfs\n");
@@ -317,6 +321,8 @@ int log_print(char *mesh_iface, int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
+
+	check_root_or_die("batctl log");
 
 	debugfs_mnt = debugfs_mount(NULL);
 	if (!debugfs_mnt) {

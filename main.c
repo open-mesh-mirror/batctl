@@ -134,11 +134,6 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	/* TODO: remove this generic check here and move it into the individual functions */
-	/* check if user is root */
-	if (strncmp(argv[1], "bisect", strlen("bisect")) != 0)
-		check_root_or_die(argv[0]);
-
 	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
 
 		ret = interface(mesh_iface, argc - 1, argv + 1);

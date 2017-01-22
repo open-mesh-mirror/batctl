@@ -324,6 +324,8 @@ int interface(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
+	check_root_or_die("batctl interface");
+
 	rest_argc = argc - optind;
 	rest_argv = &argv[optind];
 

@@ -1134,7 +1134,7 @@ static struct dump_if *create_dump_interface(char *iface)
 
 	dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (dump_if->raw_sock < 0) {
-		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
+		perror("Error - can't create raw socket");
 		goto free_dumpif;
 	}
 
@@ -1144,7 +1144,7 @@ static struct dump_if *create_dump_interface(char *iface)
 
 	res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
 	if (res < 0) {
-		fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
+		perror("Error - can't create raw socket (SIOCGIFHWADDR)");
 		goto close_socket;
 	}
 
@@ -1166,7 +1166,7 @@ static struct dump_if *create_dump_interface(char *iface)
 
 	res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
 	if (res < 0) {
-		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
+		perror("Error - can't create raw socket (SIOCGIFINDEX)");
 		goto close_socket;
 	}
 
@@ -1176,7 +1176,7 @@ static struct dump_if *create_dump_interface(char *iface)
 
 	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
 	if (res < 0) {
-		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
+		perror("Error - can't bind raw socket");
 		goto close_socket;
 	}
 
@@ -1290,7 +1290,7 @@ int tcpdump(int argc, char **argv)
 			continue;
 
 		if (res < 0) {
-			fprintf(stderr, "Error - can't select on raw socket: %s\n", strerror(errno));
+			perror("Error - can't select on raw socket");
 			continue;
 		}
 

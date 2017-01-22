@@ -48,7 +48,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (void *)&drvinfo;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		fprintf(stderr, "Error - can't open driver information: %s\n", strerror(errno));
+		perror("Error - can't open driver information");
 		goto out;
 	}
 
@@ -72,7 +72,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (void *)strings;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		fprintf(stderr, "Error - can't get stats strings information: %s\n", strerror(errno));
+		perror("Error - can't get stats strings information");
 		goto out;
 	}
 
@@ -81,7 +81,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 	ifr->ifr_data = (void *) stats;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
-		fprintf(stderr, "Error - can't get stats information: %s\n", strerror(errno));
+		perror("Error - can't get stats information");
 		goto out;
 	}
 
@@ -110,7 +110,7 @@ int ioctl_statistics_get(char *mesh_iface)
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
-		fprintf(stderr, "Error - can't open socket: %s\n", strerror(errno));
+		perror("Error - can't open socket");
 		goto out;
 	}
 

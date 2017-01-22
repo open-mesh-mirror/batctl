@@ -30,6 +30,7 @@
 #include <netinet/ether.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -190,7 +191,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 
 	iface->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (iface->sock < 0) {
-		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
+		perror("Error - can't create raw socket");
 		ret = -errno;
 		goto free_iface;
 	}
@@ -201,7 +202,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 
 	ret = ioctl(iface->sock, SIOCGIFINDEX, &req);
 	if (ret < 0) {
-		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
+		perror("Error - can't create raw socket (SIOCGIFINDEX)");
 		ret = -errno;
 		goto close_sock;
 	}
@@ -214,7 +215,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 
 	ret = bind(iface->sock, (struct sockaddr *)&sll, sizeof(struct sockaddr_ll));
 	if (ret < 0) {
-		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
+		perror("Error - can't bind raw socket");
 		ret = -errno;
 		goto close_sock;
 	}

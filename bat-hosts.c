@@ -128,7 +128,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 
 		if (!bat_host) {
 			if (read_opt & USE_BAT_HOSTS)
-				fprintf(stderr, "Error - could not allocate memory: %s\n", strerror(errno));
+				perror("Error - could not allocate memory");
 			goto out;
 		}
 

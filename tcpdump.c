@@ -39,6 +39,7 @@
 #include <netinet/icmp6.h>
 #include <netinet/if_ether.h>
 #include <net/ethernet.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/select.h>
@@ -1189,6 +1190,20 @@ free_dumpif:
 	return NULL;
 }
 
+static volatile sig_atomic_t is_aborted = 0;
+
+static void sig_handler(int sig)
+{
+	switch (sig) {
+	case SIGINT:
+	case SIGTERM:
+		is_aborted = 1;
+		break;
+	default:
+		break;
+	}
+}
+
 int tcpdump(int argc, char **argv)
 {
 	struct timeval tv;
@@ -1242,6 +1257,9 @@ int tcpdump(int argc, char **argv)
 
 	bat_hosts_init(read_opt);
 
+	signal(SIGINT, sig_handler);
+	signal(SIGTERM, sig_handler);
+
 	/* init interfaces list */
 	INIT_LIST_HEAD(&dump_if_list);
 	FD_ZERO(&wait_sockets);
@@ -1259,7 +1277,7 @@ int tcpdump(int argc, char **argv)
 		found_args++;
 	}
 
-	while (1) {
+	while (!is_aborted) {
 
 		memcpy(&tmp_wait_sockets, &wait_sockets, sizeof(fd_set));
 

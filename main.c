@@ -136,10 +136,8 @@ int main(int argc, char **argv)
 
 	/* TODO: remove this generic check here and move it into the individual functions */
 	/* check if user is root */
-	if ((strncmp(argv[1], "bisect", strlen("bisect")) != 0) && ((getuid()) || (getgid()))) {
-		fprintf(stderr, "Error - you must be root to run '%s' !\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
+	if (strncmp(argv[1], "bisect", strlen("bisect")) != 0)
+		check_root_or_die(argv[0]);
 
 	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
 

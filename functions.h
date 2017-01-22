@@ -54,6 +54,7 @@ int check_mesh_iface(char *mesh_iface);
 int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
 
 void get_random_bytes(void *buf, size_t buflen);
+void check_root_or_die(const char *cmd);
 
 int print_routing_algos(void);
 extern char *line_ptr;

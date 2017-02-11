@@ -33,8 +33,9 @@
 #include <linux/ethtool.h>
 #include <stdint.h>
 
-#include "functions.h"
 #include "ioctl.h"
+
+void check_root_or_die(const char *cmd);
 
 /* code borrowed from ethtool */
 static int statistics_custom_get(int fd, struct ifreq *ifr)

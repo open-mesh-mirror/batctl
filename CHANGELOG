@@ -1,3 +1,12 @@
+batctl 2017.0
+
+ * remove root check for read-only sysfs and rtnl functionality
+ * coding style cleanups
+ * bugs squashed:
+   - fix check for root priviliges when started under modified effective uid
+
+ -- Tue, 28 Feb 2017 17:22:49 +0100
+
 batctl 2016.5
 
  * reimplement traceroute/ping commands in userspace without debugfs

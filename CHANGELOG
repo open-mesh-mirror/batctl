@@ -1,3 +1,9 @@
+batctl 2017.1
+
+ * (no changes)
+
+ -- Tue, 23 May 2017 11:40:21 +0200
+
 batctl 2017.0
 
  * remove root check for read-only sysfs and rtnl functionality

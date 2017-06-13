@@ -59,7 +59,7 @@
 #include "debugfs.h"
 #include "netlink.h"
 
-#define PATH_BUFF_LEN 200
+#define PATH_BUFF_LEN 400
 
 static struct timespec start_time;
 static char *host_name;

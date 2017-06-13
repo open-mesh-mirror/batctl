@@ -31,7 +31,7 @@
 #define ETH_STR_LEN 17
 #define BATMAN_ADV_TAG "batman-adv:"
 
-#define PATH_BUFF_LEN 200
+#define PATH_BUFF_LEN 400
 
 /* return time delta from start to end in milliseconds */
 void start_timer(void);

@@ -500,8 +500,9 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
 		break;
 	case BATADV_TP_REASON_CANCEL:
 		printf("CANCEL received: test aborted\n");
-		/* fall through and print the partial result */
+		/* fall through */
 	case BATADV_TP_REASON_COMPLETE:
+		/* print the partial result */
 		if (result.test_time > 0) {
 			throughput = result.total_bytes * 1000;
 			throughput /= result.test_time;

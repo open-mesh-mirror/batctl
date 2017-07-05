@@ -150,7 +150,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
 					   (struct batadv_icmp_header *)&icmp_packet_out,
 					   sizeof(icmp_packet_out));
 			if (res < 0) {
-				fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(res));
+				fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(-res));
 				continue;
 			}
 

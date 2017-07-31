@@ -1,3 +1,9 @@
+batctl 2017.2
+
+ * coding style cleanups and refactoring
+
+ -- Fri, 28 Jul 2017 13:42:03 +0200
+
 batctl 2017.1
 
  * (no changes)

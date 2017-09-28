@@ -1,3 +1,10 @@
+batctl 2017.3
+
+ * bugs squashed:
+   - Fix error messages on traceroute send failures
+
+ -- Thu, 28 Sep 2017 13:43:18 +0200
+
 batctl 2017.2
 
  * coding style cleanups and refactoring

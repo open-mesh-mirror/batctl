@@ -25,7 +25,7 @@
 #include <stdint.h>
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2017.3"
+#define SOURCE_VERSION "2017.4"
 #endif
 
 #define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"

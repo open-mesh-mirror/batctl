@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: ISC
 /*
  * Copyright (c) 2007, 2008	Johannes Berg
  * Copyright (c) 2007		Andy Lutomirski

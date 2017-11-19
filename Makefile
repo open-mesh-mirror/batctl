@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA
 #
+# License-Filename: LICENSES/preferred/GPL-2.0
 
 # changing the CONFIG_* line to 'y' enables the related feature
 # batctl advanced debugging tool bisect:

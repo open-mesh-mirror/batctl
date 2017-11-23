@@ -153,6 +153,11 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	}
 
 	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+		return EXIT_FAILURE;
+	}
+
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc != 1) {
@@ -255,6 +260,11 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 
 	/* prepare the classic path */
 	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+		return EXIT_FAILURE;
+	}
+
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	/* if the specified interface is a VLAN then change the path to point
@@ -329,6 +339,11 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
 	}
 
 	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+		return EXIT_FAILURE;
+	}
+
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 
 	if (argc == 1) {

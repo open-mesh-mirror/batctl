@@ -208,9 +208,7 @@ int read_file(const char *dir, const char *fname, int read_opt,
 	if (read_opt & USE_BAT_HOSTS)
 		bat_hosts_init(read_opt);
 
-	strncpy(full_path, dir, sizeof(full_path));
-	full_path[sizeof(full_path) - 1] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
+	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
 
 open:
 	line = 0;
@@ -349,9 +347,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 	char full_path[500];
 	ssize_t write_len;
 
-	strncpy(full_path, dir, sizeof(full_path));
-	full_path[sizeof(full_path) - 1] = '\0';
-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
+	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
 
 	fd = open(full_path, O_WRONLY);
 

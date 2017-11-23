@@ -301,8 +301,10 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0)
+	if (family < 0) {
+		nl_socket_free(sock);
 		return NULL;
+	}
 
 	msg = nlmsg_alloc();
 	if (!msg) {
@@ -410,8 +412,10 @@ int netlink_print_routing_algos(void)
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0)
-		return -EOPNOTSUPP;
+	if (family < 0) {
+		last_err = -EOPNOTSUPP;
+		goto err_free_sock;
+	}
 
 	msg = nlmsg_alloc();
 	if (!msg) {
@@ -1125,8 +1129,10 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0)
-		return -EOPNOTSUPP;
+	if (family < 0) {
+		last_err = -EOPNOTSUPP;
+		goto err_free_sock;
+	}
 
 	ifindex = if_nametoindex(mesh_iface);
 	if (!ifindex) {

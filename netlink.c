@@ -295,6 +295,9 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
 	};
 
 	sock = nl_socket_alloc();
+	if (!sock)
+		return NULL;
+
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
@@ -397,6 +400,9 @@ int netlink_print_routing_algos(void)
 	};
 
 	sock = nl_socket_alloc();
+	if (!sock)
+		return -ENOMEM;
+
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
@@ -1104,6 +1110,9 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 	int family;
 
 	sock = nl_socket_alloc();
+	if (!sock)
+		return -ENOMEM;
+
 	genl_connect(sock);
 
 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);

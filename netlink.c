@@ -1137,7 +1137,8 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 	ifindex = if_nametoindex(mesh_iface);
 	if (!ifindex) {
 		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
-		return -ENODEV;
+		last_err = -ENODEV;
+		goto err_free_sock;
 	}
 
 	if (orig_iface) {
@@ -1145,7 +1146,8 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 		if (!hardifindex) {
 			fprintf(stderr, "Interface %s is unknown\n",
 				orig_iface);
-			return -ENODEV;
+			last_err = -ENODEV;
+			goto err_free_sock;
 		}
 	}
 

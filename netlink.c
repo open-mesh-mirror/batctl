@@ -320,11 +320,15 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
 	nlmsg_free(msg);
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb)
+		goto err_free_sock;
+
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, &opts);
 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
 
 	nl_recvmsgs(sock, cb);
 
+err_free_sock:
 	nl_socket_free(sock);
 
 	return opts.remaining_header;
@@ -425,6 +429,11 @@ int netlink_print_routing_algos(void)
 	opts.remaining_header = strdup("Available routing algorithms:\n");
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb) {
+		last_err = -ENOMEM;
+		goto err_free_sock;
+	}
+
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
 		  &opts);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
@@ -1134,9 +1143,14 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 		}
 	}
 
+	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb) {
+		last_err = -ENOMEM;
+		goto err_free_sock;
+	}
+
 	bat_hosts_init(read_opt);
 
-	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
@@ -1181,6 +1195,7 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 
 	bat_hosts_free();
 
+err_free_sock:
 	nl_socket_free(sock);
 
 	return last_err;

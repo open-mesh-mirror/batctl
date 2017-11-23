@@ -302,6 +302,11 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
 		return NULL;
 
 	msg = nlmsg_alloc();
+	if (!msg) {
+		nl_socket_free(sock);
+		return NULL;
+	}
+
 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
 		    BATADV_CMD_GET_MESH_INFO, 1);
 
@@ -399,6 +404,11 @@ int netlink_print_routing_algos(void)
 		return -EOPNOTSUPP;
 
 	msg = nlmsg_alloc();
+	if (!msg) {
+		last_err = -ENOMEM;
+		goto err_free_sock;
+	}
+
 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
 		    BATADV_CMD_GET_ROUTING_ALGOS, 1);
 
@@ -415,6 +425,8 @@ int netlink_print_routing_algos(void)
 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
 
 	nl_recvmsgs(sock, cb);
+
+err_free_sock:
 	nl_socket_free(sock);
 
 	if (!last_err)
@@ -1131,6 +1143,9 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
 								 header);
 
 		msg = nlmsg_alloc();
+		if (!msg)
+			continue;
+
 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
 			    NLM_F_DUMP, nl_cmd, 1);
 

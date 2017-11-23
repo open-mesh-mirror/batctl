@@ -158,7 +158,8 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
 {
 	struct batadv_tvlv_tt_data *tvlv = buff;
 	struct batadv_tvlv_tt_vlan_data *vlan;
-	int i, num_vlan, num_entry;
+	int i;
+	unsigned short num_vlan, num_entry;
 	const char *type;
 	size_t vlan_len;
 

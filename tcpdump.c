@@ -104,7 +104,11 @@ static int print_time(void)
 	gettimeofday(&tv, NULL);
 	tm = localtime(&tv.tv_sec);
 
-	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	if (tm)
+		printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	else
+		printf("00:00:00.000000 ");
+
 	return 1;
 }
 

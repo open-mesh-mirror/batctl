@@ -812,6 +812,9 @@ static int vlan_get_link_parse(struct nl_msg *msg, void *arg)
 	idx = *(int *)nla_data(tb[IFLA_LINK]);
 	free(nl_arg->iface);
 	nl_arg->iface = malloc(IFNAMSIZ + 1);
+	if (!nl_arg->iface)
+		goto err;
+
 	if (!if_indextoname(idx, nl_arg->iface))
 		goto err;
 

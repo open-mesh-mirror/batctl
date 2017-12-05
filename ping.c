@@ -37,10 +37,10 @@
 #include <sys/time.h>
 #include <netinet/if_ether.h>
 
+#include "batadv_packet.h"
 #include "main.h"
 #include "ping.h"
 #include "functions.h"
-#include "packet.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
 #include "icmp_helper.h"

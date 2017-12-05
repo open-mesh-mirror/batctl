@@ -34,10 +34,10 @@
 #include <sys/select.h>
 #include <sys/time.h>
 
+#include "batadv_packet.h"
 #include "main.h"
 #include "traceroute.h"
 #include "functions.h"
-#include "packet.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
 #include "icmp_helper.h"

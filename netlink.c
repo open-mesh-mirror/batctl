@@ -37,11 +37,11 @@
 #include <arpa/inet.h>
 
 #include "bat-hosts.h"
+#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "netlink.h"
 #include "functions.h"
 #include "main.h"
-#include "packet.h"
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 

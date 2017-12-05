@@ -42,11 +42,11 @@
 #include <unistd.h>
 
 #include "bat-hosts.h"
+#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "functions.h"
 #include "genl.h"
 #include "netlink.h"
-#include "packet.h"
 #include "debugfs.h"
 
 static struct ether_addr *dst_mac;

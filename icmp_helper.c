@@ -40,12 +40,12 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include "batadv_packet.h"
 #include "debug.h"
 #include "debugfs.h"
 #include "functions.h"
 #include "list.h"
 #include "netlink.h"
-#include "packet.h"
 
 #ifndef ETH_P_BATMAN
 #define ETH_P_BATMAN	0x4305

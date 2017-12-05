@@ -33,8 +33,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "batadv_packet.h"
 #include "list.h"
-#include "packet.h"
 
 struct timeval;
 

@@ -46,8 +46,8 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
+#include "batadv_packet.h"
 #include "tcpdump.h"
-#include "packet.h"
 #include "bat-hosts.h"
 #include "functions.h"
 

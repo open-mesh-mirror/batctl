@@ -51,10 +51,6 @@
 #define __maybe_unused __attribute__((unused))
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
-typedef uint8_t u8; /* linux kernel compat */
-typedef uint16_t u16; /* linux kernel compat */
-typedef uint32_t u32; /* linux kernel compat */
-
 extern char module_ver_path[];
 
 #ifndef VLAN_VID_MASK

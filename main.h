@@ -47,7 +47,6 @@
 #error "unknown endianess"
 #endif
 
-#define __packed __attribute((packed))   /* linux kernel compat */
 #define __maybe_unused __attribute__((unused))
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 

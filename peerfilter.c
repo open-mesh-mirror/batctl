@@ -31,6 +31,7 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 #include <net/ethernet.h>
+#include <netinet/ether.h>
 
 #include "main.h"
 #include "batfilter_genl.h"
@@ -87,6 +88,10 @@ batadv_genl_missing_attrs(struct nlattr *attrs[],
 static struct nla_policy batfilter_genl_policy[NUM_BATFILTER_ATTR] = {
 	[BATFILTER_ATTR_MESH_IFINDEX]	= { .type = NLA_U32 },
 	[BATFILTER_ATTR_PLAYDEAD]	= { .type = NLA_FLAG },
+	[BATFILTER_ATTR_NEIGH_ADDRESS]	= { .type = NLA_UNSPEC,
+					    .minlen = ETH_ALEN,
+					    .maxlen = ETH_ALEN },
+	[BATFILTER_ATTR_LOSS_RATE]	= { .type = NLA_U8 },
 };
 
 /**
@@ -283,7 +288,6 @@ struct playdead_set_genl_opts {
 	struct batadv_nlquery_opts query_opts;
 };
 
-
 static int peerfilter_playdead_set_argscb(struct nl_msg *msg, void *arg)
 {
 	struct batadv_nlquery_opts *query_opts = arg;
@@ -342,8 +346,185 @@ static int peerfilter_playdead(const char *mesh_iface, int argc, char **argv)
 	return -EINVAL;
 }
 
+static const enum batfilter_genl_attrs peerfilter_list_mandatory[] = {
+	BATFILTER_ATTR_NEIGH_ADDRESS,
+	BATFILTER_ATTR_LOSS_RATE,
+};
+
+static int peerfilter_list_cb(struct nl_msg *msg, void *arg __maybe_unused)
+{
+	struct nlattr *attrs[BATFILTER_ATTR_MAX+1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	const uint8_t *neigh_addr;
+	uint8_t loss_rate;
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (ghdr->cmd != BATFILTER_CMD_GET_PEERFILTER)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATFILTER_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batfilter_genl_policy))
+		return NL_OK;
+
+	if (batadv_genl_missing_attrs(attrs, peerfilter_list_mandatory,
+				      BATADV_ARRAY_SIZE(peerfilter_list_mandatory)))
+		return NL_OK;
+
+	neigh_addr = nla_data(attrs[BATFILTER_ATTR_NEIGH_ADDRESS]);
+	loss_rate = nla_get_u8(attrs[BATFILTER_ATTR_LOSS_RATE]);
+
+	printf("%s,%u\n", ether_ntoa_long((struct ether_addr *)neigh_addr), loss_rate);
+
+	return NL_OK;
+}
+
+static int peerfilter_list(const char *mesh_iface)
+{
+	struct batadv_nlquery_opts opts = {
+		.err = 0,
+	};
+	int ret;
+
+	ret = batfilter_genl_query(mesh_iface, BATFILTER_CMD_GET_PEERFILTER,
+				   NULL, peerfilter_list_cb,
+				   NLM_F_DUMP, &opts);
+	if (ret < 0) {
+		fprintf(stderr, "Failed to retrieve peer filters\n");
+		return ret;
+	}
+
+	return 0;
+}
+
+struct peerfilter_add_genl_opts {
+	uint8_t neigh_addr[ETH_ALEN];
+	uint8_t loss_rate;
+	struct batadv_nlquery_opts query_opts;
+};
+
+static int peerfilter_add_argscb(struct nl_msg *msg, void *arg)
+{
+	struct batadv_nlquery_opts *query_opts = arg;
+	struct peerfilter_add_genl_opts *opts;
+
+	opts = container_of(query_opts, struct peerfilter_add_genl_opts,
+			    query_opts);
+
+	nla_put(msg, BATFILTER_ATTR_NEIGH_ADDRESS, ETH_ALEN, opts->neigh_addr);
+	nla_put_u8(msg, BATFILTER_ATTR_LOSS_RATE, opts->loss_rate);
+
+	return 0;
+}
+
+static int peerfilter_add(const char *mesh_iface, int argc, char **argv)
+{
+	struct peerfilter_add_genl_opts opts = {
+		.query_opts = {
+			.err = 0,
+		},
+	};
+	struct ether_addr *mac_addr;
+	unsigned long loss_rate;
+	int ret;
+
+	if (argc < 1 || argc > 2) {
+		fprintf(stderr, "Invalid numer of parameters for peerfilter add\n");
+		return -EINVAL;
+	}
+
+	mac_addr = ether_aton(argv[0]);
+	if (!mac_addr) {
+		fprintf(stderr, "Failed to parse mac address: %s\n", argv[0]);
+		return -EINVAL;
+	}
+
+	memcpy(opts.neigh_addr, mac_addr->ether_addr_octet, ETH_ALEN);
+
+	if (argc < 2) {
+		opts.loss_rate = 255;
+	} else {
+		loss_rate = strtoul(argv[1], NULL, 0);
+		if (loss_rate > 255) {
+			fprintf(stderr, "Loss rate is higher than 255\n");
+			return -EINVAL;
+		}
+
+		opts.loss_rate = loss_rate;
+	}
+
+	ret = batfilter_genl_query(mesh_iface, BATFILTER_CMD_ADD_PEERFILTER,
+				   peerfilter_add_argscb, NULL, 0,
+				   &opts.query_opts);
+	if (ret < 0 && ret != -EEXIST) {
+		fprintf(stderr, "Failed to add new peer filter\n");
+		return ret;
+	}
+
+	return 0;
+}
+
+struct peerfilter_del_genl_opts {
+	uint8_t neigh_addr[ETH_ALEN];
+	struct batadv_nlquery_opts query_opts;
+};
+
+static int peerfilter_del_argscb(struct nl_msg *msg, void *arg)
+{
+	struct batadv_nlquery_opts *query_opts = arg;
+	struct peerfilter_del_genl_opts *opts;
+
+	opts = container_of(query_opts, struct peerfilter_del_genl_opts,
+			    query_opts);
+
+	nla_put(msg, BATFILTER_ATTR_NEIGH_ADDRESS, ETH_ALEN, opts->neigh_addr);
+
+	return 0;
+}
+
+static int peerfilter_del(const char *mesh_iface, int argc, char **argv)
+{
+	struct peerfilter_del_genl_opts opts = {
+		.query_opts = {
+			.err = 0,
+		},
+	};
+	struct ether_addr *mac_addr;
+	int ret;
+
+	if (argc != 1) {
+		fprintf(stderr, "Invalid numer of parameters for peerfilter del\n");
+		return -EINVAL;
+	}
+
+	mac_addr = ether_aton(argv[0]);
+	if (!mac_addr) {
+		fprintf(stderr, "Failed to parse mac address: %s\n", argv[0]);
+		return -EINVAL;
+	}
+
+	memcpy(opts.neigh_addr, mac_addr->ether_addr_octet, ETH_ALEN);
+
+	ret = batfilter_genl_query(mesh_iface, BATFILTER_CMD_DEL_PEERFILTER,
+				   peerfilter_del_argscb, NULL, 0,
+				   &opts.query_opts);
+	if (ret < 0) {
+		fprintf(stderr, "Failed to remove peer filter\n");
+		return ret;
+	}
+
+	return 0;
+}
+
 static void peerfilter_usage(void)
 {
+	fprintf(stderr, "Usage: batctl [options] peerfilter\n");
+	fprintf(stderr, "Usage: batctl [options] peerfilter add MACADDR LOSS\n");
+	fprintf(stderr, "Usage: batctl [options] peerfilter del MACADDR\n");
 	fprintf(stderr, "Usage: batctl [options] peerfilter playdead\n");
 	fprintf(stderr, "Usage: batctl [options] peerfilter playdead [0|1]\n");
 	fprintf(stderr, "parameters:\n");
@@ -374,15 +555,19 @@ static int peerfilter(struct state *state, int argc, char **argv)
 	rest_argv = &argv[optind];
 
 	if (rest_argc == 0) {
-		fprintf(stderr, "Error - subcommand not found\n");
-		peerfilter_usage();
-		return EXIT_FAILURE;
-	}
-
-	if (strcmp(rest_argv[0], "playdead") == 0) {
+		peerfilter_list(state->mesh_iface);
+	} else if (strcmp(rest_argv[0], "add") == 0) {
+		res = peerfilter_add(state->mesh_iface, rest_argc - 1, &rest_argv[1]);
+		if (res < 0)
+			return EXIT_FAILURE;
+	} else if (strcmp(rest_argv[0], "del") == 0) {
+		res = peerfilter_del(state->mesh_iface, rest_argc - 1, &rest_argv[1]);
+		if (res < 0)
+			return EXIT_FAILURE;
+	} else if (strcmp(rest_argv[0], "playdead") == 0) {
 		res = peerfilter_playdead(state->mesh_iface, rest_argc - 1, &rest_argv[1]);
 		if (res < 0)
-			goto out;
+			return EXIT_FAILURE;
 	} else {
 		fprintf(stderr, "Error - subcommand unknown: %s\n", rest_argv[0]);
 		peerfilter_usage();
@@ -391,7 +576,6 @@ static int peerfilter(struct state *state, int argc, char **argv)
 
 	ret = EXIT_SUCCESS;
 
-out:
 	return ret;
 }
 

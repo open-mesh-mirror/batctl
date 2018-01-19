@@ -40,6 +40,17 @@ enum batfilter_genl_attrs {
 	 */
 	BATFILTER_ATTR_PLAYDEAD,
 
+	/**
+	 * @BATFILTER_ATTR_NEIGH_ADDRESS: mac address of neighbor filter
+	 */
+	BATFILTER_ATTR_NEIGH_ADDRESS,
+
+	/**
+	 * @BATFILTER_ATTR_LOSS_RATE: average number of packets (from 255) too
+	 *  drop
+	 */
+	BATFILTER_ATTR_LOSS_RATE,
+
 	/* add attributes above here, update the policy in netlink.c */
 
 	/**
@@ -81,6 +92,29 @@ enum batfilter_genl_commands {
 	 * enabled
 	 */
 	BATFILTER_CMD_SET_PLAYDEAD,
+
+	/**
+	 * @BATFILTER_CMD_GET_PEERFILTER: Query current peerfilter
+	 *
+	 * Returns multiple BATFILTER_ATTR_NEIGH_ADDRESS +
+	 * BATFILTER_ATTR_LOSS_RATE entries
+	 */
+	BATFILTER_CMD_GET_PEERFILTER,
+
+	/**
+	 * @BATFILTER_CMD_ADD_PEERFILTER: Adds new peer filter entry
+	 *
+	 * Requires BATFILTER_ATTR_NEIGH_ADDRESS + BATFILTER_ATTR_LOSS_RATE
+	 * parameter
+	 */
+	BATFILTER_CMD_ADD_PEERFILTER,
+
+	/**
+	 * @BATFILTER_CMD_DEL_PEERFILTER: Removes peer filter entry
+	 *
+	 * Requires BATFILTER_ATTR_NEIGH_ADDRESS parameter
+	 */
+	BATFILTER_CMD_DEL_PEERFILTER,
 
 	/* add new commands above here */
 

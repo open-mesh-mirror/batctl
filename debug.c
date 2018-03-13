@@ -100,6 +100,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_short = "mf",
 		.debugfs_name = "mcast_flags",
 		.header_lines = 6,
+		.netlink_fn = netlink_print_mcast_flags,
 	},
 };
 

@@ -45,6 +45,8 @@ int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
 			    float orig_timeout, float watch_interval);
 int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
 			       float orig_timeout, float watch_interval);
+int netlink_print_dat_cache(char *mesh_iface, char *orig_iface, int read_opt,
+			    float orig_timeout, float watch_interval);
 
 int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 			  struct ether_addr *mac_out);

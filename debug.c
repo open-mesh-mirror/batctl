@@ -87,6 +87,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
 		.opt_short = "dc",
 		.debugfs_name = "dat_cache",
 		.header_lines = 2,
+		.netlink_fn = netlink_print_dat_cache,
 	},
 	{
 		.opt_long = "nc_nodes",

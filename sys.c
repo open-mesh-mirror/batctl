@@ -132,6 +132,7 @@ static void log_level_usage(void)
 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
 	fprintf(stderr, " \t nc      Messages related to network coding\n");
 	fprintf(stderr, " \t mcast   Messages related to multicast\n");
+	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
 }
 
 int handle_loglevel(char *mesh_iface, int argc, char **argv)
@@ -169,7 +170,7 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level = 0;
 				break;
 			} else if (strcmp(argv[i], "all") == 0) {
-				log_level = 127;
+				log_level = 255;
 				break;
 			} else if (strcmp(argv[i], "batman") == 0)
 				log_level |= BIT(0);
@@ -185,6 +186,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 				log_level |= BIT(5);
 			else if (strcmp(argv[i], "mcast") == 0)
 				log_level |= BIT(6);
+			else if (strcmp(argv[i], "tp") == 0)
+				log_level |= BIT(7);
 			else {
 				log_level_usage();
 				goto out;
@@ -220,6 +223,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
 	       "messages related to network coding", "nc");
 	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
 	       "messages related to multicast", "mcast");
+	printf("[%c] %s (%s)\n", (log_level & BIT(7)) ? 'x' : ' ',
+	       "messages related to throughput meter", "tp");
 
 out:
 	free(path_buff);

@@ -428,6 +428,7 @@ Example::
   [ ] messages related to arp snooping and distributed arp table (dat)
   [ ] messages related to network coding (nc)
   [ ] messages related to multicast (mcast)
+  [ ] messages related to throughput meter (tp)
 
 
 batctl nc_nodes

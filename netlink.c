@@ -252,7 +252,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
 		if (attrs[BATADV_ATTR_MCAST_FLAGS_PRIV])
 			mcast_flags_priv = nla_get_u32(attrs[BATADV_ATTR_MCAST_FLAGS_PRIV]);
 		else
-			mcast_flags = -EOPNOTSUPP;
+			mcast_flags_priv = -EOPNOTSUPP;
 
 		switch (opts->nl_cmd) {
 		case BATADV_CMD_GET_TRANSTABLE_LOCAL:

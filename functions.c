@@ -571,6 +571,19 @@ static struct nla_policy neigh_policy[NDA_MAX+1] = {
 	[NDA_PROBES]    = { .type = NLA_U32 },
 };
 
+static bool ether_addr_valid(const uint8_t *addr)
+{
+	/* no multicast address */
+	if (addr[0] & 0x01)
+		return false;
+
+	/* no zero address */
+	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
+		return false;
+
+	return true;
+}
+
 static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *tb[NDA_MAX + 1];
@@ -615,6 +628,9 @@ static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
 
 	mac = nla_data(tb[NDA_LLADDR]);
 	l3addr = nla_data(tb[NDA_DST]);
+
+	if (!ether_addr_valid(mac))
+		goto err;
 
 	if (memcmp(nl_arg->l3addr, l3addr, l3_len) == 0) {
 		memcpy(nl_arg->mac_result, mac, ETH_ALEN);

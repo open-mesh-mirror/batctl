@@ -194,6 +194,19 @@ static int str_is_mcast_addr(char *addr)
 		mac_addr->ether_addr_octet[0] & 0x01;
 }
 
+static bool ether_addr_valid(const uint8_t *addr)
+{
+	/* no multicast address */
+	if (addr[0] & 0x01)
+		return false;
+
+	/* no zero address */
+	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
+		return false;
+
+	return true;
+}
+
 int read_file(const char *dir, const char *fname, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines)
 {
@@ -475,6 +488,9 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	memcpy(&out_mac, mac, sizeof(out_mac));
 	mac_result = &out_mac;
 
+	if (!ether_addr_valid(in_mac.ether_addr_octet))
+		return mac_result;
+
 	ret = translate_mac_netlink(mesh_iface, &in_mac, mac_result);
 
 	if (ret == -EOPNOTSUPP)
@@ -570,19 +586,6 @@ static struct nla_policy neigh_policy[NDA_MAX+1] = {
 	[NDA_CACHEINFO] = { .minlen = sizeof(struct nda_cacheinfo) },
 	[NDA_PROBES]    = { .type = NLA_U32 },
 };
-
-static bool ether_addr_valid(const uint8_t *addr)
-{
-	/* no multicast address */
-	if (addr[0] & 0x01)
-		return false;
-
-	/* no zero address */
-	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
-		return false;
-
-	return true;
-}
 
 static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
 {

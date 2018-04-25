@@ -1,5 +1,12 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2018.1 (2018-04-25)
+===================
+
+* synchronization of batman-adv netlink and packet headers
+* add DAT cache and multicast flags netlink support
+* disable translation support for non-unicast mac addresses
+
 2018.0 (2018-02-26)
 ===================
 

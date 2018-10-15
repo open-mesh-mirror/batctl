@@ -338,7 +338,7 @@ given batctl will not replace the MAC addresses with bat\-host names in the outp
 This command starts a throughput test entirely controlled by batman module in
 kernel space: the computational resources needed to align memory and copy data
 between user and kernel space that are required by other user space tools may
-represent a bootleneck on some low profile device.
+represent a bottleneck on some low profile device.
 
 The test consist of the transfer of 14 MB of data between the two nodes. The
 protocol used to transfer the data is somehow similar to TCP, but simpler: some
@@ -346,9 +346,9 @@ TCP features are still missing, thus protocol performances could be worst. Since
 a fixed amount of data is transferred the experiment duration depends on the
 network conditions. The experiment can be interrupted with CTRL + C. At the end
 of a successful experiment the throughput in KBytes per second is returned,
-togheter with the experiment duration in millisecond and the amount of bytes
+together with the experiment duration in millisecond and the amount of bytes
 transferred. If too many packets are lost or the specified MAC address is not
-reachable, a message notifing the error is returned instead of the result.
+reachable, a message notifying the error is returned instead of the result.
 .RE
 .br
 .SH FILES

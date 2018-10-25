@@ -28,9 +28,6 @@
 #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL		"log_level"
 #define SYS_LOG			"log"
-#define SYS_GW_MODE		"gw_mode"
-#define SYS_GW_SEL		"gw_sel_class"
-#define SYS_GW_BW		"gw_bandwidth"
 #define SYS_IFACE_PATH		"/sys/class/net"
 #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
@@ -54,12 +51,6 @@ enum batctl_settings_list {
 	BATCTL_SETTINGS_NUM,
 };
 
-enum gw_modes {
-	GW_MODE_OFF,
-	GW_MODE_CLIENT,
-	GW_MODE_SERVER,
-};
-
 struct settings_data {
 	const char opt_long[OPT_LONG_MAX_LEN];
 	const char opt_short[OPT_SHORT_MAX_LEN];
@@ -72,7 +63,6 @@ extern const char *sysfs_param_server[];
 extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
 
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
-int handle_gw_setting(char *mesh_iface, int argc, char **argv);
 int handle_ra_setting(int argc, char **argv);
 
 #endif

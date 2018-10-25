@@ -40,6 +40,7 @@
 #include "statistics.h"
 #include "loglevel.h"
 #include "log.h"
+#include "gw_mode.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
@@ -179,7 +180,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
-		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);
+		ret = gw_mode(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
 

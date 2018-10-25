@@ -31,6 +31,7 @@ OBJ += debugfs.o
 OBJ += debug.o
 OBJ += functions.o
 OBJ += genl.o
+OBJ += gw_mode.o
 OBJ += hash.o
 OBJ += icmp_helper.o
 OBJ += interface.o

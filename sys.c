@@ -145,12 +145,3 @@ static struct settings_data batctl_settings_orig_interval = {
 COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
 	      "[interval]        \tdisplay or modify orig_interval setting");
-
-static struct settings_data batctl_settings_network_coding = {
-	.sysfs_name = SYS_NETWORK_CODING,
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
-	      "[0|1]             \tdisplay or modify network_coding setting");

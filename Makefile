@@ -60,6 +60,7 @@ OBJ += multicast_mode.o
 OBJ += nc_nodes.o
 OBJ += neighbors.o
 OBJ += netlink.o
+OBJ += network_coding.o
 OBJ += ping.o
 OBJ += originators.o
 OBJ += routing_algo.o

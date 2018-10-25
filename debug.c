@@ -251,15 +251,6 @@ static struct debug_table_data batctl_debug_table_transglobal = {
 COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
 
-static struct debug_table_data batctl_debug_table_dat_cache = {
-	.debugfs_name = DEBUG_DAT_CACHE,
-	.header_lines = 2,
-	.netlink_fn = netlink_print_dat_cache,
-};
-
-COMMAND_NAMED(DEBUGTABLE, dat_cache, "dc", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_dat_cache, "");
-
 static struct debug_table_data batctl_debug_table_nc_nodes = {
 	.debugfs_name = DEBUG_NC_NODES,
 	.header_lines = 0,

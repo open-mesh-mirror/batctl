@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright (C) 2009-2018  B.A.T.M.A.N. contributors:
  *
- * Andrew Lunn <andrew@lunn.ch>
- * Simon Wunderlich <sw@simonwunderlich.de>
- * Sven Eckelmann <sven@narfation.org>
+ * Linus Lüssing <linus.luessing@c0d3.blue>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public

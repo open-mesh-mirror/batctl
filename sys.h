@@ -33,8 +33,6 @@
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
-#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
-#define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
 #define VLAN_ID_MAX_LEN		4
 
 enum batctl_settings_list {
@@ -63,6 +61,5 @@ extern const char *sysfs_param_server[];
 extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
 
 int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
-int handle_ra_setting(int argc, char **argv);
 
 #endif

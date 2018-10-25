@@ -41,6 +41,7 @@
 #include "loglevel.h"
 #include "log.h"
 #include "gw_mode.h"
+#include "routing_algo.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
@@ -153,7 +154,7 @@ int main(int argc, char **argv)
 #endif
 	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
 
-		ret = handle_ra_setting(argc - 1, argv + 1);
+		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
 
 	} else if (check_mesh_iface(mesh_iface) < 0) {
 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);

@@ -40,6 +40,7 @@ OBJ += log.o
 OBJ += main.o
 OBJ += netlink.o
 OBJ += ping.o
+OBJ += routing_algo.o
 OBJ += statistics.o
 OBJ += sys.o
 OBJ += tcpdump.o

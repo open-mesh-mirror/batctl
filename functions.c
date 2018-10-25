@@ -73,11 +73,11 @@ const char *fs_compile_out_param[] = {
 	batctl_settings[BATCTL_SETTINGS_DAT].sysfs_name,
 	batctl_settings[BATCTL_SETTINGS_NETWORK_CODING].sysfs_name,
 	batctl_settings[BATCTL_SETTINGS_MULTICAST_MODE].sysfs_name,
-	batctl_debug_tables[BATCTL_TABLE_BLA_CLAIMS].debugfs_name,
-	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
-	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
-	batctl_debug_tables[BATCTL_TABLE_NETWORK_CODING_NODES].debugfs_name,
-	batctl_debug_tables[BATCTL_TABLE_MCAST_FLAGS].debugfs_name,
+	DEBUG_DAT_CACHE,
+	DEBUG_BACKBONETABLE,
+	DEBUG_DAT_CACHE,
+	DEBUG_NC_NODES,
+	DEBUG_MCAST_FLAGS,
 	NULL,
 };
 

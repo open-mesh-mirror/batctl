@@ -43,6 +43,7 @@ static void print_usage(void)
 {
 	enum command_type type[] = {
 		SUBCOMMAND,
+		DEBUGTABLE,
 	};
 	const struct command **p;
 	int opt_indent;
@@ -62,6 +63,9 @@ static void print_usage(void)
 		switch (type[i]) {
 		case SUBCOMMAND:
 			fprintf(stderr, "commands:\n");
+			break;
+		case DEBUGTABLE:
+			fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
 			break;
 		}
 
@@ -97,12 +101,6 @@ static void print_usage(void)
 			}
 		}
 	}
-
-	fprintf(stderr, "\n");
-
-	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
-	for (i = 0; i < BATCTL_TABLE_NUM; i++)
-		fprintf(stderr, " \t%s|%s\n", batctl_debug_tables[i].opt_long, batctl_debug_tables[i].opt_short);
 }
 
 static void version(void)
@@ -209,15 +207,6 @@ int main(int argc, char **argv)
 				continue;
 
 			ret = handle_sys_setting(state.mesh_iface, i, argc, argv);
-			goto out;
-		}
-
-		for (i = 0; i < BATCTL_TABLE_NUM; i++) {
-			if ((strcmp(argv[0], batctl_debug_tables[i].opt_long) != 0) &&
-			    (strcmp(argv[0], batctl_debug_tables[i].opt_short) != 0))
-				continue;
-
-			ret = handle_debug_table(state.mesh_iface, i, argc, argv);
 			goto out;
 		}
 

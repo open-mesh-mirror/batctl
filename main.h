@@ -34,7 +34,6 @@
 #define OPT_LONG_MAX_LEN 25
 #define OPT_SHORT_MAX_LEN 5
 
-#define DEBUG_TABLE_PATH_MAX_LEN 20
 #define SETTINGS_PATH_MAX_LEN 25
 
 #if BYTE_ORDER == BIG_ENDIAN
@@ -63,6 +62,7 @@ enum command_flags {
 
 enum command_type {
 	SUBCOMMAND,
+	DEBUGTABLE,
 };
 
 struct state {

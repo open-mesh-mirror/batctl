@@ -28,35 +28,26 @@
 
 #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
 #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+#define DEBUG_BACKBONETABLE "bla_backbone_table"
+#define DEBUG_CLAIMTABLE "bla_claim_table"
+#define DEBUG_DAT_CACHE "dat_cache"
+#define DEBUG_NC_NODES "nc_nodes"
+#define DEBUG_MCAST_FLAGS "mcast_flags"
 #define DEBUG_LOG "log"
 #define DEBUG_ROUTING_ALGOS "routing_algos"
 
-enum batctl_debug_tables {
-	BATCTL_TABLE_NEIGHBORS,
-	BATCTL_TABLE_ORIGINATORS,
-	BATCTL_TABLE_GATEWAYS,
-	BATCTL_TABLE_TRANSLOCAL,
-	BATCTL_TABLE_TRANSGLOBAL,
-	BATCTL_TABLE_BLA_CLAIMS,
-	BATCTL_TABLE_BLA_BACKBONES,
-	BATCTL_TABLE_DAT,
-	BATCTL_TABLE_NETWORK_CODING_NODES,
-	BATCTL_TABLE_MCAST_FLAGS,
-	BATCTL_TABLE_NUM,
-};
-
 struct debug_table_data {
-       const char opt_long[OPT_LONG_MAX_LEN];
-       const char opt_short[OPT_SHORT_MAX_LEN];
-       const char debugfs_name[DEBUG_TABLE_PATH_MAX_LEN];
-       size_t header_lines;
-       int (*netlink_fn)(char *mesh_iface, char *hard_iface, int read_opt,
+	const char *debugfs_name;
+	size_t header_lines;
+	int (*netlink_fn)(char *mesh_iface, char *hard_iface, int read_opt,
 			 float orig_timeout, float watch_interval);
+	unsigned int option_unicast_only:1;
+	unsigned int option_multicast_only:1;
+	unsigned int option_watch_interval:1;
+	unsigned int option_orig_iface:1;
 };
 
-extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
-
-int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
+int handle_debug_table(struct state *state, int argc, char **argv);
 int debug_print_routing_algos(void);
 
 #endif

@@ -249,12 +249,3 @@ static struct debug_table_data batctl_debug_table_nc_nodes = {
 
 COMMAND_NAMED(DEBUGTABLE, nc_nodes, "nn", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_nc_nodes, "");
-
-static struct debug_table_data batctl_debug_table_mcast_flags = {
-	.debugfs_name = DEBUG_MCAST_FLAGS,
-	.header_lines = 6,
-	.netlink_fn = netlink_print_mcast_flags,
-};
-
-COMMAND_NAMED(DEBUGTABLE, mcast_flags, "mf", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_mcast_flags, "");

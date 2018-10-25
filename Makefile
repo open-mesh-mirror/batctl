@@ -48,6 +48,7 @@ OBJ += interface.o
 OBJ += loglevel.o
 OBJ += log.o
 OBJ += main.o
+OBJ += mcast_flags.o
 OBJ += netlink.o
 OBJ += ping.o
 OBJ += routing_algo.o

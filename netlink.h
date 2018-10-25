@@ -25,6 +25,7 @@
 
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
+#include <stdint.h>
 
 struct print_opts {
 	int read_opt;
@@ -47,8 +48,6 @@ int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
 			      float orig_timeout, float watch_interval);
 int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
 			     float orig_timeout, float watch_interval);
-int netlink_print_mcast_flags(char *mesh_iface, char *orig_iface, int read_opt,
-			      float orig_timeout, float watch_interval);
 
 char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
 int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
@@ -68,5 +67,7 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
 
 extern char algo_name_buf[256];
 extern int last_err;
+extern int64_t mcast_flags;
+extern int64_t mcast_flags_priv;
 
 #endif /* _BATCTL_NETLINK_H */

@@ -78,4 +78,4 @@ out:
 	return ret;
 }
 
-COMMAND(translate, "t");
+COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE);

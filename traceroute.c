@@ -231,4 +231,4 @@ out:
 	return ret;
 }
 
-COMMAND(traceroute, "tr");
+COMMAND(traceroute, "tr", COMMAND_FLAG_MESH_IFACE);

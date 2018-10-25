@@ -143,4 +143,4 @@ out:
 	return res;
 }
 
-COMMAND(loglevel, "ll");
+COMMAND(loglevel, "ll", COMMAND_FLAG_MESH_IFACE);

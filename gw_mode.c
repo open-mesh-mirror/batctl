@@ -167,4 +167,4 @@ out:
 	return res;
 }
 
-COMMAND(gw_mode, "gw");
+COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE);

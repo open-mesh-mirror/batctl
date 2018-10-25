@@ -126,4 +126,4 @@ out:
 	return ret;
 }
 
-COMMAND(statistics, "s");
+COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE);

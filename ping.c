@@ -345,4 +345,4 @@ out:
 	return ret;
 }
 
-COMMAND(ping, "p");
+COMMAND(ping, "p", COMMAND_FLAG_MESH_IFACE);

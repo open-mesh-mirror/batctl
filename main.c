@@ -169,12 +169,19 @@ int main(int argc, char **argv)
 
 		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
 
-	} else if (check_mesh_iface(mesh_iface) < 0) {
-		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
-		exit(EXIT_FAILURE);
 	} else if ((cmd = find_command(argv[1]))) {
+		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
+		    check_mesh_iface(mesh_iface) < 0) {
+			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+			exit(EXIT_FAILURE);
+		}
+
 		ret = cmd->handler(mesh_iface, argc - 1, argv + 1);
 	} else {
+		if (check_mesh_iface(mesh_iface) < 0) {
+			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+			exit(EXIT_FAILURE);
+		}
 
 		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
 			if ((strcmp(argv[1], batctl_settings[i].opt_long) != 0) &&

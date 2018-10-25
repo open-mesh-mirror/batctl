@@ -22,6 +22,7 @@
 
 
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -87,6 +88,25 @@ static void print_usage(void)
 #endif
 }
 
+static void version(void)
+{
+	int ret;
+
+	printf("batctl %s [batman-adv: ", SOURCE_VERSION);
+
+	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	if (ret == EXIT_SUCCESS)
+		printf("%s]\n", line_ptr);
+	else
+		printf("module not loaded]\n");
+
+	free(line_ptr);
+	exit(EXIT_SUCCESS);
+}
+
 static const struct command *find_command(const char *name)
 {
 	const struct command **p;
@@ -109,53 +129,48 @@ int main(int argc, char **argv)
 	const struct command *cmd;
 	int i, ret = EXIT_FAILURE;
 	char *mesh_iface = mesh_dfl_iface;
+	int opt;
 
-	if ((argc > 1) && (strcmp(argv[1], "-m") == 0)) {
-		if (argc < 3) {
-			fprintf(stderr, "Error - the option '-m' needs a parameter\n");
+	while ((opt = getopt(argc, argv, "+hm:v")) != -1) {
+		switch (opt) {
+		case 'h':
+			print_usage();
+			exit(EXIT_SUCCESS);
+			break;
+		case 'm':
+			if (mesh_iface != mesh_dfl_iface) {
+				fprintf(stderr,
+					"Error - multiple mesh interfaces specified\n");
+				goto err;
+			}
+
+			mesh_iface = argv[2];
+			break;
+		case 'v':
+			version();
+			break;
+		default:
 			goto err;
 		}
-
-		mesh_iface = argv[2];
-
-		argv += 2;
-		argc -= 2;
 	}
 
-	if (argc < 2) {
+	if (optind >= argc) {
 		fprintf(stderr, "Error - no command specified\n");
 		goto err;
 	}
 
-	if (strcmp(argv[1], "-h") == 0) {
-		print_usage();
-		exit(EXIT_SUCCESS);
-	}
+	argv += optind;
+	argc -= optind;
+	optind = 0;
 
-	if (strcmp(argv[1], "-v") == 0) {
-		printf("batctl %s [batman-adv: ", SOURCE_VERSION);
-
-		ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-		if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
-			line_ptr[strlen(line_ptr) - 1] = '\0';
-
-		if (ret == EXIT_SUCCESS)
-			printf("%s]\n", line_ptr);
-		else
-			printf("module not loaded]\n");
-
-		free(line_ptr);
-		exit(EXIT_SUCCESS);
-	}
-
-	if ((cmd = find_command(argv[1]))) {
+	if ((cmd = find_command(argv[0]))) {
 		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
 		    check_mesh_iface(mesh_iface) < 0) {
 			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
 			exit(EXIT_FAILURE);
 		}
 
-		ret = cmd->handler(mesh_iface, argc - 1, argv + 1);
+		ret = cmd->handler(mesh_iface, argc, argv);
 	} else {
 		if (check_mesh_iface(mesh_iface) < 0) {
 			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
@@ -163,24 +178,26 @@ int main(int argc, char **argv)
 		}
 
 		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
-			if ((strcmp(argv[1], batctl_settings[i].opt_long) != 0) &&
-			    (strcmp(argv[1], batctl_settings[i].opt_short) != 0))
+			if ((strcmp(argv[0], batctl_settings[i].opt_long) != 0) &&
+			    (strcmp(argv[0], batctl_settings[i].opt_short) != 0))
 				continue;
 
-			ret = handle_sys_setting(mesh_iface, i, argc - 1, argv + 1);
+			ret = handle_sys_setting(mesh_iface, i, argc, argv);
 			goto out;
 		}
 
 		for (i = 0; i < BATCTL_TABLE_NUM; i++) {
-			if ((strcmp(argv[1], batctl_debug_tables[i].opt_long) != 0) &&
-			    (strcmp(argv[1], batctl_debug_tables[i].opt_short) != 0))
+			if ((strcmp(argv[0], batctl_debug_tables[i].opt_long) != 0) &&
+			    (strcmp(argv[0], batctl_debug_tables[i].opt_short) != 0))
 				continue;
 
-			ret = handle_debug_table(mesh_iface, i, argc - 1, argv + 1);
+			ret = handle_debug_table(mesh_iface, i, argc, argv);
 			goto out;
 		}
 
-		fprintf(stderr, "Error - no valid command or debug table specified: %s\n", argv[1]);
+		fprintf(stderr,
+			"Error - no valid command or debug table specified: %s\n",
+			argv[0]);
 		print_usage();
 	}
 

@@ -20,9 +20,9 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-#ifndef _BATCTL_IOCTL_H
-#define _BATCTL_IOCTL_H
+#ifndef _BATCTL_STATISTICS_H
+#define _BATCTL_STATISTICS_H
 
-int ioctl_statistics_get(char *mesh_iface);
+int statistics(char *mesh_iface, int argc, char **argv);
 
 #endif

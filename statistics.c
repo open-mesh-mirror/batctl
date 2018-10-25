@@ -34,7 +34,8 @@
 #include <linux/ethtool.h>
 #include <stdint.h>
 
-#include "ioctl.h"
+#include "main.h"
+#include "statistics.h"
 
 void check_root_or_die(const char *cmd);
 
@@ -102,7 +103,8 @@ out:
 	return ret;
 }
 
-int ioctl_statistics_get(char *mesh_iface)
+int statistics(char *mesh_iface, int argc __maybe_unused,
+	       char **argv __maybe_unused)
 {
 	struct ifreq ifr;
 	int fd = -1, ret = EXIT_FAILURE;

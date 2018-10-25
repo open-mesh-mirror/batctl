@@ -37,7 +37,7 @@
 #include "tcpdump.h"
 #include "tp_meter.h"
 #include "bisect_iv.h"
-#include "ioctl.h"
+#include "statistics.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
 
-		ret = ioctl_statistics_get(mesh_iface);
+		ret = statistics(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "translate") == 0) || (strcmp(argv[1], "t") == 0)) {
 

@@ -53,6 +53,7 @@ OBJ += nc_nodes.o
 OBJ += neighbors.o
 OBJ += netlink.o
 OBJ += ping.o
+OBJ += originators.o
 OBJ += routing_algo.o
 OBJ += statistics.o
 OBJ += sys.o

@@ -54,87 +54,18 @@ const char *sysfs_param_server[] = {
 	NULL,
 };
 
-const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
-	{
-		.opt_long = "orig_interval",
-		.opt_short = "it",
-		.sysfs_name = "orig_interval",
-		.params = NULL,
-	},
-	{
-		.opt_long = "ap_isolation",
-		.opt_short = "ap",
-		.sysfs_name = "ap_isolation",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "bridge_loop_avoidance",
-		.opt_short = "bl",
-		.sysfs_name = "bridge_loop_avoidance",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "distributed_arp_table",
-		.opt_short = "dat",
-		.sysfs_name = "distributed_arp_table",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "aggregation",
-		.opt_short = "ag",
-		.sysfs_name = "aggregated_ogms",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "bonding",
-		.opt_short = "b",
-		.sysfs_name = "bonding",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "fragmentation",
-		.opt_short = "f",
-		.sysfs_name = "fragmentation",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "network_coding",
-		.opt_short = "nc",
-		.sysfs_name = "network_coding",
-		.params = sysfs_param_enable,
-	},
-	{
-		.opt_long = "isolation_mark",
-		.opt_short = "mark",
-		.sysfs_name = "isolation_mark",
-		.params = NULL,
-	},
-	{
-		.opt_long = "multicast_mode",
-		.opt_short = "mm",
-		.sysfs_name = "multicast_mode",
-		.params = sysfs_param_enable,
-	},
-};
-
-static void settings_usage(int setting)
+static void settings_usage(struct state *state)
 {
-	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]",
-	       (char *)batctl_settings[setting].opt_long, (char *)batctl_settings[setting].opt_short);
-
-	if (batctl_settings[setting].params == sysfs_param_enable)
-		fprintf(stderr, " [0|1]\n");
-	else if (batctl_settings[setting].params == sysfs_param_server)
-		fprintf(stderr, " [client|server]\n");
-	else
-		fprintf(stderr, "\n");
+	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
+		state->cmd->name, state->cmd->abbr, state->cmd->usage);
 
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -h print this help\n");
 }
 
-int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+int handle_sys_setting(struct state *state, int argc, char **argv)
 {
+	struct settings_data *settings = state->cmd->arg;
 	int vid, optchar, res = EXIT_FAILURE;
 	char *path_buff, *base_dev = NULL;
 	const char **ptr;
@@ -142,10 +73,10 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
 		case 'h':
-			settings_usage(setting);
+			settings_usage(state);
 			return EXIT_SUCCESS;
 		default:
-			settings_usage(setting);
+			settings_usage(state);
 			return EXIT_FAILURE;
 		}
 	}
@@ -157,27 +88,27 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
 
 	/* if the specified interface is a VLAN then change the path to point
 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
 	 */
-	vid = vlan_get_link(mesh_iface, &base_dev);
+	vid = vlan_get_link(state->mesh_iface, &base_dev);
 	if (vid >= 0)
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
 
 	if (argc == 1) {
-		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
+		res = read_file(path_buff, settings->sysfs_name,
 				NO_FLAGS, 0, 0, 0);
 		goto out;
 	}
 
 	check_root_or_die("batctl");
 
-	if (!batctl_settings[setting].params)
+	if (!settings->params)
 		goto write_file;
 
-	ptr = batctl_settings[setting].params;
+	ptr = settings->params;
 	while (*ptr) {
 		if (strcmp(*ptr, argv[1]) == 0)
 			goto write_file;
@@ -188,7 +119,7 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
 	fprintf(stderr, "The following values are allowed:\n");
 
-	ptr = batctl_settings[setting].params;
+	ptr = settings->params;
 	while (*ptr) {
 		fprintf(stderr, " * %s\n", *ptr);
 		ptr++;
@@ -197,7 +128,7 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
 	goto out;
 
 write_file:
-	res = write_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
+	res = write_file(path_buff, settings->sysfs_name,
 			 argv[1], argc > 2 ? argv[2] : NULL);
 
 out:
@@ -205,3 +136,93 @@ out:
 	free(base_dev);
 	return res;
 }
+
+static struct settings_data batctl_settings_orig_interval = {
+	.sysfs_name = "orig_interval",
+	.params = NULL,
+};
+
+COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
+	      "[interval]        \tdisplay or modify orig_interval setting");
+
+static struct settings_data batctl_settings_ap_isolation = {
+	.sysfs_name = "ap_isolation",
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
+	      "[0|1]             \tdisplay or modify ap_isolation setting");
+
+static struct settings_data batctl_settings_bridge_loop_avoidance = {
+	.sysfs_name = SYS_BLA,
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
+	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
+
+static struct settings_data batctl_settings_distributed_arp_table = {
+	.sysfs_name = SYS_DAT,
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
+	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
+
+static struct settings_data batctl_settings_aggregation = {
+	.sysfs_name = "aggregated_ogms",
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
+	      "[0|1]             \tdisplay or modify aggregation setting");
+
+static struct settings_data batctl_settings_bonding = {
+	.sysfs_name = "bonding",
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
+	      "[0|1]             \tdisplay or modify bonding setting");
+
+static struct settings_data batctl_settings_fragmentation = {
+	.sysfs_name = "fragmentation",
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, fragmentation, "f", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_fragmentation,
+	      "[0|1]             \tdisplay or modify fragmentation setting");
+
+static struct settings_data batctl_settings_network_coding = {
+	.sysfs_name = SYS_NETWORK_CODING,
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
+	      "[0|1]             \tdisplay or modify network_coding setting");
+
+static struct settings_data batctl_settings_isolation_mark = {
+	.sysfs_name = "isolation_mark",
+	.params = NULL,
+};
+
+COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
+	      "[mark]            \tdisplay or modify isolation_mark setting");
+
+static struct settings_data batctl_settings_multicast_mode = {
+	.sysfs_name = SYS_MULTICAST_MODE,
+	.params = sysfs_param_enable,
+};
+
+COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_multicast_mode,
+	      "[0|1]             \tdisplay or modify multicast_mode setting");

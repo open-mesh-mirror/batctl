@@ -46,10 +46,8 @@ static void print_usage(void)
 		DEBUGTABLE,
 	};
 	const struct command **p;
-	int opt_indent;
 	char buf[32];
 	size_t i;
-	size_t j;
 
 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
 	fprintf(stderr, "options:\n");
@@ -82,23 +80,6 @@ static void print_usage(void)
 					 cmd->abbr);
 
 			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
-		}
-
-		if (type[i] == SUBCOMMAND) {
-			for (j = 0; j < BATCTL_SETTINGS_NUM; j++) {
-				fprintf(stderr, " \t%s|%s", batctl_settings[j].opt_long, batctl_settings[j].opt_short);
-				opt_indent = strlen(batctl_settings[j].opt_long) + strlen(batctl_settings[j].opt_short);
-
-				if (batctl_settings[j].params == sysfs_param_enable)
-					fprintf(stderr, "%*s                display or modify %s setting\n",
-						31 - opt_indent, "[0|1]", batctl_settings[j].opt_long);
-				else if (batctl_settings[j].params == sysfs_param_server)
-					fprintf(stderr, "%*s      display or modify %s setting\n",
-						41 - opt_indent, "[client|server]", batctl_settings[j].opt_long);
-				else
-					fprintf(stderr, "                                display or modify %s setting\n",
-						batctl_settings[j].opt_long);
-			}
 		}
 	}
 }
@@ -142,12 +123,12 @@ static const struct command *find_command(const char *name)
 int main(int argc, char **argv)
 {
 	const struct command *cmd;
-	int i, ret = EXIT_FAILURE;
 	struct state state = {
 		.mesh_iface = mesh_dfl_iface,
 		.cmd = NULL,
 	};
 	int opt;
+	int ret;
 
 	while ((opt = getopt(argc, argv, "+hm:v")) != -1) {
 		switch (opt) {
@@ -181,42 +162,26 @@ int main(int argc, char **argv)
 	argc -= optind;
 	optind = 0;
 
-	if ((cmd = find_command(argv[0]))) {
-		state.cmd = cmd;
-
-		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
-		    check_mesh_iface(state.mesh_iface) < 0) {
-			fprintf(stderr,
-				"Error - interface %s is not present or not a batman-adv interface\n",
-				state.mesh_iface);
-			exit(EXIT_FAILURE);
-		}
-
-		ret = cmd->handler(&state, argc, argv);
-	} else {
-		if (check_mesh_iface(state.mesh_iface) < 0) {
-			fprintf(stderr,
-				"Error - interface %s is not present or not a batman-adv interface\n",
-				state.mesh_iface);
-			exit(EXIT_FAILURE);
-		}
-
-		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
-			if ((strcmp(argv[0], batctl_settings[i].opt_long) != 0) &&
-			    (strcmp(argv[0], batctl_settings[i].opt_short) != 0))
-				continue;
-
-			ret = handle_sys_setting(state.mesh_iface, i, argc, argv);
-			goto out;
-		}
-
+	cmd = find_command(argv[0]);
+	if (!cmd) {
 		fprintf(stderr,
 			"Error - no valid command or debug table specified: %s\n",
 			argv[0]);
-		print_usage();
+		goto err;
 	}
 
-out:
+	state.cmd = cmd;
+
+	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
+	    check_mesh_iface(state.mesh_iface) < 0) {
+		fprintf(stderr,
+			"Error - interface %s is not present or not a batman-adv interface\n",
+			state.mesh_iface);
+		exit(EXIT_FAILURE);
+	}
+
+	ret = cmd->handler(&state, argc, argv);
+
 	return ret;
 
 err:

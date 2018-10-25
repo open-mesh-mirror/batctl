@@ -28,6 +28,10 @@
 #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
 #define SYS_LOG_LEVEL		"log_level"
 #define SYS_LOG			"log"
+#define SYS_BLA			"bridge_loop_avoidance"
+#define SYS_DAT			"distributed_arp_table"
+#define SYS_NETWORK_CODING	"network_coding"
+#define SYS_MULTICAST_MODE	"multicast_mode"
 #define SYS_IFACE_PATH		"/sys/class/net"
 #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
@@ -35,31 +39,14 @@
 #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
 #define VLAN_ID_MAX_LEN		4
 
-enum batctl_settings_list {
-	BATCTL_SETTINGS_ORIG_INTERVAL,
-	BATCTL_SETTINGS_AP_ISOLATION,
-	BATCTL_SETTINGS_BLA,
-	BATCTL_SETTINGS_DAT,
-	BATCTL_SETTINGS_AGGREGATION,
-	BATCTL_SETTINGS_BONDING,
-	BATCTL_SETTINGS_FRAGMENTATION,
-	BATCTL_SETTINGS_NETWORK_CODING,
-	BATCTL_SETTINGS_ISOLATION_MARK,
-	BATCTL_SETTINGS_MULTICAST_MODE,
-	BATCTL_SETTINGS_NUM,
-};
-
 struct settings_data {
-	const char opt_long[OPT_LONG_MAX_LEN];
-	const char opt_short[OPT_SHORT_MAX_LEN];
-	const char sysfs_name[SETTINGS_PATH_MAX_LEN];
+	const char *sysfs_name;
 	const char **params;
 };
 
 extern const char *sysfs_param_enable[];
 extern const char *sysfs_param_server[];
-extern const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM];
 
-int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
+int handle_sys_setting(struct state *state, int argc, char **argv);
 
 #endif

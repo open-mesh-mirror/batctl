@@ -40,8 +40,6 @@ struct print_opts {
 struct ether_addr;
 
 int netlink_print_routing_algos(void);
-int netlink_print_transglobal(char *mesh_iface, char *orig_iface, int read_opt,
-			      float orig_timeout, float watch_interval);
 int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
 			     float orig_timeout, float watch_interval);
 

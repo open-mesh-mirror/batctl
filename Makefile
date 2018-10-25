@@ -60,6 +60,7 @@ OBJ += sys.o
 OBJ += tcpdump.o
 OBJ += throughputmeter.o
 OBJ += traceroute.o
+OBJ += transglobal.o
 OBJ += translate.o
 
 MANPAGE = man/batctl.8

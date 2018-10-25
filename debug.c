@@ -210,14 +210,3 @@ static struct debug_table_data batctl_debug_table_translocal = {
 
 COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");
-
-static struct debug_table_data batctl_debug_table_transglobal = {
-	.debugfs_name = "transtable_global",
-	.header_lines = 2,
-	.netlink_fn = netlink_print_transglobal,
-	.option_unicast_only = 1,
-	.option_multicast_only = 1,
-};
-
-COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");

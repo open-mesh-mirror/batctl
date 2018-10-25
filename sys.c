@@ -164,15 +164,6 @@ COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
 	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
 
-static struct settings_data batctl_settings_bonding = {
-	.sysfs_name = "bonding",
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bonding,
-	      "[0|1]             \tdisplay or modify bonding setting");
-
 static struct settings_data batctl_settings_fragmentation = {
 	.sysfs_name = "fragmentation",
 	.params = sysfs_param_enable,

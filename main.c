@@ -39,6 +39,7 @@
 #include "bisect_iv.h"
 #include "statistics.h"
 #include "loglevel.h"
+#include "log.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";

@@ -57,7 +57,6 @@ struct debug_table_data {
 extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
 
 int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
-int log_print(char *mesh_iface, int argc, char **argv);
 int debug_print_routing_algos(void);
 
 #endif

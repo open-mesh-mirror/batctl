@@ -35,6 +35,7 @@ OBJ += hash.o
 OBJ += icmp_helper.o
 OBJ += interface.o
 OBJ += loglevel.o
+OBJ += log.o
 OBJ += main.o
 OBJ += netlink.o
 OBJ += ping.o

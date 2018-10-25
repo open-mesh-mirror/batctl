@@ -42,6 +42,7 @@ OBJ += claimtable.o
 OBJ += dat_cache.o
 OBJ += debugfs.o
 OBJ += debug.o
+OBJ += distributed_arp_table.o
 OBJ += functions.o
 OBJ += gateways.o
 OBJ += genl.o

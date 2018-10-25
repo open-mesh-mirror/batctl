@@ -146,15 +146,6 @@ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
 	      "[interval]        \tdisplay or modify orig_interval setting");
 
-static struct settings_data batctl_settings_distributed_arp_table = {
-	.sysfs_name = SYS_DAT,
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
-	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
-
 static struct settings_data batctl_settings_fragmentation = {
 	.sysfs_name = "fragmentation",
 	.params = sysfs_param_enable,

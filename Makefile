@@ -34,6 +34,7 @@ OBJ += backbonetable.o
 ifeq ($(CONFIG_BATCTL_BISECT),y)
 OBJ += $(OBJ_BISECT)
 endif
+OBJ += claimtable.o
 OBJ += debugfs.o
 OBJ += debug.o
 OBJ += functions.o

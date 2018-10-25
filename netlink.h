@@ -51,8 +51,6 @@ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
 			     float orig_timeout, float watch_interval);
 int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
 			   float orig_timeout, float watch_interval);
-int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
-			    float orig_timeout, float watch_interval);
 int netlink_print_dat_cache(char *mesh_iface, char *orig_iface, int read_opt,
 			    float orig_timeout, float watch_interval);
 int netlink_print_mcast_flags(char *mesh_iface, char *orig_iface, int read_opt,

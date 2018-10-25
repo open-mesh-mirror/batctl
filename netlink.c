@@ -964,79 +964,6 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static const int bla_claim_mandatory[] = {
-	BATADV_ATTR_BLA_ADDRESS,
-	BATADV_ATTR_BLA_VID,
-	BATADV_ATTR_BLA_BACKBONE,
-	BATADV_ATTR_BLA_CRC,
-};
-
-static int bla_claim_callback(struct nl_msg *msg, void *arg)
-{
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	struct print_opts *opts = arg;
-	struct bat_host *bat_host;
-	struct genlmsghdr *ghdr;
-	uint16_t backbone_crc;
-	uint8_t *backbone;
-	uint8_t *client;
-	uint16_t vid;
-	char c = ' ';
-
-	if (!genlmsg_valid_hdr(nlh, 0)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	ghdr = nlmsg_data(nlh);
-
-	if (ghdr->cmd != BATADV_CMD_GET_BLA_CLAIM)
-		return NL_OK;
-
-	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	if (missing_mandatory_attrs(attrs, bla_claim_mandatory,
-				       ARRAY_SIZE(bla_claim_mandatory))) {
-		fputs("Missing attributes from kernel\n", stderr);
-		exit(1);
-	}
-
-	if (attrs[BATADV_ATTR_BLA_OWN])
-		c = '*';
-
-	client = nla_data(attrs[BATADV_ATTR_BLA_ADDRESS]);
-	vid = nla_get_u16(attrs[BATADV_ATTR_BLA_VID]);
-	backbone = nla_data(attrs[BATADV_ATTR_BLA_BACKBONE]);
-	backbone_crc = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
-
-	bat_host = bat_hosts_find_by_mac((char *)client);
-	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-		       client[0], client[1], client[2],
-		       client[3], client[4], client[5]);
-	else
-		printf("%17s ", bat_host->name);
-
-	printf("on %5d by ", BATADV_PRINT_VID(vid));
-
-	bat_host = bat_hosts_find_by_mac((char *)backbone);
-	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-		       backbone[0], backbone[1], backbone[2],
-		       backbone[3], backbone[4], backbone[5]);
-	else
-		printf("%17s ", bat_host->name);
-
-	printf("[%c] (0x%04x)\n", c, backbone_crc);
-
-	return NL_OK;
-}
-
 static const int dat_cache_mandatory[] = {
 	BATADV_ATTR_DAT_CACHE_IP4ADDRESS,
 	BATADV_ATTR_DAT_CACHE_HWADDRESS,
@@ -1386,17 +1313,6 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
 				    header,
 				    BATADV_CMD_GET_GATEWAYS,
 				    gateways_callback);
-}
-
-int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opts,
-			    float orig_timeout,
-			    float watch_interval)
-{
-	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-				    orig_timeout, watch_interval,
-				    "Client               VID      Originator        [o] (CRC   )\n",
-				    BATADV_CMD_GET_BLA_CLAIM,
-				    bla_claim_callback);
 }
 
 int netlink_print_dat_cache(char *mesh_iface, char *orig_iface, int read_opts,

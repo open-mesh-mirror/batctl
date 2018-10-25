@@ -595,89 +595,6 @@ static int originators_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static const int neighbors_mandatory[] = {
-	BATADV_ATTR_NEIGH_ADDRESS,
-	BATADV_ATTR_HARD_IFINDEX,
-	BATADV_ATTR_LAST_SEEN_MSECS,
-};
-
-static int neighbors_callback(struct nl_msg *msg, void *arg)
-{
-	unsigned throughput_mbits, throughput_kbits;
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	int last_seen_msecs, last_seen_secs;
-	struct print_opts *opts = arg;
-	struct bat_host *bat_host;
-	char ifname[IF_NAMESIZE];
-	struct genlmsghdr *ghdr;
-	uint8_t *neigh;
-
-	if (!genlmsg_valid_hdr(nlh, 0)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	ghdr = nlmsg_data(nlh);
-
-	if (ghdr->cmd != BATADV_CMD_GET_NEIGHBORS)
-		return NL_OK;
-
-	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	if (missing_mandatory_attrs(attrs, neighbors_mandatory,
-				    ARRAY_SIZE(neighbors_mandatory))) {
-		fputs("Missing attributes from kernel\n", stderr);
-		exit(1);
-	}
-
-	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
-	bat_host = bat_hosts_find_by_mac((char *)neigh);
-
-	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
-			    ifname))
-		ifname[0] = '\0';
-
-	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
-	last_seen_secs = last_seen_msecs / 1000;
-	last_seen_msecs = last_seen_msecs % 1000;
-
-	if (attrs[BATADV_ATTR_THROUGHPUT]) {
-		throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
-		throughput_mbits = throughput_kbits / 1000;
-		throughput_kbits = throughput_kbits % 1000;
-
-		if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-			printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-			       neigh[0], neigh[1], neigh[2],
-			       neigh[3], neigh[4], neigh[5]);
-		else
-			printf("%17s ", bat_host->name);
-
-		printf("%4i.%03is (%9u.%1u) [%10s]\n",
-		       last_seen_secs, last_seen_msecs,
-		       throughput_mbits, throughput_kbits / 100,
-		       ifname);
-	} else {
-		printf("   %10s	  ", ifname);
-
-		if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-			printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-			       neigh[0], neigh[1], neigh[2],
-			       neigh[3], neigh[4], neigh[5]);
-		else
-			printf("%17s ", bat_host->name);
-
-		printf("%4i.%03is\n", last_seen_secs, last_seen_msecs);
-	}
-
-	return NL_OK;
-}
-
 static const int transglobal_mandatory[] = {
 	BATADV_ATTR_TT_ADDRESS,
 	BATADV_ATTR_ORIG_ADDRESS,
@@ -1016,17 +933,6 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
 				    orig_timeout, watch_interval, header,
 				    BATADV_CMD_GET_ORIGINATORS,
 				    originators_callback);
-}
-
-int netlink_print_neighbors(char *mesh_iface, char *orig_iface, int read_opts,
-			    float orig_timeout,
-			    float watch_interval)
-{
-	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-				    orig_timeout, watch_interval,
-				    "IF             Neighbor              last-seen\n",
-				    BATADV_CMD_GET_NEIGHBORS,
-				    neighbors_callback);
 }
 
 int netlink_print_transglobal(char *mesh_iface, char *orig_iface,

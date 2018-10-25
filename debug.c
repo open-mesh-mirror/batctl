@@ -200,15 +200,6 @@ int debug_print_routing_algos(void)
 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
 }
 
-static struct debug_table_data batctl_debug_table_neighbors = {
-	.debugfs_name = "neighbors",
-	.header_lines = 2,
-	.netlink_fn = netlink_print_neighbors,
-};
-
-COMMAND_NAMED(DEBUGTABLE, neighbors, "n", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_neighbors, "");
-
 static struct debug_table_data batctl_debug_table_originators = {
 	.debugfs_name = "originators",
 	.header_lines = 2,

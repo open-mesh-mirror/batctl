@@ -50,6 +50,7 @@ OBJ += log.o
 OBJ += main.o
 OBJ += mcast_flags.o
 OBJ += nc_nodes.o
+OBJ += neighbors.o
 OBJ += netlink.o
 OBJ += ping.o
 OBJ += routing_algo.o

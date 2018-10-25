@@ -231,4 +231,5 @@ out:
 	return ret;
 }
 
-COMMAND(traceroute, "tr", COMMAND_FLAG_MESH_IFACE);
+COMMAND(traceroute, "tr", COMMAND_FLAG_MESH_IFACE,
+	"<destination>     \ttraceroute another batman adv host via layer 2");

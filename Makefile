@@ -26,7 +26,13 @@ export CONFIG_BATCTL_BISECT=n
 
 # batctl build
 BINARY_NAME = batctl
+
+OBJ_BISECT = bisect_iv.o
+
 OBJ += bat-hosts.o
+ifeq ($(CONFIG_BATCTL_BISECT),y)
+OBJ += $(OBJ_BISECT)
+endif
 OBJ += debugfs.o
 OBJ += debug.o
 OBJ += functions.o
@@ -47,7 +53,7 @@ OBJ += tcpdump.o
 OBJ += throughputmeter.o
 OBJ += traceroute.o
 OBJ += translate.o
-OBJ_BISECT = bisect_iv.o
+
 MANPAGE = man/batctl.8
 
 # batctl flags and options
@@ -95,11 +101,6 @@ CFLAGS += $(LIBNL_GENL_CFLAGS)
 LDLIBS += $(LIBNL_GENL_LDLIBS)
 
 # standard build tools
-ifeq ($(CONFIG_BATCTL_BISECT),y)
-OBJ += $(OBJ_BISECT)
-CPPFLAGS += -DBATCTL_BISECT
-endif
-
 CC ?= gcc
 RM ?= rm -f
 INSTALL ?= install

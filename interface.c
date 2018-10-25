@@ -458,4 +458,5 @@ err:
 	return EXIT_FAILURE;
 }
 
-COMMAND(interface, "if", 0);
+COMMAND(interface, "if", 0,
+	"[add|del iface(s)]\tdisplay or modify the interface settings");

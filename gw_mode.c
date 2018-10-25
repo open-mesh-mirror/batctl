@@ -167,4 +167,5 @@ out:
 	return res;
 }
 
-COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE);
+COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE,
+	"[mode]            \tdisplay or modify the gateway mode");

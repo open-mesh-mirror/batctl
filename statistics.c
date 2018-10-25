@@ -126,4 +126,5 @@ out:
 	return ret;
 }
 
-COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE);
+COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE,
+	"                  \tprint mesh statistics");

@@ -78,4 +78,5 @@ out:
 	return ret;
 }
 
-COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE);
+COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE,
+	"<destination>     \ttranslate a destination to the originator responsible for it");

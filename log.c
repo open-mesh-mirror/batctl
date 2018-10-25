@@ -69,4 +69,5 @@ static int log_print(char *mesh_iface, int argc, char **argv)
 	return res;
 }
 
-COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE);
+COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE,
+	      "                  \tread the log produced by the kernel module");

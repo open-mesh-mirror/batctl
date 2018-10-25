@@ -41,7 +41,9 @@ extern const struct command *__stop___command[];
 
 static void print_usage(void)
 {
+	const struct command **p;
 	int i, opt_indent;
+	char buf[32];
 
 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
 	fprintf(stderr, "options:\n");
@@ -51,7 +53,19 @@ static void print_usage(void)
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "commands:\n");
-	fprintf(stderr, " \tinterface|if               [add|del iface(s)]\tdisplay or modify the interface settings\n");
+
+	for (p = __start___command; p < __stop___command; p++) {
+		const struct command *cmd = *p;
+
+		if (strcmp(cmd->name, cmd->abbr) == 0)
+			snprintf(buf, sizeof(buf), "%s", cmd->name);
+		else
+			snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
+				 cmd->abbr);
+
+		fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
+	}
+
 	for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
 		fprintf(stderr, " \t%s|%s", batctl_settings[i].opt_long, batctl_settings[i].opt_short);
 		opt_indent = strlen(batctl_settings[i].opt_long) + strlen(batctl_settings[i].opt_short);
@@ -66,26 +80,11 @@ static void print_usage(void)
 			fprintf(stderr, "                                display or modify %s setting\n",
 			       batctl_settings[i].opt_long);
 	}
-	fprintf(stderr, " \tloglevel|ll                [level]           \tdisplay or modify the log level\n");
-	fprintf(stderr, " \tlog|l                                        \tread the log produced by the kernel module\n");
-	fprintf(stderr, " \tgw_mode|gw                 [mode]            \tdisplay or modify the gateway mode\n");
-	fprintf(stderr, " \trouting_algo|ra            [mode]            \tdisplay or modify the routing algorithm\n");
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
 	for (i = 0; i < BATCTL_TABLE_NUM; i++)
 		fprintf(stderr, " \t%s|%s\n", batctl_debug_tables[i].opt_long, batctl_debug_tables[i].opt_short);
-
-	fprintf(stderr, "\n");
-	fprintf(stderr, " \tstatistics|s                                 \tprint mesh statistics\n");
-	fprintf(stderr, " \tping|p                     <destination>     \tping another batman adv host via layer 2\n");
-	fprintf(stderr, " \ttraceroute|tr              <destination>     \ttraceroute another batman adv host via layer 2\n");
-	fprintf(stderr, " \ttcpdump|td                 <interface>       \ttcpdump layer 2 traffic on the given interface\n");
-	printf(" \tthroughputmeter|tp         <destination>     \tstart a throughput measurement\n");
-	fprintf(stderr, " \ttranslate|t                <destination>     \ttranslate a destination to the originator responsible for it\n");
-#ifdef BATCTL_BISECT
-	fprintf(stderr, " \tbisect_iv                  <file1> .. <fileN>\tanalyze given batman iv log files for routing stability\n");
-#endif
 }
 
 static void version(void)

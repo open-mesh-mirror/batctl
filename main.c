@@ -30,10 +30,6 @@
 #include "main.h"
 #include "sys.h"
 #include "debug.h"
-#include "interface.h"
-#include "tcpdump.h"
-#include "bisect_iv.h"
-#include "routing_algo.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
@@ -152,24 +148,7 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
-
-		ret = interface(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
-
-		ret = tcpdump(argc - 1, argv + 1);
-
-#ifdef BATCTL_BISECT
-	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
-
-		ret = bisect_iv(argc - 1, argv + 1);
-#endif
-	} else if ((strcmp(argv[1], "routing_algo") == 0) || (strcmp(argv[1], "ra") == 0)) {
-
-		ret = routing_algo(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((cmd = find_command(argv[1]))) {
+	if ((cmd = find_command(argv[1]))) {
 		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
 		    check_mesh_iface(mesh_iface) < 0) {
 			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);

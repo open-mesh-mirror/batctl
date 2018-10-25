@@ -41,7 +41,7 @@ static void ra_mode_usage(void)
 	fprintf(stderr, " \t -h print this help\n");
 }
 
-int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
+static int routing_algo(char *mesh_iface __maybe_unused, int argc, char **argv)
 {
 	DIR *iface_base_dir;
 	struct dirent *iface_dir;
@@ -125,3 +125,5 @@ free_buff:
 out:
 	return res;
 }
+
+COMMAND(routing_algo, "ra", 0);

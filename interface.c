@@ -20,8 +20,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-#include "interface.h"
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -299,7 +297,7 @@ err_free_msg:
 	return err;
 }
 
-int interface(char *mesh_iface, int argc, char **argv)
+static int interface(char *mesh_iface, int argc, char **argv)
 {
 	int i, optchar;
 	int ret;
@@ -459,3 +457,5 @@ int interface(char *mesh_iface, int argc, char **argv)
 err:
 	return EXIT_FAILURE;
 }
+
+COMMAND(interface, "if", 0);

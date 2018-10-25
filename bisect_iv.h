@@ -33,10 +33,6 @@
 #define RT_FLAG_UPDATE 2
 #define RT_FLAG_DELETE 3
 
-int bisect_iv(int argc, char **argv);
-
-
-
 struct bat_node {
 	char name[NAME_LEN];
 	struct list_head orig_event_list;

@@ -1210,7 +1210,7 @@ static void sig_handler(int sig)
 	}
 }
 
-int tcpdump(int argc, char **argv)
+static int tcpdump(char *mesh_iface __maybe_unused, int argc, char **argv)
 {
 	struct timeval tv;
 	struct dump_if *dump_if, *dump_if_tmp;
@@ -1351,3 +1351,5 @@ out:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(tcpdump, "td", 0);

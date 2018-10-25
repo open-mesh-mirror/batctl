@@ -113,6 +113,4 @@ struct prism_header {
 #define PRISM_HEADER_LEN sizeof(struct prism_header)
 #define RADIOTAP_HEADER_LEN sizeof(struct radiotap_header)
 
-int tcpdump(int argc, char **argv);
-
 #endif

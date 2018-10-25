@@ -32,6 +32,7 @@
 #include "bisect_iv.h"
 #include "bat-hosts.h"
 #include "hash.h"
+#include "main.h"
 #include "functions.h"
 
 static struct hashtable_t *node_hash = NULL;
@@ -1440,7 +1441,7 @@ err:
 	return 0;
 }
 
-int bisect_iv(int argc, char **argv)
+static int bisect_iv(char *mesh_iface __maybe_unused, int argc, char **argv)
 {
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
@@ -1593,3 +1594,5 @@ err:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(bisect_iv, "bisect_iv", 0);

@@ -260,15 +260,6 @@ static struct debug_table_data batctl_debug_table_claimtable = {
 COMMAND_NAMED(DEBUGTABLE, claimtable, "cl", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_claimtable, "");
 
-static struct debug_table_data batctl_debug_table_backbonetable = {
-	.debugfs_name = DEBUG_BACKBONETABLE,
-	.header_lines = 2,
-	.netlink_fn = netlink_print_bla_backbone,
-};
-
-COMMAND_NAMED(DEBUGTABLE, backbonetable, "bbt", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_backbonetable, "");
-
 static struct debug_table_data batctl_debug_table_dat_cache = {
 	.debugfs_name = DEBUG_DAT_CACHE,
 	.header_lines = 2,

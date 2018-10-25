@@ -43,24 +43,6 @@
 #include "functions.h"
 #include "main.h"
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
-
-#ifndef container_of
-#define container_of(ptr, type, member) __extension__ ({ \
-	const __typeof__(((type *)0)->member) *__pmember = (ptr); \
-	(type *)((char *)__pmember - offsetof(type, member)); })
-#endif
-
-struct print_opts {
-	int read_opt;
-	float orig_timeout;
-	float watch_interval;
-	nl_recvmsg_msg_cb_t callback;
-	char *remaining_header;
-	const char *static_header;
-	uint8_t nl_cmd;
-};
-
 struct nlquery_opts {
 	int err;
 };
@@ -132,8 +114,8 @@ static char algo_name_buf[256] = "";
 static int64_t mcast_flags = -EOPNOTSUPP;
 static int64_t mcast_flags_priv = -EOPNOTSUPP;
 
-static int missing_mandatory_attrs(struct nlattr *attrs[],
-				   const int mandatory[], int num)
+int missing_mandatory_attrs(struct nlattr *attrs[], const int mandatory[],
+			    int num)
 {
 	int i;
 
@@ -1055,74 +1037,6 @@ static int bla_claim_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static const int bla_backbone_mandatory[] = {
-	BATADV_ATTR_BLA_VID,
-	BATADV_ATTR_BLA_BACKBONE,
-	BATADV_ATTR_BLA_CRC,
-	BATADV_ATTR_LAST_SEEN_MSECS,
-};
-
-static int bla_backbone_callback(struct nl_msg *msg, void *arg)
-{
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	int last_seen_msecs, last_seen_secs;
-	struct print_opts *opts = arg;
-	struct bat_host *bat_host;
-	struct genlmsghdr *ghdr;
-	uint16_t backbone_crc;
-	uint8_t *backbone;
-	uint16_t vid;
-
-	if (!genlmsg_valid_hdr(nlh, 0)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	ghdr = nlmsg_data(nlh);
-
-	if (ghdr->cmd != BATADV_CMD_GET_BLA_BACKBONE)
-		return NL_OK;
-
-	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-		fputs("Received invalid data from kernel.\n", stderr);
-		exit(1);
-	}
-
-	if (missing_mandatory_attrs(attrs, bla_backbone_mandatory,
-				       ARRAY_SIZE(bla_backbone_mandatory))) {
-		fputs("Missing attributes from kernel\n", stderr);
-		exit(1);
-	}
-
-	/* don't show own backbones */
-	if (attrs[BATADV_ATTR_BLA_OWN])
-		return NL_OK;
-
-	vid = nla_get_u16(attrs[BATADV_ATTR_BLA_VID]);
-	backbone = nla_data(attrs[BATADV_ATTR_BLA_BACKBONE]);
-	backbone_crc = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
-
-	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
-	last_seen_secs = last_seen_msecs / 1000;
-	last_seen_msecs = last_seen_msecs % 1000;
-
-	bat_host = bat_hosts_find_by_mac((char *)backbone);
-	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-		       backbone[0], backbone[1], backbone[2],
-		       backbone[3], backbone[4], backbone[5]);
-	else
-		printf("%17s ", bat_host->name);
-
-	printf("on %5d %4i.%03is (0x%04x)\n",
-	       BATADV_PRINT_VID(vid), last_seen_secs, last_seen_msecs,
-	       backbone_crc);
-
-	return NL_OK;
-}
-
 static const int dat_cache_mandatory[] = {
 	BATADV_ATTR_DAT_CACHE_IP4ADDRESS,
 	BATADV_ATTR_DAT_CACHE_HWADDRESS,
@@ -1263,10 +1177,10 @@ static int mcast_flags_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static int netlink_print_common(char *mesh_iface, char *orig_iface,
-				int read_opt, float orig_timeout,
-				float watch_interval, const char *header,
-				uint8_t nl_cmd, nl_recvmsg_msg_cb_t callback)
+int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+			 float orig_timeout, float watch_interval,
+			 const char *header, uint8_t nl_cmd,
+			 nl_recvmsg_msg_cb_t callback)
 {
 	struct print_opts opts = {
 		.read_opt = read_opt,
@@ -1483,16 +1397,6 @@ int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opts,
 				    "Client               VID      Originator        [o] (CRC   )\n",
 				    BATADV_CMD_GET_BLA_CLAIM,
 				    bla_claim_callback);
-}
-
-int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opts,
-			       float orig_timeout, float watch_interval)
-{
-	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-				    orig_timeout, watch_interval,
-				    "Originator           VID   last seen (CRC   )\n",
-				    BATADV_CMD_GET_BLA_BACKBONE,
-				    bla_backbone_callback);
 }
 
 int netlink_print_dat_cache(char *mesh_iface, char *orig_iface, int read_opts,

@@ -51,6 +51,14 @@ extern char module_ver_path[];
 #define BATADV_PRINT_VID(vid) (vid & BATADV_VLAN_HAS_TAG ? \
 			       (int)(vid & VLAN_VID_MASK) : -1)
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
+
+#ifndef container_of
+#define container_of(ptr, type, member) __extension__ ({ \
+	const __typeof__(((type *)0)->member) *__pmember = (ptr); \
+	(type *)((char *)__pmember - offsetof(type, member)); })
+#endif
+
 enum command_flags {
 	COMMAND_FLAG_MESH_IFACE = BIT(0),
 };

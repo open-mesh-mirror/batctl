@@ -30,6 +30,7 @@ BINARY_NAME = batctl
 OBJ_BISECT = bisect_iv.o
 
 OBJ += bat-hosts.o
+OBJ += backbonetable.o
 ifeq ($(CONFIG_BATCTL_BISECT),y)
 OBJ += $(OBJ_BISECT)
 endif

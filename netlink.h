@@ -26,6 +26,16 @@
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 
+struct print_opts {
+	int read_opt;
+	float orig_timeout;
+	float watch_interval;
+	nl_recvmsg_msg_cb_t callback;
+	char *remaining_header;
+	const char *static_header;
+	uint8_t nl_cmd;
+};
+
 struct ether_addr;
 
 int netlink_print_routing_algos(void);
@@ -43,8 +53,6 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
 			   float orig_timeout, float watch_interval);
 int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
 			    float orig_timeout, float watch_interval);
-int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
-			       float orig_timeout, float watch_interval);
 int netlink_print_dat_cache(char *mesh_iface, char *orig_iface, int read_opt,
 			    float orig_timeout, float watch_interval);
 int netlink_print_mcast_flags(char *mesh_iface, char *orig_iface, int read_opt,
@@ -57,5 +65,12 @@ int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
 int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac);
 
 extern struct nla_policy batadv_netlink_policy[];
+
+int missing_mandatory_attrs(struct nlattr *attrs[], const int mandatory[],
+			    int num);
+int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+			 float orig_timeout, float watch_interval,
+			 const char *header, uint8_t nl_cmd,
+			 nl_recvmsg_msg_cb_t callback);
 
 #endif /* _BATCTL_NETLINK_H */

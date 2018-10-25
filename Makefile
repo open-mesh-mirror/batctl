@@ -37,6 +37,7 @@ ifeq ($(CONFIG_BATCTL_BISECT),y)
 OBJ += $(OBJ_BISECT)
 endif
 OBJ += bonding.o
+OBJ += bridge_loop_avoidance.o
 OBJ += claimtable.o
 OBJ += dat_cache.o
 OBJ += debugfs.o

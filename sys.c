@@ -146,15 +146,6 @@ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
 	      "[interval]        \tdisplay or modify orig_interval setting");
 
-static struct settings_data batctl_settings_bridge_loop_avoidance = {
-	.sysfs_name = SYS_BLA,
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_bridge_loop_avoidance,
-	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");
-
 static struct settings_data batctl_settings_distributed_arp_table = {
 	.sysfs_name = SYS_DAT,
 	.params = sysfs_param_enable,

@@ -154,12 +154,3 @@ static struct settings_data batctl_settings_network_coding = {
 COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
 	      "[0|1]             \tdisplay or modify network_coding setting");
-
-static struct settings_data batctl_settings_multicast_mode = {
-	.sysfs_name = SYS_MULTICAST_MODE,
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_multicast_mode,
-	      "[0|1]             \tdisplay or modify multicast_mode setting");

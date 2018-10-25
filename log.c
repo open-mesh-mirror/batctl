@@ -69,5 +69,5 @@ static int log_print(struct state *state, int argc, char **argv)
 	return res;
 }
 
-COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND_NAMED(SUBCOMMAND, log, "l", log_print, COMMAND_FLAG_MESH_IFACE, NULL,
 	      "                  \tread the log produced by the kernel module");

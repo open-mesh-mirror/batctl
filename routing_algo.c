@@ -126,5 +126,5 @@ out:
 	return res;
 }
 
-COMMAND(routing_algo, "ra", 0, NULL,
+COMMAND(SUBCOMMAND, routing_algo, "ra", 0, NULL,
 	"[mode]            \tdisplay or modify the routing algorithm");

@@ -1352,5 +1352,5 @@ out:
 	return ret;
 }
 
-COMMAND(tcpdump, "td", 0, NULL,
+COMMAND(SUBCOMMAND, tcpdump, "td", 0, NULL,
 	"<interface>       \ttcpdump layer 2 traffic on the given interface");

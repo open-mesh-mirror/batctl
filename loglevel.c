@@ -143,5 +143,5 @@ out:
 	return res;
 }
 
-COMMAND(loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND, loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
 	"[level]           \tdisplay or modify the log level");

@@ -41,45 +41,63 @@ extern const struct command *__stop___command[];
 
 static void print_usage(void)
 {
+	enum command_type type[] = {
+		SUBCOMMAND,
+	};
 	const struct command **p;
-	int i, opt_indent;
+	int opt_indent;
 	char buf[32];
+	size_t i;
+	size_t j;
 
 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
 	fprintf(stderr, "options:\n");
 	fprintf(stderr, " \t-m mesh interface or VLAN created on top of a mesh interface (default 'bat0')\n");
 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
 	fprintf(stderr, " \t-v print version\n");
-	fprintf(stderr, "\n");
 
-	fprintf(stderr, "commands:\n");
+	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
+		fprintf(stderr, "\n");
 
-	for (p = __start___command; p < __stop___command; p++) {
-		const struct command *cmd = *p;
+		switch (type[i]) {
+		case SUBCOMMAND:
+			fprintf(stderr, "commands:\n");
+			break;
+		}
 
-		if (strcmp(cmd->name, cmd->abbr) == 0)
-			snprintf(buf, sizeof(buf), "%s", cmd->name);
-		else
-			snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
-				 cmd->abbr);
+		for (p = __start___command; p < __stop___command; p++) {
+			const struct command *cmd = *p;
 
-		fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
+			if (cmd->type != type[i])
+				continue;
+
+			if (strcmp(cmd->name, cmd->abbr) == 0)
+				snprintf(buf, sizeof(buf), "%s", cmd->name);
+			else
+				snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
+					 cmd->abbr);
+
+			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
+		}
+
+		if (type[i] == SUBCOMMAND) {
+			for (j = 0; j < BATCTL_SETTINGS_NUM; j++) {
+				fprintf(stderr, " \t%s|%s", batctl_settings[j].opt_long, batctl_settings[j].opt_short);
+				opt_indent = strlen(batctl_settings[j].opt_long) + strlen(batctl_settings[j].opt_short);
+
+				if (batctl_settings[j].params == sysfs_param_enable)
+					fprintf(stderr, "%*s                display or modify %s setting\n",
+						31 - opt_indent, "[0|1]", batctl_settings[j].opt_long);
+				else if (batctl_settings[j].params == sysfs_param_server)
+					fprintf(stderr, "%*s      display or modify %s setting\n",
+						41 - opt_indent, "[client|server]", batctl_settings[j].opt_long);
+				else
+					fprintf(stderr, "                                display or modify %s setting\n",
+						batctl_settings[j].opt_long);
+			}
+		}
 	}
 
-	for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
-		fprintf(stderr, " \t%s|%s", batctl_settings[i].opt_long, batctl_settings[i].opt_short);
-		opt_indent = strlen(batctl_settings[i].opt_long) + strlen(batctl_settings[i].opt_short);
-
-		if (batctl_settings[i].params == sysfs_param_enable)
-			fprintf(stderr, "%*s                display or modify %s setting\n",
-			       31 - opt_indent, "[0|1]", batctl_settings[i].opt_long);
-		else if (batctl_settings[i].params == sysfs_param_server)
-			fprintf(stderr, "%*s      display or modify %s setting\n",
-			       41 - opt_indent, "[client|server]", batctl_settings[i].opt_long);
-		else
-			fprintf(stderr, "                                display or modify %s setting\n",
-			       batctl_settings[i].opt_long);
-	}
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");

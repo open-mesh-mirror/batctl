@@ -1595,5 +1595,5 @@ err:
 	return ret;
 }
 
-COMMAND(bisect_iv, "bisect_iv", 0, NULL,
+COMMAND(SUBCOMMAND, bisect_iv, "bisect_iv", 0, NULL,
 	"<file1> .. <fileN>\tanalyze given batman iv log files for routing stability");

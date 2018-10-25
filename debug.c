@@ -241,11 +241,3 @@ static struct debug_table_data batctl_debug_table_transglobal = {
 
 COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
-
-static struct debug_table_data batctl_debug_table_nc_nodes = {
-	.debugfs_name = DEBUG_NC_NODES,
-	.header_lines = 0,
-};
-
-COMMAND_NAMED(DEBUGTABLE, nc_nodes, "nn", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_nc_nodes, "");

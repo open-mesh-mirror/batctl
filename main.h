@@ -29,8 +29,6 @@
 #define SOURCE_VERSION "2018.4"
 #endif
 
-#define SOCKET_PATH_FMT "%s/batman_adv/%s/socket"
-
 #define EXIT_NOSUCCESS 2
 
 #define OPT_LONG_MAX_LEN 25

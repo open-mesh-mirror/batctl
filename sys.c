@@ -155,15 +155,6 @@ COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_network_coding,
 	      "[0|1]             \tdisplay or modify network_coding setting");
 
-static struct settings_data batctl_settings_isolation_mark = {
-	.sysfs_name = "isolation_mark",
-	.params = NULL,
-};
-
-COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_isolation_mark,
-	      "[mark]            \tdisplay or modify isolation_mark setting");
-
 static struct settings_data batctl_settings_multicast_mode = {
 	.sysfs_name = SYS_MULTICAST_MODE,
 	.params = sysfs_param_enable,

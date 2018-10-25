@@ -51,6 +51,7 @@ OBJ += gw_mode.o
 OBJ += hash.o
 OBJ += icmp_helper.o
 OBJ += interface.o
+OBJ += isolation_mark.o
 OBJ += loglevel.o
 OBJ += log.o
 OBJ += main.o

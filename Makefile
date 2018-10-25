@@ -30,6 +30,7 @@ BINARY_NAME = batctl
 OBJ_BISECT = bisect_iv.o
 
 OBJ += aggregation.o
+OBJ += ap_isolation.o
 OBJ += bat-hosts.o
 OBJ += backbonetable.o
 ifeq ($(CONFIG_BATCTL_BISECT),y)

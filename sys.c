@@ -146,15 +146,6 @@ COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
 	      "[interval]        \tdisplay or modify orig_interval setting");
 
-static struct settings_data batctl_settings_ap_isolation = {
-	.sysfs_name = "ap_isolation",
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_ap_isolation,
-	      "[0|1]             \tdisplay or modify ap_isolation setting");
-
 static struct settings_data batctl_settings_bridge_loop_avoidance = {
 	.sysfs_name = SYS_BLA,
 	.params = sysfs_param_enable,

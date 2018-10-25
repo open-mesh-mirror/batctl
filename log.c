@@ -36,7 +36,7 @@ static void log_usage(void)
 	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 }
 
-int log_print(char *mesh_iface, int argc, char **argv)
+static int log_print(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
 	char full_path[MAX_PATH+1];
@@ -68,3 +68,5 @@ int log_print(char *mesh_iface, int argc, char **argv)
 	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
 	return res;
 }
+
+COMMAND_NAMED(log, "l", log_print);

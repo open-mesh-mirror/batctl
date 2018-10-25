@@ -47,7 +47,7 @@ static void log_level_usage(void)
 	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
 }
 
-int loglevel(char *mesh_iface, int argc, char **argv)
+static int loglevel(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
 	int log_level = 0;
@@ -142,3 +142,5 @@ out:
 	free(path_buff);
 	return res;
 }
+
+COMMAND(loglevel, "ll");

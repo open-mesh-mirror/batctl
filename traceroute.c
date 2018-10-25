@@ -36,7 +36,6 @@
 
 #include "batadv_packet.h"
 #include "main.h"
-#include "traceroute.h"
 #include "functions.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
@@ -56,7 +55,7 @@ static void traceroute_usage(void)
 	fprintf(stderr, " \t -T don't try to translate mac to originator address\n");
 }
 
-int traceroute(char *mesh_iface, int argc, char **argv)
+static int traceroute(char *mesh_iface, int argc, char **argv)
 {
 	struct batadv_icmp_packet icmp_packet_out, icmp_packet_in;
 	struct bat_host *bat_host;
@@ -231,3 +230,5 @@ out:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(traceroute, "tr");

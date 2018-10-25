@@ -21,7 +21,6 @@
  */
 
 #include "main.h"
-#include "throughputmeter.h"
 
 #include <netinet/ether.h>
 #include <netinet/in.h>
@@ -389,7 +388,7 @@ static void tp_meter_usage(void)
 	fprintf(stderr, "\t -n don't convert addresses to bat-host names\n");
 }
 
-int throughputmeter(char *mesh_iface, int argc, char **argv)
+static int throughputmeter(char *mesh_iface, int argc, char **argv)
 {
 	struct bat_host *bat_host;
 	uint64_t throughput;
@@ -543,3 +542,5 @@ out:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(throughputmeter, "tp");

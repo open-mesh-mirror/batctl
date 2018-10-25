@@ -45,7 +45,7 @@ static void gw_mode_usage(void)
 	fprintf(stderr, " \t -h print this help\n");
 }
 
-int gw_mode(char *mesh_iface, int argc, char **argv)
+static int gw_mode(char *mesh_iface, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
 	char *path_buff, gw_mode;
@@ -166,3 +166,5 @@ out:
 	free(path_buff);
 	return res;
 }
+
+COMMAND(gw_mode, "gw");

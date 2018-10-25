@@ -31,21 +31,16 @@
 #include "sys.h"
 #include "debug.h"
 #include "interface.h"
-#include "ping.h"
-#include "translate.h"
-#include "traceroute.h"
 #include "tcpdump.h"
-#include "throughputmeter.h"
 #include "bisect_iv.h"
-#include "statistics.h"
-#include "loglevel.h"
-#include "log.h"
-#include "gw_mode.h"
 #include "routing_algo.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";
+
+extern const struct command *__start___command[];
+extern const struct command *__stop___command[];
 
 static void print_usage(void)
 {
@@ -96,8 +91,26 @@ static void print_usage(void)
 #endif
 }
 
+static const struct command *find_command(const char *name)
+{
+	const struct command **p;
+
+	for (p = __start___command; p < __stop___command; p++) {
+		const struct command *cmd = *p;
+
+		if (strcmp(cmd->name, name) == 0)
+			return cmd;
+
+		if (strcmp(cmd->abbr, name) == 0)
+			return cmd;
+	}
+
+	return NULL;
+}
+
 int main(int argc, char **argv)
 {
+	const struct command *cmd;
 	int i, ret = EXIT_FAILURE;
 	char *mesh_iface = mesh_dfl_iface;
 
@@ -159,38 +172,8 @@ int main(int argc, char **argv)
 	} else if (check_mesh_iface(mesh_iface) < 0) {
 		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
 		exit(EXIT_FAILURE);
-	} else if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
-
-		ret = ping(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "throughputmeter") == 0) || (strcmp(argv[1], "tp") == 0)) {
-
-		ret = throughputmeter(mesh_iface, argc -1, argv + 1);
-
-	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
-
-		ret = traceroute(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
-
-		ret = loglevel(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
-
-		ret = log_print(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
-
-		ret = gw_mode(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "statistics") == 0) || (strcmp(argv[1], "s") == 0)) {
-
-		ret = statistics(mesh_iface, argc - 1, argv + 1);
-
-	} else if ((strcmp(argv[1], "translate") == 0) || (strcmp(argv[1], "t") == 0)) {
-
-		ret = translate(mesh_iface, argc - 1, argv + 1);
-
+	} else if ((cmd = find_command(argv[1]))) {
+		ret = cmd->handler(mesh_iface, argc - 1, argv + 1);
 	} else {
 
 		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {

@@ -35,7 +35,6 @@
 #include <stdint.h>
 
 #include "main.h"
-#include "statistics.h"
 
 void check_root_or_die(const char *cmd);
 
@@ -103,8 +102,8 @@ out:
 	return ret;
 }
 
-int statistics(char *mesh_iface, int argc __maybe_unused,
-	       char **argv __maybe_unused)
+static int statistics(char *mesh_iface, int argc __maybe_unused,
+		      char **argv __maybe_unused)
 {
 	struct ifreq ifr;
 	int fd = -1, ret = EXIT_FAILURE;
@@ -126,3 +125,5 @@ out:
 		close(fd);
 	return ret;
 }
+
+COMMAND(statistics, "s");

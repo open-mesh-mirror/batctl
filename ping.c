@@ -39,7 +39,6 @@
 
 #include "batadv_packet.h"
 #include "main.h"
-#include "ping.h"
 #include "functions.h"
 #include "bat-hosts.h"
 #include "debugfs.h"
@@ -73,7 +72,7 @@ static void sig_handler(int sig)
 	}
 }
 
-int ping(char *mesh_iface, int argc, char **argv)
+static int ping(char *mesh_iface, int argc, char **argv)
 {
 	struct batadv_icmp_packet_rr icmp_packet_out, icmp_packet_in;
 	struct timeval tv;
@@ -345,3 +344,5 @@ out:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(ping, "p");

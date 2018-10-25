@@ -24,7 +24,6 @@
 #include <stdlib.h>
 
 #include "main.h"
-#include "translate.h"
 #include "functions.h"
 #include "bat-hosts.h"
 
@@ -34,7 +33,7 @@ static void translate_usage(void)
 	fprintf(stderr, "Usage: batctl [options] translate mac|bat-host|host_name|IPv4_address\n");
 }
 
-int translate(char *mesh_iface, int argc, char **argv)
+static int translate(char *mesh_iface, int argc, char **argv)
 {
 	struct ether_addr *dst_mac = NULL;
 	struct bat_host *bat_host;
@@ -78,3 +77,5 @@ out:
 	bat_hosts_free();
 	return ret;
 }
+
+COMMAND(translate, "t");

@@ -138,11 +138,11 @@ static int transglobal_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static int netlink_print_transglobal(char *mesh_iface, char *orig_iface,
+static int netlink_print_transglobal(struct state *state, char *orig_iface,
 				     int read_opts, float orig_timeout,
 				     float watch_interval)
 {
-	return netlink_print_common(mesh_iface, orig_iface, read_opts,
+	return netlink_print_common(state, orig_iface, read_opts,
 				    orig_timeout, watch_interval,
 				    "   Client             VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
 				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
@@ -158,4 +158,5 @@ static struct debug_table_data batctl_debug_table_transglobal = {
 };
 
 COMMAND_NAMED(DEBUGTABLE, transglobal, "tg", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_transglobal, "");
+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
+	      &batctl_debug_table_transglobal, "");

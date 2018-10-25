@@ -21,7 +21,7 @@
  */
 
 
-
+#include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +32,7 @@
 #include "sys.h"
 #include "debug.h"
 #include "functions.h"
+#include "netlink.h"
 
 char mesh_dfl_iface[] = "bat0";
 char module_ver_path[] = "/sys/module/batman_adv/version";
@@ -180,7 +181,22 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	if (cmd->flags & COMMAND_FLAG_NETLINK) {
+		ret = netlink_create(&state);
+		if (ret < 0 && ret != -EOPNOTSUPP) {
+			/* TODO handle -EOPNOTSUPP as error when fallbacks were
+			 * removed
+			 */
+			fprintf(stderr,
+				"Error - failed to connect to batadv\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	ret = cmd->handler(&state, argc, argv);
+
+	if (cmd->flags & COMMAND_FLAG_NETLINK)
+		netlink_destroy(&state);
 
 	return ret;
 

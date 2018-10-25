@@ -109,6 +109,59 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
 	[BATADV_ATTR_MCAST_FLAGS_PRIV]		= { .type = NLA_U32 },
 };
 
+int netlink_create(struct state *state)
+{
+	int ret;
+
+	state->sock = NULL;
+	state->cb = NULL;
+	state->batadv_family = 0;
+
+	state->sock = nl_socket_alloc();
+	if (!state->sock)
+		return -ENOMEM;
+
+	ret = genl_connect(state->sock);
+	if (ret < 0)
+		goto err_free_sock;
+
+	state->batadv_family = genl_ctrl_resolve(state->sock, BATADV_NL_NAME);
+	if (state->batadv_family < 0) {
+		ret = -EOPNOTSUPP;
+		goto err_free_sock;
+	}
+
+	state->cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!state->cb) {
+		ret = -ENOMEM;
+		goto err_free_family;
+	}
+
+	return 0;
+
+err_free_family:
+	state->batadv_family = 0;
+
+err_free_sock:
+	nl_socket_free(state->sock);
+	state->sock = NULL;
+
+	return ret;
+}
+
+void netlink_destroy(struct state *state)
+{
+	if (state->cb) {
+		nl_cb_put(state->cb);
+		state->cb = NULL;
+	}
+
+	if (state->sock) {
+		nl_socket_free(state->sock);
+		state->sock = NULL;
+	}
+}
+
 int last_err;
 char algo_name_buf[256] = "";
 int64_t mcast_flags = -EOPNOTSUPP;
@@ -456,7 +509,7 @@ err_free_sock:
 	return last_err;
 }
 
-int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			 float orig_timeout, float watch_interval,
 			 const char *header, uint8_t nl_cmd,
 			 nl_recvmsg_msg_cb_t callback)
@@ -469,29 +522,19 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
 		.callback = callback,
 	};
 	int hardifindex = 0;
-	struct nl_sock *sock;
 	struct nl_msg *msg;
-	struct nl_cb *cb;
 	int ifindex;
-	int family;
 
-	sock = nl_socket_alloc();
-	if (!sock)
-		return -ENOMEM;
-
-	genl_connect(sock);
-
-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0) {
+	if (!state->sock) {
 		last_err = -EOPNOTSUPP;
-		goto err_free_sock;
+		return last_err;
 	}
 
-	ifindex = if_nametoindex(mesh_iface);
+	ifindex = if_nametoindex(state->mesh_iface);
 	if (!ifindex) {
-		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
+		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
 		last_err = -ENODEV;
-		goto err_free_sock;
+		return last_err;
 	}
 
 	if (orig_iface) {
@@ -500,21 +543,15 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
 			fprintf(stderr, "Interface %s is unknown\n",
 				orig_iface);
 			last_err = -ENODEV;
-			goto err_free_sock;
+			return last_err;
 		}
-	}
-
-	cb = nl_cb_alloc(NL_CB_DEFAULT);
-	if (!cb) {
-		last_err = -ENOMEM;
-		goto err_free_sock;
 	}
 
 	bat_hosts_init(read_opt);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
-	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
-	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+	nl_cb_set(state->cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
+	nl_cb_set(state->cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(state->cb, NL_CB_CUSTOM, print_error, NULL);
 
 	do {
 		if (read_opt & CLR_CONT_READ)
@@ -530,20 +567,20 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
 		if (!msg)
 			continue;
 
-		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
-			    NLM_F_DUMP, nl_cmd, 1);
+		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family,
+			    0, NLM_F_DUMP, nl_cmd, 1);
 
 		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
 		if (hardifindex)
 			nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
 				    hardifindex);
 
-		nl_send_auto_complete(sock, msg);
+		nl_send_auto_complete(state->sock, msg);
 
 		nlmsg_free(msg);
 
 		last_err = 0;
-		nl_recvmsgs(sock, cb);
+		nl_recvmsgs(state->sock, state->cb);
 
 		/* the header should still be printed when no entry was received */
 		if (!last_err)
@@ -555,9 +592,6 @@ int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
 	} while (!last_err && read_opt & (CONT_READ|CLR_CONT_READ));
 
 	bat_hosts_free();
-
-err_free_sock:
-	nl_socket_free(sock);
 
 	return last_err;
 }

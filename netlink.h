@@ -27,6 +27,8 @@
 #include <netlink/genl/ctrl.h>
 #include <stdint.h>
 
+struct state;
+
 struct print_opts {
 	int read_opt;
 	float orig_timeout;
@@ -38,6 +40,9 @@ struct print_opts {
 };
 
 struct ether_addr;
+
+int netlink_create(struct state *state);
+void netlink_destroy(struct state *state);
 
 int netlink_print_routing_algos(void);
 
@@ -52,7 +57,7 @@ extern struct nla_policy batadv_netlink_policy[];
 
 int missing_mandatory_attrs(struct nlattr *attrs[], const int mandatory[],
 			    int num);
-int netlink_print_common(char *mesh_iface, char *orig_iface, int read_opt,
+int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			 float orig_timeout, float watch_interval,
 			 const char *header, uint8_t nl_cmd,
 			 nl_recvmsg_msg_cb_t callback);

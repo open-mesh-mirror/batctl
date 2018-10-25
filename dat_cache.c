@@ -113,7 +113,7 @@ static int dat_cache_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static int netlink_print_dat_cache(char *mesh_iface, char *orig_iface,
+static int netlink_print_dat_cache(struct state *state, char *orig_iface,
 				   int read_opts, float orig_timeout,
 				   float watch_interval)
 {
@@ -121,13 +121,13 @@ static int netlink_print_dat_cache(char *mesh_iface, char *orig_iface,
 	int ret;
 
 	ret = asprintf(&header, "Distributed ARP Table (%s):\n%s\n",
-		       mesh_iface,
+		       state->mesh_iface,
 		       "          IPv4             MAC        VID   last-seen");
 
 	if (ret < 0)
 		return ret;
 
-	ret = netlink_print_common(mesh_iface, orig_iface, read_opts,
+	ret = netlink_print_common(state, orig_iface, read_opts,
 				   orig_timeout, watch_interval, header,
 				   BATADV_CMD_GET_DAT_CACHE,
 				   dat_cache_callback);
@@ -143,4 +143,5 @@ static struct debug_table_data batctl_debug_table_dat_cache = {
 };
 
 COMMAND_NAMED(DEBUGTABLE, dat_cache, "dc", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_dat_cache, "");
+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
+	      &batctl_debug_table_dat_cache, "");

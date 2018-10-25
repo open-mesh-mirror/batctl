@@ -25,6 +25,10 @@
 
 #include <stdint.h>
 
+#include <netlink/genl/ctrl.h>
+#include <netlink/genl/genl.h>
+#include <netlink/netlink.h>
+
 #ifndef SOURCE_VERSION
 #define SOURCE_VERSION "2018.4"
 #endif
@@ -61,6 +65,7 @@ extern char module_ver_path[];
 
 enum command_flags {
 	COMMAND_FLAG_MESH_IFACE = BIT(0),
+	COMMAND_FLAG_NETLINK = BIT(1),
 };
 
 enum command_type {
@@ -71,6 +76,10 @@ enum command_type {
 struct state {
 	char *mesh_iface;
 	const struct command *cmd;
+
+	struct nl_sock *sock;
+	struct nl_cb *cb;
+	int batadv_family;
 };
 
 struct command {

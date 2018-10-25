@@ -179,7 +179,7 @@ static int originators_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static int netlink_print_originators(char *mesh_iface, char *orig_iface,
+static int netlink_print_originators(struct state *state, char *orig_iface,
 				     int read_opts, float orig_timeout,
 				     float watch_interval)
 {
@@ -187,9 +187,9 @@ static int netlink_print_originators(char *mesh_iface, char *orig_iface,
 	char *info_header;
 	int ifindex;
 
-	ifindex = if_nametoindex(mesh_iface);
+	ifindex = if_nametoindex(state->mesh_iface);
 	if (!ifindex) {
-		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
+		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
 		return -ENODEV;
 	}
 
@@ -209,7 +209,7 @@ static int netlink_print_originators(char *mesh_iface, char *orig_iface,
 	if (!header)
 		return -EINVAL;
 
-	return netlink_print_common(mesh_iface, orig_iface, read_opts,
+	return netlink_print_common(state, orig_iface, read_opts,
 				    orig_timeout, watch_interval, header,
 				    BATADV_CMD_GET_ORIGINATORS,
 				    originators_callback);
@@ -224,4 +224,5 @@ static struct debug_table_data batctl_debug_table_originators = {
 };
 
 COMMAND_NAMED(DEBUGTABLE, originators, "o", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_originators, "");
+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
+	      &batctl_debug_table_originators, "");

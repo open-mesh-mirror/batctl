@@ -168,9 +168,8 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 	}
 
 	if (debug_table->netlink_fn) {
-		err = debug_table->netlink_fn(
-			state->mesh_iface, orig_iface, read_opt, orig_timeout,
-			watch_interval);
+		err = debug_table->netlink_fn(state , orig_iface, read_opt,
+					      orig_timeout, watch_interval);
 		if (err != -EOPNOTSUPP)
 			return err;
 	}

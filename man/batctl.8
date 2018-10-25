@@ -89,6 +89,10 @@ OGM packet aggregation.
 If no parameter is given the current bonding mode setting is displayed. Otherwise the parameter is used to enable or disable
 the bonding mode.
 .br
+.IP "\fBevent\fP|\fBe\fP [\fB\-t\fP|\fB\-r\fP]"
+batctl will monitor for events from the netlink kernel interface of batman-adv. The local timestamp of the event will be printed
+when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but with relative timestamps.
+.br
 .IP "\fBfragmentation\fP|\fBf\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
 disable fragmentation.

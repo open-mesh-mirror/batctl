@@ -183,18 +183,3 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			 read_opt, orig_timeout, watch_interval,
 			 debug_table->header_lines);
 }
-
-int debug_print_routing_algos(void)
-{
-	char full_path[MAX_PATH+1];
-	char *debugfs_mnt;
-
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt) {
-		fprintf(stderr, "Error - can't mount or find debugfs\n");
-		return -1;
-	}
-
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
-	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
-}

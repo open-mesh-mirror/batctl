@@ -48,6 +48,5 @@ struct debug_table_data {
 };
 
 int handle_debug_table(struct state *state, int argc, char **argv);
-int debug_print_routing_algos(void);
 
 #endif

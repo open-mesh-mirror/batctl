@@ -44,8 +44,6 @@ struct ether_addr;
 int netlink_create(struct state *state);
 void netlink_destroy(struct state *state);
 
-int netlink_print_routing_algos(void);
-
 char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
 int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
 			  struct ether_addr *mac_out);
@@ -61,6 +59,12 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			 float orig_timeout, float watch_interval,
 			 const char *header, uint8_t nl_cmd,
 			 nl_recvmsg_msg_cb_t callback);
+
+int netlink_print_common_cb(struct nl_msg *msg, void *arg);
+int netlink_stop_callback(struct nl_msg *msg, void *arg);
+int netlink_print_error(struct sockaddr_nl *nla, struct nlmsgerr *nlerr,
+			void *arg);
+void netlink_print_remaining_header(struct print_opts *opts);
 
 extern char algo_name_buf[256];
 extern int last_err;

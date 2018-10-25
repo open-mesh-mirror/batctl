@@ -905,16 +905,6 @@ err:
 	return arg.vid;
 }
 
-int print_routing_algos(void)
-{
-	int err;
-
-	err = netlink_print_routing_algos();
-	if (err == -EOPNOTSUPP)
-		err = debug_print_routing_algos();
-	return err;
-}
-
 int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg)
 {
 	struct ifinfomsg rt_hdr = {

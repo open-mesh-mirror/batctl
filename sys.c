@@ -173,15 +173,6 @@ COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_distributed_arp_table,
 	      "[0|1]             \tdisplay or modify distributed_arp_table setting");
 
-static struct settings_data batctl_settings_aggregation = {
-	.sysfs_name = "aggregated_ogms",
-	.params = sysfs_param_enable,
-};
-
-COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_aggregation,
-	      "[0|1]             \tdisplay or modify aggregation setting");
-
 static struct settings_data batctl_settings_bonding = {
 	.sysfs_name = "bonding",
 	.params = sysfs_param_enable,

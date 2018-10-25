@@ -61,26 +61,33 @@ enum command_flags {
 	COMMAND_FLAG_MESH_IFACE = BIT(0),
 };
 
+struct state {
+	char *mesh_iface;
+	const struct command *cmd;
+};
+
 struct command {
 	const char *name;
 	const char *abbr;
-	int (*handler)(char *mesh_iface, int argc, char **argv);
+	int (*handler)(struct state *state, int argc, char **argv);
 	uint32_t flags;
+	void *arg;
 	const char *usage;
 };
 
-#define COMMAND_NAMED(_name, _abbr, _handler, _flags, _usage) \
+#define COMMAND_NAMED(_name, _abbr, _handler, _flags, _arg, _usage) \
 	static const struct command command_ ## _name = { \
 		.name = (#_name), \
 		.abbr = _abbr, \
 		.handler = (_handler), \
 		.flags = (_flags), \
+		.arg = (_arg), \
 		.usage = (_usage), \
 	}; \
 	static const struct command *__command_ ## _name \
 	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name
 
-#define COMMAND(_handler, _abbr, _flags, _usage) \
-	COMMAND_NAMED(_handler, _abbr, _handler, _flags, _usage)
+#define COMMAND(_handler, _abbr, _flags, _arg, _usage) \
+	COMMAND_NAMED(_handler, _abbr, _handler, _flags, _arg, _usage)
 
 #endif

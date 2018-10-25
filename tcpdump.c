@@ -1210,7 +1210,7 @@ static void sig_handler(int sig)
 	}
 }
 
-static int tcpdump(char *mesh_iface __maybe_unused, int argc, char **argv)
+static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 {
 	struct timeval tv;
 	struct dump_if *dump_if, *dump_if_tmp;
@@ -1352,5 +1352,5 @@ out:
 	return ret;
 }
 
-COMMAND(tcpdump, "td", 0,
+COMMAND(tcpdump, "td", 0, NULL,
 	"<interface>       \ttcpdump layer 2 traffic on the given interface");

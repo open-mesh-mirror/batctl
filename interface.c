@@ -297,7 +297,7 @@ err_free_msg:
 	return err;
 }
 
-static int interface(char *mesh_iface, int argc, char **argv)
+static int interface(struct state *state, int argc, char **argv)
 {
 	int i, optchar;
 	int ret;
@@ -327,7 +327,7 @@ static int interface(char *mesh_iface, int argc, char **argv)
 	rest_argv = &argv[optind];
 
 	if (rest_argc == 0)
-		return print_interfaces(mesh_iface);
+		return print_interfaces(state->mesh_iface);
 
 	check_root_or_die("batctl interface");
 
@@ -370,7 +370,7 @@ static int interface(char *mesh_iface, int argc, char **argv)
 
 	switch (rest_argv[0][0]) {
 	case 'c':
-		ret = create_interface(mesh_iface);
+		ret = create_interface(state->mesh_iface);
 		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to add create batman-adv interface: %s\n",
@@ -379,7 +379,7 @@ static int interface(char *mesh_iface, int argc, char **argv)
 		}
 		return EXIT_SUCCESS;
 	case 'D':
-		ret = destroy_interface(mesh_iface);
+		ret = destroy_interface(state->mesh_iface);
 		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to destroy batman-adv interface: %s\n",
@@ -392,9 +392,9 @@ static int interface(char *mesh_iface, int argc, char **argv)
 	}
 
 	/* get index of batman-adv interface - or try to create it */
-	ifmaster = if_nametoindex(mesh_iface);
+	ifmaster = if_nametoindex(state->mesh_iface);
 	if (!manual_mode && !ifmaster && rest_argv[0][0] == 'a') {
-		ret = create_interface(mesh_iface);
+		ret = create_interface(state->mesh_iface);
 		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to create batman-adv interface: %s\n",
@@ -402,7 +402,7 @@ static int interface(char *mesh_iface, int argc, char **argv)
 			goto err;
 		}
 
-		ifmaster = if_nametoindex(mesh_iface);
+		ifmaster = if_nametoindex(state->mesh_iface);
 	}
 
 	if (!ifmaster) {
@@ -447,9 +447,9 @@ static int interface(char *mesh_iface, int argc, char **argv)
 
 	/* check if there is no interface left and then destroy mesh_iface */
 	if (!manual_mode && rest_argv[0][0] == 'd') {
-		cnt = count_interfaces(mesh_iface);
+		cnt = count_interfaces(state->mesh_iface);
 		if (cnt == 0)
-			destroy_interface(mesh_iface);
+			destroy_interface(state->mesh_iface);
 	}
 
 	return EXIT_SUCCESS;
@@ -458,5 +458,5 @@ err:
 	return EXIT_FAILURE;
 }
 
-COMMAND(interface, "if", 0,
+COMMAND(interface, "if", 0, NULL,
 	"[add|del iface(s)]\tdisplay or modify the interface settings");

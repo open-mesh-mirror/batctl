@@ -47,7 +47,7 @@ static void log_level_usage(void)
 	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
 }
 
-static int loglevel(char *mesh_iface, int argc, char **argv)
+static int loglevel(struct state *state, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
 	int log_level = 0;
@@ -72,7 +72,7 @@ static int loglevel(char *mesh_iface, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
 
 	if (argc != 1) {
 		check_root_or_die("batctl loglevel");
@@ -143,5 +143,5 @@ out:
 	return res;
 }
 
-COMMAND(loglevel, "ll", COMMAND_FLAG_MESH_IFACE,
+COMMAND(loglevel, "ll", COMMAND_FLAG_MESH_IFACE, NULL,
 	"[level]           \tdisplay or modify the log level");

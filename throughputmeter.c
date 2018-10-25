@@ -388,7 +388,7 @@ static void tp_meter_usage(void)
 	fprintf(stderr, "\t -n don't convert addresses to bat-host names\n");
 }
 
-static int throughputmeter(char *mesh_iface, int argc, char **argv)
+static int throughputmeter(struct state *state, int argc, char **argv)
 {
 	struct bat_host *bat_host;
 	uint64_t throughput;
@@ -458,7 +458,7 @@ static int throughputmeter(char *mesh_iface, int argc, char **argv)
 		dst_string = ether_ntoa_long(dst_mac);
 
 	/* for sighandler */
-	tp_mesh_iface = mesh_iface;
+	tp_mesh_iface = state->mesh_iface;
 	signal(SIGINT, tp_sig_handler);
 	signal(SIGTERM, tp_sig_handler);
 
@@ -466,7 +466,7 @@ static int throughputmeter(char *mesh_iface, int argc, char **argv)
 	if (!listen_sock)
 		goto out;
 
-	ret = tp_meter_start(mesh_iface, dst_mac, time, &cookie);
+	ret = tp_meter_start(state->mesh_iface, dst_mac, time, &cookie);
 	if (ret < 0) {
 		printf("Failed to send tp_meter request to kernel: %d\n", ret);
 		goto out;
@@ -543,5 +543,5 @@ out:
 	return ret;
 }
 
-COMMAND(throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE,
+COMMAND(throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE, NULL,
 	"<destination>     \tstart a throughput measurement");

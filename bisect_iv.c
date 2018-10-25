@@ -1441,7 +1441,7 @@ err:
 	return 0;
 }
 
-static int bisect_iv(char *mesh_iface __maybe_unused, int argc, char **argv)
+static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 {
 	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
 	int read_opt = USE_BAT_HOSTS, num_parsed_files;
@@ -1595,5 +1595,5 @@ err:
 	return ret;
 }
 
-COMMAND(bisect_iv, "bisect_iv", 0,
+COMMAND(bisect_iv, "bisect_iv", 0, NULL,
 	"<file1> .. <fileN>\tanalyze given batman iv log files for routing stability");

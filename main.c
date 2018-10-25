@@ -127,7 +127,10 @@ int main(int argc, char **argv)
 {
 	const struct command *cmd;
 	int i, ret = EXIT_FAILURE;
-	char *mesh_iface = mesh_dfl_iface;
+	struct state state = {
+		.mesh_iface = mesh_dfl_iface,
+		.cmd = NULL,
+	};
 	int opt;
 
 	while ((opt = getopt(argc, argv, "+hm:v")) != -1) {
@@ -137,13 +140,13 @@ int main(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 			break;
 		case 'm':
-			if (mesh_iface != mesh_dfl_iface) {
+			if (state.mesh_iface != mesh_dfl_iface) {
 				fprintf(stderr,
 					"Error - multiple mesh interfaces specified\n");
 				goto err;
 			}
 
-			mesh_iface = argv[2];
+			state.mesh_iface = argv[2];
 			break;
 		case 'v':
 			version();
@@ -163,16 +166,22 @@ int main(int argc, char **argv)
 	optind = 0;
 
 	if ((cmd = find_command(argv[0]))) {
+		state.cmd = cmd;
+
 		if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
-		    check_mesh_iface(mesh_iface) < 0) {
-			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+		    check_mesh_iface(state.mesh_iface) < 0) {
+			fprintf(stderr,
+				"Error - interface %s is not present or not a batman-adv interface\n",
+				state.mesh_iface);
 			exit(EXIT_FAILURE);
 		}
 
-		ret = cmd->handler(mesh_iface, argc, argv);
+		ret = cmd->handler(&state, argc, argv);
 	} else {
-		if (check_mesh_iface(mesh_iface) < 0) {
-			fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
+		if (check_mesh_iface(state.mesh_iface) < 0) {
+			fprintf(stderr,
+				"Error - interface %s is not present or not a batman-adv interface\n",
+				state.mesh_iface);
 			exit(EXIT_FAILURE);
 		}
 
@@ -181,7 +190,7 @@ int main(int argc, char **argv)
 			    (strcmp(argv[0], batctl_settings[i].opt_short) != 0))
 				continue;
 
-			ret = handle_sys_setting(mesh_iface, i, argc, argv);
+			ret = handle_sys_setting(state.mesh_iface, i, argc, argv);
 			goto out;
 		}
 
@@ -190,7 +199,7 @@ int main(int argc, char **argv)
 			    (strcmp(argv[0], batctl_debug_tables[i].opt_short) != 0))
 				continue;
 
-			ret = handle_debug_table(mesh_iface, i, argc, argv);
+			ret = handle_debug_table(state.mesh_iface, i, argc, argv);
 			goto out;
 		}
 

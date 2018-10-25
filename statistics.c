@@ -102,14 +102,14 @@ out:
 	return ret;
 }
 
-static int statistics(char *mesh_iface, int argc __maybe_unused,
+static int statistics(struct state *state, int argc __maybe_unused,
 		      char **argv __maybe_unused)
 {
 	struct ifreq ifr;
 	int fd = -1, ret = EXIT_FAILURE;
 
 	memset(&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, mesh_iface, sizeof(ifr.ifr_name));
+	strncpy(ifr.ifr_name, state->mesh_iface, sizeof(ifr.ifr_name));
 	ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -126,5 +126,5 @@ out:
 	return ret;
 }
 
-COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE,
+COMMAND(statistics, "s", COMMAND_FLAG_MESH_IFACE, NULL,
 	"                  \tprint mesh statistics");

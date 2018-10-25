@@ -36,7 +36,7 @@ static void log_usage(void)
 	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 }
 
-static int log_print(char *mesh_iface, int argc, char **argv)
+static int log_print(struct state *state, int argc, char **argv)
 {
 	int optchar, res, read_opt = USE_BAT_HOSTS | LOG_MODE;
 	char full_path[MAX_PATH+1];
@@ -64,10 +64,10 @@ static int log_print(char *mesh_iface, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
+	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", state->mesh_iface, full_path, sizeof(full_path));
 	res = read_file(full_path, DEBUG_LOG, read_opt, 0, 0, 0);
 	return res;
 }
 
-COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE,
+COMMAND_NAMED(log, "l", log_print, COMMAND_FLAG_MESH_IFACE, NULL,
 	      "                  \tread the log produced by the kernel module");

@@ -45,7 +45,7 @@ static void gw_mode_usage(void)
 	fprintf(stderr, " \t -h print this help\n");
 }
 
-static int gw_mode(char *mesh_iface, int argc, char **argv)
+static int gw_mode(struct state *state, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
 	char *path_buff, gw_mode;
@@ -68,7 +68,7 @@ static int gw_mode(char *mesh_iface, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
 
 	if (argc == 1) {
 		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
@@ -167,5 +167,5 @@ out:
 	return res;
 }
 
-COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE,
+COMMAND(gw_mode, "gw", COMMAND_FLAG_MESH_IFACE, NULL,
 	"[mode]            \tdisplay or modify the gateway mode");

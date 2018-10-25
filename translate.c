@@ -33,7 +33,7 @@ static void translate_usage(void)
 	fprintf(stderr, "Usage: batctl [options] translate mac|bat-host|host_name|IPv4_address\n");
 }
 
-static int translate(char *mesh_iface, int argc, char **argv)
+static int translate(struct state *state, int argc, char **argv)
 {
 	struct ether_addr *dst_mac = NULL;
 	struct bat_host *bat_host;
@@ -64,7 +64,7 @@ static int translate(char *mesh_iface, int argc, char **argv)
 		}
 	}
 
-	dst_mac = translate_mac(mesh_iface, dst_mac);
+	dst_mac = translate_mac(state->mesh_iface, dst_mac);
 	if (dst_mac) {
 		mac_string = ether_ntoa_long(dst_mac);
 		printf("%s\n", mac_string);
@@ -78,5 +78,5 @@ out:
 	return ret;
 }
 
-COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE,
+COMMAND(translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
 	"<destination>     \ttranslate a destination to the originator responsible for it");

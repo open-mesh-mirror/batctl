@@ -63,6 +63,7 @@ OBJ += netlink.o
 OBJ += network_coding.o
 OBJ += ping.o
 OBJ += originators.o
+OBJ += orig_interval.o
 OBJ += routing_algo.o
 OBJ += statistics.o
 OBJ += sys.o

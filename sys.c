@@ -136,12 +136,3 @@ out:
 	free(base_dev);
 	return res;
 }
-
-static struct settings_data batctl_settings_orig_interval = {
-	.sysfs_name = "orig_interval",
-	.params = NULL,
-};
-
-COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_settings_orig_interval,
-	      "[interval]        \tdisplay or modify orig_interval setting");

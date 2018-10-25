@@ -220,15 +220,6 @@ static struct debug_table_data batctl_debug_table_originators = {
 COMMAND_NAMED(DEBUGTABLE, originators, "o", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_originators, "");
 
-static struct debug_table_data batctl_debug_table_gateways = {
-	.debugfs_name = "gateways",
-	.header_lines = 1,
-	.netlink_fn = netlink_print_gateways,
-};
-
-COMMAND_NAMED(DEBUGTABLE, gateways, "gwl", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_gateways, "");
-
 static struct debug_table_data batctl_debug_table_translocal = {
 	.debugfs_name = "transtable_local",
 	.header_lines = 2,

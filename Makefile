@@ -39,6 +39,7 @@ OBJ += dat_cache.o
 OBJ += debugfs.o
 OBJ += debug.o
 OBJ += functions.o
+OBJ += gateways.o
 OBJ += genl.o
 OBJ += gw_mode.o
 OBJ += hash.o

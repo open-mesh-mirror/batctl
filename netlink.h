@@ -40,8 +40,6 @@ struct print_opts {
 struct ether_addr;
 
 int netlink_print_routing_algos(void);
-int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opt,
-			     float orig_timeout, float watch_interval);
 
 char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header);
 int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,

@@ -62,6 +62,7 @@ OBJ += throughputmeter.o
 OBJ += traceroute.o
 OBJ += transglobal.o
 OBJ += translate.o
+OBJ += translocal.o
 
 MANPAGE = man/batctl.8
 

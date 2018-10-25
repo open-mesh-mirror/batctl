@@ -199,14 +199,3 @@ int debug_print_routing_algos(void)
 	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
 	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
 }
-
-static struct debug_table_data batctl_debug_table_translocal = {
-	.debugfs_name = "transtable_local",
-	.header_lines = 2,
-	.netlink_fn = netlink_print_translocal,
-	.option_unicast_only = 1,
-	.option_multicast_only = 1,
-};
-
-COMMAND_NAMED(DEBUGTABLE, translocal, "tl", handle_debug_table,
-	      COMMAND_FLAG_MESH_IFACE, &batctl_debug_table_translocal, "");

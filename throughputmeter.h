@@ -20,9 +20,9 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-#ifndef _BATCTL_TP_METER_H
-#define _BATCTL_TP_METER_H
+#ifndef _BATCTL_THROUGHPUTMETER_H
+#define _BATCTL_THROUGHPUTMETER_H
 
-int tp_meter(char *mesh_iface, int argc, char **argv);
+int throughputmeter(char *mesh_iface, int argc, char **argv);
 
-#endif /* _BATCTL_TP_METER_H */
+#endif /* _BATCTL_THROUGHPUTMETER_H */

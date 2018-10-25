@@ -35,7 +35,7 @@
 #include "translate.h"
 #include "traceroute.h"
 #include "tcpdump.h"
-#include "tp_meter.h"
+#include "throughputmeter.h"
 #include "bisect_iv.h"
 #include "statistics.h"
 #include "loglevel.h"
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "throughputmeter") == 0) || (strcmp(argv[1], "tp") == 0)) {
 
-		ret = tp_meter (mesh_iface, argc -1, argv + 1);
+		ret = throughputmeter(mesh_iface, argc -1, argv + 1);
 
 	} else if ((strcmp(argv[1], "traceroute") == 0) || (strcmp(argv[1], "tr") == 0)) {
 

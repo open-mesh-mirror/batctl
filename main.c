@@ -38,6 +38,7 @@
 #include "tp_meter.h"
 #include "bisect_iv.h"
 #include "statistics.h"
+#include "loglevel.h"
 #include "functions.h"
 
 char mesh_dfl_iface[] = "bat0";
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
 
 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
 
-		ret = handle_loglevel(mesh_iface, argc - 1, argv + 1);
+		ret = loglevel(mesh_iface, argc - 1, argv + 1);
 
 	} else if ((strcmp(argv[1], "log") == 0) || (strcmp(argv[1], "l") == 0)) {
 

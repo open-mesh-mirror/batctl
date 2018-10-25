@@ -175,12 +175,6 @@ int main(int argc, char **argv)
 
 		ret = log_print(mesh_iface, argc - 1, argv + 1);
 
-        /* vis legacy support */
-	} else if ((strcmp(argv[1], "vis_data") == 0) || (strcmp(argv[1], "vd") == 0) ||
-	           (strcmp(argv[1], "vis_mode") == 0) || (strcmp(argv[1], "vm") == 0)) {
-
-		ret = print_vis_info(mesh_iface);
-
 	} else if ((strcmp(argv[1], "gw_mode") == 0) || (strcmp(argv[1], "gw") == 0)) {
 
 		ret = handle_gw_setting(mesh_iface, argc - 1, argv + 1);

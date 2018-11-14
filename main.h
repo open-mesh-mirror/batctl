@@ -30,7 +30,7 @@
 #include <netlink/netlink.h>
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2018.4"
+#define SOURCE_VERSION "2019.0"
 #endif
 
 #define EXIT_NOSUCCESS 2

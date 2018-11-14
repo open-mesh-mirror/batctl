@@ -1,5 +1,14 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2018.4 (2018-11-14)
+===================
+
+* coding style cleanups and refactoring
+* correction of manpage spelling errors
+* new subcommand "event" to receive netlink notifications
+* infrastructure to disable commands during build time
+* drop of the legacy vis subcommands
+
 2018.3 (2018-09-14)
 ===================
 

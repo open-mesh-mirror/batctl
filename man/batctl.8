@@ -144,6 +144,9 @@ examples:  5000 \->  5.0/1.0 MBit
 If the node is a gateway client the parameter will decide which criteria to consider when the batman-adv module has to choose
 between different internet connections announced by the aforementioned servers.
 .RE
+.RS 7
+B.A.T.M.A.N. IV:
+.RE
 .RS 17
 default: 20 \-> late switch (TQ 20)
 .RE
@@ -166,6 +169,20 @@ chooses the gateway with the best link quality but switches to another gateway a
 .RS 7
 chooses the gateway with the best link quality but switches to another gateway as soon as a better one is found which is at
 least XX TQ better than the currently selected gateway (XX has to be a number between 3 and 256).
+.RE
+.RE
+.RS 7
+B.A.T.M.A.N. V:
+.RE
+.RS 17
+default: 5000 \-> late switch (5000 kbit/s throughput)
+.br
+example: 1500 \-> fast switch connection
+.RS 17
+switches to another gateway as soon as a better one is found which is at least 
+1500 kbit/s faster throughput than the currently selected gateway. Throughput is
+determined by evaluating which is lower: the advertised throughput by the
+gateway or the maximum bandwidth across the entire path.
 .RE
 .RE
 .br

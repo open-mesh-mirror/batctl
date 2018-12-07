@@ -24,7 +24,7 @@
 #include "sys.h"
 
 static struct settings_data batctl_settings_bridge_loop_avoidance = {
-	.sysfs_name = SYS_BLA,
+	.sysfs_name = "bridge_loop_avoidance",
 	.params = sysfs_param_enable,
 };
 

@@ -24,7 +24,7 @@
 #include "sys.h"
 
 static struct settings_data batctl_settings_network_coding = {
-	.sysfs_name = SYS_NETWORK_CODING,
+	.sysfs_name = "network_coding",
 	.params = sysfs_param_enable,
 };
 

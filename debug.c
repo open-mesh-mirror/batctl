@@ -89,7 +89,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 			break;
 		case 't':
-			if (debug_table->option_watch_interval) {
+			if (!debug_table->option_watch_interval) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(state);
 				return EXIT_FAILURE;
@@ -105,7 +105,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			read_opt |= SKIP_HEADER;
 			break;
 		case 'u':
-			if (debug_table->option_unicast_only) {
+			if (!debug_table->option_unicast_only) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(state);
 				return EXIT_FAILURE;
@@ -114,7 +114,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			read_opt |= UNICAST_ONLY;
 			break;
 		case 'm':
-			if (debug_table->option_multicast_only) {
+			if (!debug_table->option_multicast_only) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(state);
 				return EXIT_FAILURE;
@@ -123,7 +123,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			read_opt |= MULTICAST_ONLY;
 			break;
 		case 'i':
-			if (debug_table->option_orig_iface) {
+			if (!debug_table->option_orig_iface) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(state);
 				return EXIT_FAILURE;

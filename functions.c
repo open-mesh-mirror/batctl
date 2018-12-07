@@ -149,12 +149,6 @@ static void file_open_problem_dbg(const char *dir, const char *full_path)
 		return;
 	}
 
-	if (!file_exists(dir)) {
-		fprintf(stderr, "Error - mesh has not been enabled yet\n");
-		fprintf(stderr, "Activate your mesh by adding interfaces to batman-adv\n");
-		return;
-	}
-
 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
 	fprintf(stderr, "The option you called seems not to be compiled into your batman-adv kernel module.\n");
 	fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");

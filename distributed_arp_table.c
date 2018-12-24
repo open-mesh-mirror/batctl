@@ -24,7 +24,7 @@
 #include "sys.h"
 
 static struct settings_data batctl_settings_distributed_arp_table = {
-	.sysfs_name = SYS_DAT,
+	.sysfs_name = "distributed_arp_table",
 	.params = sysfs_param_enable,
 };
 

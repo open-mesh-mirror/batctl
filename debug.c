@@ -44,7 +44,7 @@ static void debug_table_usage(struct state *state)
 	fprintf(stderr, " \t -H don't show the header\n");
 	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
 
-	if (debug_table->option_watch_interval)
+	if (debug_table->option_timeout_interval)
 		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
 
 	if (debug_table->option_orig_iface)
@@ -89,7 +89,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 			break;
 		case 't':
-			if (!debug_table->option_watch_interval) {
+			if (!debug_table->option_timeout_interval) {
 				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
 				debug_table_usage(state);
 				return EXIT_FAILURE;

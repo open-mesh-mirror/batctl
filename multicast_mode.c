@@ -24,7 +24,7 @@
 #include "sys.h"
 
 static struct settings_data batctl_settings_multicast_mode = {
-	.sysfs_name = SYS_MULTICAST_MODE,
+	.sysfs_name = "multicast_mode",
 	.params = sysfs_param_enable,
 };
 

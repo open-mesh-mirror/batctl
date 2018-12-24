@@ -29,6 +29,8 @@
 #include "main.h"
 #include "sys.h"
 
+#define SYS_LOG_LEVEL		"log_level"
+
 static void log_level_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] loglevel [parameters] [level[ level[ level]]...]\n");

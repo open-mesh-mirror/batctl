@@ -43,7 +43,7 @@ struct debug_table_data {
 			 float orig_timeout, float watch_interval);
 	unsigned int option_unicast_only:1;
 	unsigned int option_multicast_only:1;
-	unsigned int option_watch_interval:1;
+	unsigned int option_timeout_interval:1;
 	unsigned int option_orig_iface:1;
 };
 

@@ -66,21 +66,6 @@ static struct timespec start_time;
 static char *host_name;
 char *line_ptr = NULL;
 
-const char *fs_compile_out_param[] = {
-	SYS_LOG,
-	SYS_LOG_LEVEL,
-	SYS_BLA,
-	SYS_DAT,
-	SYS_NETWORK_CODING,
-	SYS_MULTICAST_MODE,
-	DEBUG_DAT_CACHE,
-	DEBUG_BACKBONETABLE,
-	DEBUG_DAT_CACHE,
-	DEBUG_NC_NODES,
-	DEBUG_MCAST_FLAGS,
-	NULL,
-};
-
 void start_timer(void)
 {
 	clock_gettime(CLOCK_MONOTONIC, &start_time);
@@ -147,10 +132,8 @@ int file_exists(const char *fpath)
 	return stat(fpath, &st) == 0;
 }
 
-static void file_open_problem_dbg(const char *dir, const char *fname,
-				  const char *full_path)
+static void file_open_problem_dbg(const char *dir, const char *full_path)
 {
-	const char **ptr;
 	struct stat st;
 
 	if (strstr(dir, "/sys/")) {
@@ -166,24 +149,9 @@ static void file_open_problem_dbg(const char *dir, const char *fname,
 		return;
 	}
 
-	if (!file_exists(dir)) {
-		fprintf(stderr, "Error - mesh has not been enabled yet\n");
-		fprintf(stderr, "Activate your mesh by adding interfaces to batman-adv\n");
-		return;
-	}
-
-	for (ptr = fs_compile_out_param; *ptr; ptr++) {
-		if (strcmp(*ptr, fname) != 0)
-			continue;
-
-		break;
-	}
-
 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
-	if (*ptr) {
-		fprintf(stderr, "The option you called seems not to be compiled into your batman-adv kernel module.\n");
-		fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");
-	}
+	fprintf(stderr, "The option you called seems not to be compiled into your batman-adv kernel module.\n");
+	fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");
 }
 
 static int str_is_mcast_addr(char *addr)
@@ -230,7 +198,7 @@ open:
 
 	if (!fp) {
 		if (!(read_opt & SILENCE_ERRORS))
-			file_open_problem_dbg(dir, fname, full_path);
+			file_open_problem_dbg(dir, full_path);
 
 		goto out;
 	}
@@ -366,7 +334,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 	fd = open(full_path, O_WRONLY);
 
 	if (fd < 0) {
-		file_open_problem_dbg(dir, fname, full_path);
+		file_open_problem_dbg(dir, full_path);
 		goto out;
 	}
 

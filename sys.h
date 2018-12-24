@@ -26,12 +26,6 @@
 #include "main.h"
 
 #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
-#define SYS_LOG_LEVEL		"log_level"
-#define SYS_LOG			"log"
-#define SYS_BLA			"bridge_loop_avoidance"
-#define SYS_DAT			"distributed_arp_table"
-#define SYS_NETWORK_CODING	"network_coding"
-#define SYS_MULTICAST_MODE	"multicast_mode"
 #define SYS_IFACE_PATH		"/sys/class/net"
 #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"

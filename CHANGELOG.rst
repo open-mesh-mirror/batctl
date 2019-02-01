@@ -1,5 +1,16 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2019.0 (2019-02-01)
+===================
+
+* coding style cleanups and refactoring
+* add gateway selection manpage section for B.A.T.M.A.N. V
+* bugs squashed:
+
+  - re-integrate support for translation table unicast/multicast filter
+  - avoid incorrect warning about disabled mesh interface when debugfs
+    support is not enabled in batman-adv
+
 2018.4 (2018-11-14)
 ===================
 

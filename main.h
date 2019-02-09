@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 
+#include <net/if.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
 #include <netlink/netlink.h>
@@ -74,7 +75,10 @@ enum command_type {
 };
 
 struct state {
-	char *mesh_iface;
+	char *arg_iface;
+	char mesh_iface[IF_NAMESIZE];
+	unsigned int mesh_ifindex;
+	int vid;
 	const struct command *cmd;
 
 	struct nl_sock *sock;

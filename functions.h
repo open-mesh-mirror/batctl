@@ -34,6 +34,8 @@
 
 #define PATH_BUFF_LEN 400
 
+struct state;
+
 /* return time delta from start to end in milliseconds */
 void start_timer(void);
 double end_timer(void);
@@ -48,10 +50,10 @@ int write_file(const char *dir, const char *fname, const char *arg1,
 struct ether_addr *translate_mac(const char *mesh_iface,
 				 const struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
-int vlan_get_link(const char *ifname, char *parent);
 int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
 int netlink_simple_request(struct nl_msg *msg);
-int check_mesh_iface(char *mesh_iface);
+int translate_mesh_iface(struct state *state);
+int check_mesh_iface(struct state *state);
 int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
 
 void get_random_bytes(void *buf, size_t buflen);

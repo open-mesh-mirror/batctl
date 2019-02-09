@@ -820,7 +820,7 @@ err:
  *
  * Returns the vlan identifier on success or -1 on error
  */
-int vlan_get_link(const char *ifname, char *parent)
+static int vlan_get_link(const char *ifname, char *parent)
 {
 	struct nl_sock *sock;
 	int ret;
@@ -987,19 +987,33 @@ err_free_sock:
 	return err;
 }
 
-int check_mesh_iface(char *mesh_iface)
+int translate_mesh_iface(struct state *state)
+{
+	state->vid = vlan_get_link(state->arg_iface, state->mesh_iface);
+	if (state->vid < 0) {
+		/* if there is no iface then the argument must be the
+		 * mesh interface
+		 */
+		snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s",
+			 state->arg_iface);
+	}
+
+	return 0;
+}
+
+int check_mesh_iface(struct state *state)
 {
 	char path_buff[PATH_BUFF_LEN];
-	char base_dev[IF_NAMESIZE];
-	int ret = -1, vid;
+	int ret = -1;
 	DIR *dir;
 
 	/* use the parent interface if this is a VLAN */
-	vid = vlan_get_link(mesh_iface, base_dev);
-	if (vid >= 0)
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+	if (state->vid >= 0)
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+			 state->mesh_iface, state->vid);
 	else
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
+			 state->mesh_iface);
 
 	/* try to open the mesh sys directory */
 	dir = opendir(path_buff);
@@ -1007,6 +1021,10 @@ int check_mesh_iface(char *mesh_iface)
 		goto out;
 
 	closedir(dir);
+
+	state->mesh_ifindex = if_nametoindex(state->mesh_iface);
+	if (state->mesh_ifindex == 0)
+		goto out;
 
 	ret = 0;
 out:

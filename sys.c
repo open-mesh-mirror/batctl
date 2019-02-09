@@ -66,8 +66,7 @@ static void settings_usage(struct state *state)
 int handle_sys_setting(struct state *state, int argc, char **argv)
 {
 	struct settings_data *settings = state->cmd->arg;
-	int vid, optchar, res = EXIT_FAILURE;
-	char base_dev[IF_NAMESIZE];
+	int optchar, res = EXIT_FAILURE;
 	char *path_buff;
 	const char **ptr;
 
@@ -89,14 +88,15 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
-
 	/* if the specified interface is a VLAN then change the path to point
 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
 	 */
-	vid = vlan_get_link(state->mesh_iface, base_dev);
-	if (vid >= 0)
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
+	if (state->vid >= 0)
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+			 state->mesh_iface, state->vid);
+	else
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
+			 state->mesh_iface);
 
 	if (argc == 1) {
 		res = read_file(path_buff, settings->sysfs_name,

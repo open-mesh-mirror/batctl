@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 {
 	const struct command *cmd;
 	struct state state = {
-		.mesh_iface = mesh_dfl_iface,
+		.arg_iface = mesh_dfl_iface,
 		.cmd = NULL,
 	};
 	int opt;
@@ -138,13 +138,13 @@ int main(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 			break;
 		case 'm':
-			if (state.mesh_iface != mesh_dfl_iface) {
+			if (state.arg_iface != mesh_dfl_iface) {
 				fprintf(stderr,
 					"Error - multiple mesh interfaces specified\n");
 				goto err;
 			}
 
-			state.mesh_iface = argv[2];
+			state.arg_iface = argv[2];
 			break;
 		case 'v':
 			version();
@@ -173,8 +173,10 @@ int main(int argc, char **argv)
 
 	state.cmd = cmd;
 
+	translate_mesh_iface(&state);
+
 	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
-	    check_mesh_iface(state.mesh_iface) < 0) {
+	    check_mesh_iface(&state) < 0) {
 		fprintf(stderr,
 			"Error - interface %s is not present or not a batman-adv interface\n",
 			state.mesh_iface);

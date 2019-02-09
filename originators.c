@@ -185,17 +185,11 @@ static int netlink_print_originators(struct state *state, char *orig_iface,
 {
 	char *header = NULL;
 	char *info_header;
-	int ifindex;
-
-	ifindex = if_nametoindex(state->mesh_iface);
-	if (!ifindex) {
-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
-		return -ENODEV;
-	}
 
 	/* only parse routing algorithm name */
 	last_err = -EINVAL;
-	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
+	info_header = netlink_get_info(state->mesh_ifindex,
+				       BATADV_CMD_GET_ORIGINATORS, NULL);
 	free(info_header);
 
 	if (strlen(algo_name_buf) == 0)

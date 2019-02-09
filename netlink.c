@@ -443,17 +443,9 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 	};
 	int hardifindex = 0;
 	struct nl_msg *msg;
-	int ifindex;
 
 	if (!state->sock) {
 		last_err = -EOPNOTSUPP;
-		return last_err;
-	}
-
-	ifindex = if_nametoindex(state->mesh_iface);
-	if (!ifindex) {
-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
-		last_err = -ENODEV;
 		return last_err;
 	}
 
@@ -479,7 +471,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			printf("\033[2J\033[0;0f");
 
 		if (!(read_opt & SKIP_HEADER))
-			opts.remaining_header = netlink_get_info(ifindex,
+			opts.remaining_header = netlink_get_info(state->mesh_ifindex,
 								 nl_cmd,
 								 header);
 
@@ -490,7 +482,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family,
 			    0, NLM_F_DUMP, nl_cmd, 1);
 
-		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
 		if (hardifindex)
 			nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
 				    hardifindex);

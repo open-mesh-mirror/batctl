@@ -113,17 +113,11 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
 	char *info_header;
 	char *header;
 	bool bridged;
-	int ifindex;
 	int ret;
 
-	ifindex = if_nametoindex(state->mesh_iface);
-	if (!ifindex) {
-		fprintf(stderr, "Interface %s is unknown\n", state->mesh_iface);
-		return -ENODEV;
-	}
-
 	/* only parse own multicast flags */
-	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_MCAST_FLAGS, NULL);
+	info_header = netlink_get_info(state->mesh_ifindex,
+				       BATADV_CMD_GET_MCAST_FLAGS, NULL);
 	free(info_header);
 
 	if (mcast_flags == -EOPNOTSUPP || mcast_flags_priv == -EOPNOTSUPP)

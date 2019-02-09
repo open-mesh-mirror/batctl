@@ -47,13 +47,6 @@ const char *sysfs_param_enable[] = {
 	NULL,
 };
 
-const char *sysfs_param_server[] = {
-	"off",
-	"client",
-	"server",
-	NULL,
-};
-
 static void settings_usage(struct state *state)
 {
 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",

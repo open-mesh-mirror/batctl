@@ -853,3 +853,79 @@ int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac)
 
 	return 0;
 }
+
+struct get_algoname_netlink_opts {
+	char *algoname;
+	size_t algoname_len;
+	bool found;
+	struct nlquery_opts query_opts;
+};
+
+static int get_algoname_netlink_cb(struct nl_msg *msg, void *arg)
+{
+	static const int mandatory[] = {
+		BATADV_ATTR_ALGO_NAME,
+	};
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct nlquery_opts *query_opts = arg;
+	struct get_algoname_netlink_opts *opts;
+	struct genlmsghdr *ghdr;
+	const char *algoname;
+
+	opts = container_of(query_opts, struct get_algoname_netlink_opts,
+			    query_opts);
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (ghdr->cmd != BATADV_CMD_GET_MESH)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		return NL_OK;
+	}
+
+	if (missing_mandatory_attrs(attrs, mandatory, ARRAY_SIZE(mandatory)))
+		return NL_OK;
+
+	algoname = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
+
+	/* save result */
+	strncpy(opts->algoname, algoname, opts->algoname_len);
+	if (opts->algoname_len > 0)
+		opts->algoname[opts->algoname_len - 1] = '\0';
+
+	opts->found = true;
+	opts->query_opts.err = 0;
+
+	return NL_STOP;
+}
+
+int get_algoname_netlink(const char *mesh_iface, char *algoname,
+			 size_t algoname_len)
+{
+	struct get_algoname_netlink_opts opts = {
+		.algoname = algoname,
+		.algoname_len = algoname_len,
+		.found = false,
+		.query_opts = {
+			.err = 0,
+		},
+	};
+	int ret;
+
+	ret = netlink_query_common(mesh_iface, BATADV_CMD_GET_MESH,
+			           get_algoname_netlink_cb, 0,
+				   &opts.query_opts);
+	if (ret < 0)
+		return ret;
+
+	if (!opts.found)
+		return -EOPNOTSUPP;
+
+	return 0;
+}

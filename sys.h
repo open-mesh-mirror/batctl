@@ -31,6 +31,7 @@
 #define SYS_MESH_IFACE_FMT	SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
 #define SYS_IFACE_STATUS_FMT	SYS_IFACE_PATH"/%s/batman_adv/iface_status"
 #define SYS_VLAN_PATH		SYS_IFACE_PATH"/%s/mesh/vlan%d/"
+#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
 #define VLAN_ID_MAX_LEN		4
 
 struct settings_data {
@@ -43,7 +44,6 @@ struct settings_data {
 };
 
 extern const char *sysfs_param_enable[];
-extern const char *sysfs_param_server[];
 
 int handle_sys_setting(struct state *state, int argc, char **argv);
 

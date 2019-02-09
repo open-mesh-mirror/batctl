@@ -467,6 +467,44 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	return mac_result;
 }
 
+int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len)
+{
+	char *path_buff;
+	int ret;
+
+	ret = get_algoname_netlink(mesh_iface, algoname, algoname_len);
+	if (ret != -EOPNOTSUPP)
+		return ret;
+
+	path_buff = malloc(PATH_BUFF_LEN);
+	if (!path_buff) {
+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
+		return -ENOMEM;
+	}
+
+	snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, mesh_iface);
+	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	if (ret != EXIT_SUCCESS) {
+		ret = -ENOENT;
+		goto free_path_buf;
+	}
+
+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	strncpy(algoname, line_ptr, algoname_len);
+	if (algoname_len > 0)
+		algoname[algoname_len - 1] = '\0';
+
+free_path_buf:
+	free(path_buff);
+
+	free(line_ptr);
+	line_ptr = NULL;
+
+	return ret;
+}
+
 static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 {
 	int ret;
@@ -1129,4 +1167,58 @@ void check_root_or_die(const char *cmd)
 		fprintf(stderr, "Error - you must be root to run '%s' !\n", cmd);
 		exit(EXIT_FAILURE);
 	}
+}
+
+bool parse_throughput(char *buff, const char *description, uint32_t *throughput)
+{
+	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
+	uint64_t lthroughput;
+	char *tmp_ptr;
+	char *endptr;
+
+	if (strlen(buff) > 4) {
+		tmp_ptr = buff + strlen(buff) - 4;
+
+		if (strncasecmp(tmp_ptr, "mbit", 4) == 0)
+			bw_unit_type = BATADV_BW_UNIT_MBIT;
+
+		if (strncasecmp(tmp_ptr, "kbit", 4) == 0 ||
+		    bw_unit_type == BATADV_BW_UNIT_MBIT)
+			*tmp_ptr = '\0';
+	}
+
+	lthroughput = strtoull(buff, &endptr, 10);
+	if (!endptr || *endptr != '\0') {
+		fprintf(stderr, "Invalid throughput speed for %s: %s\n",
+			description, buff);
+		return false;
+	}
+
+	switch (bw_unit_type) {
+	case BATADV_BW_UNIT_MBIT:
+		/* prevent overflow */
+		if (UINT64_MAX / 10 < lthroughput) {
+			fprintf(stderr,
+				"Throughput speed for %s too large: %s\n",
+				description, buff);
+			return false;
+		}
+
+		lthroughput *= 10;
+		break;
+	case BATADV_BW_UNIT_KBIT:
+	default:
+		lthroughput = lthroughput / 100;
+		break;
+	}
+
+	if (lthroughput > UINT32_MAX) {
+		fprintf(stderr, "Throughput speed for %s too large: %s\n",
+			description, buff);
+		return false;
+	}
+
+	*throughput = lthroughput;
+
+	return true;
 }

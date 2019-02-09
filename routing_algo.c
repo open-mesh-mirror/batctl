@@ -41,7 +41,6 @@
 #include "sys.h"
 
 #define SYS_SELECTED_RA_PATH	"/sys/module/batman_adv/parameters/routing_algo"
-#define SYS_ROUTING_ALGO_FMT	SYS_IFACE_PATH"/%s/mesh/routing_algo"
 
 static void ra_mode_usage(void)
 {

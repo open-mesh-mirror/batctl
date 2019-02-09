@@ -47,6 +47,34 @@ const char *sysfs_param_enable[] = {
 	NULL,
 };
 
+int parse_simple_boolean(struct state *state, int argc, char *argv[])
+{
+	struct settings_data *settings = state->cmd->arg;
+	struct simple_boolean_data *data = settings->data;
+	int ret;
+
+	if (argc != 2) {
+		fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
+		return -EINVAL;
+	}
+
+	ret = parse_bool(argv[1], &data->val);
+	if (ret < 0) {
+		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
+		fprintf(stderr, "The following values are allowed:\n");
+		fprintf(stderr, " * 0\n");
+		fprintf(stderr, " * disable\n");
+		fprintf(stderr, " * disabled\n");
+		fprintf(stderr, " * 1\n");
+		fprintf(stderr, " * enable\n");
+		fprintf(stderr, " * enabled\n");
+
+		return ret;
+	}
+
+	return 0;
+}
+
 static int sys_simple_nlerror(struct sockaddr_nl *nla __maybe_unused,
 			      struct nlmsgerr *nlerr,	void *arg)
 {
@@ -104,6 +132,33 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
 	nl_recvmsgs(state->sock, state->cb);
 
 	return result;
+}
+
+int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
+			     enum batadv_nl_attrs attr)
+{
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	int *result = arg;
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		return NL_OK;
+	}
+
+	if (!attrs[attr])
+		return NL_OK;
+
+	printf("%s\n", nla_get_u8(attrs[attr]) ? "enabled" : "disabled");
+
+	*result = 0;
+	return NL_STOP;
 }
 
 static void settings_usage(struct state *state)

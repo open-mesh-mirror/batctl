@@ -72,6 +72,7 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
 void get_random_bytes(void *buf, size_t buflen);
 void check_root_or_die(const char *cmd);
 
+int parse_bool(const char *val, bool *res);
 bool parse_throughput(char *buff, const char *description,
 		      uint32_t *throughput);
 

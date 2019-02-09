@@ -1169,6 +1169,23 @@ void check_root_or_die(const char *cmd)
 	}
 }
 
+int parse_bool(const char *val, bool *res)
+{
+	if (strcasecmp(val, "0") == 0 ||
+	    strcasecmp(val, "disable") == 0 ||
+	    strcasecmp(val, "disabled") == 0) {
+		*res = false;
+		return 0;
+	} else if (strcasecmp(val, "1") == 0 ||
+		   strcasecmp(val, "enable") == 0 ||
+		   strcasecmp(val, "enabled") == 0) {
+		*res = true;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
 bool parse_throughput(char *buff, const char *description, uint32_t *throughput)
 {
 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;

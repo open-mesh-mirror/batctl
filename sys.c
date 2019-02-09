@@ -67,7 +67,8 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 {
 	struct settings_data *settings = state->cmd->arg;
 	int vid, optchar, res = EXIT_FAILURE;
-	char *path_buff, *base_dev = NULL;
+	char base_dev[IF_NAMESIZE];
+	char *path_buff;
 	const char **ptr;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
@@ -93,7 +94,7 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 	/* if the specified interface is a VLAN then change the path to point
 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
 	 */
-	vid = vlan_get_link(state->mesh_iface, &base_dev);
+	vid = vlan_get_link(state->mesh_iface, base_dev);
 	if (vid >= 0)
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
 
@@ -133,6 +134,5 @@ write_file:
 
 out:
 	free(path_buff);
-	free(base_dev);
 	return res;
 }

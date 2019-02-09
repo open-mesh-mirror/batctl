@@ -39,14 +39,6 @@
 #include "functions.h"
 #include "debug.h"
 
-const char *sysfs_param_enable[] = {
-	"enable",
-	"disable",
-	"1",
-	"0",
-	NULL,
-};
-
 int parse_simple_boolean(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
@@ -216,7 +208,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 	struct settings_data *settings = state->cmd->arg;
 	int optchar, res = EXIT_FAILURE;
 	char *path_buff;
-	const char **ptr;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -261,29 +252,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 		}
 	}
 
-	if (!settings->params)
-		goto write_file;
-
-	ptr = settings->params;
-	while (*ptr) {
-		if (strcmp(*ptr, argv[1]) == 0)
-			goto write_file;
-
-		ptr++;
-	}
-
-	fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
-	fprintf(stderr, "The following values are allowed:\n");
-
-	ptr = settings->params;
-	while (*ptr) {
-		fprintf(stderr, " * %s\n", *ptr);
-		ptr++;
-	}
-
-	goto out;
-
-write_file:
 	res = sys_write_setting(state, path_buff, settings->sysfs_name, argc,
 				argv);
 

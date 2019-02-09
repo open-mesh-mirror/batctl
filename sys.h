@@ -43,14 +43,11 @@
 
 struct settings_data {
 	const char *sysfs_name;
-	const char **params;
 	void *data;
 	int (*parse)(struct state *state, int argc, char *argv[]);
 	int (*netlink_get)(struct state *state);
 	int (*netlink_set)(struct state *state);
 };
-
-extern const char *sysfs_param_enable[];
 
 struct simple_boolean_data {
 	bool val;

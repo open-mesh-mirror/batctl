@@ -63,6 +63,47 @@ static void settings_usage(struct state *state)
 	fprintf(stderr, " \t -h print this help\n");
 }
 
+static int sys_read_setting(struct state *state, const char *path_buff,
+			    const char *sysfs_name)
+{
+	struct settings_data *settings = state->cmd->arg;
+	int res = EXIT_FAILURE;
+
+	if (settings->netlink_get) {
+		res = settings->netlink_get(state);
+		if (res < 0 && res != -EOPNOTSUPP)
+			return EXIT_FAILURE;
+		if (res >= 0)
+			return EXIT_SUCCESS;
+	}
+
+	if (sysfs_name)
+		res = read_file(path_buff, sysfs_name, NO_FLAGS, 0, 0, 0);
+
+	return res;
+}
+
+static int sys_write_setting(struct state *state, const char *path_buff,
+			    const char *sysfs_name, int argc, char **argv)
+{
+	struct settings_data *settings = state->cmd->arg;
+	int res = EXIT_FAILURE;
+
+	if (settings->netlink_set) {
+		res = settings->netlink_set(state);
+		if (res < 0 && res != -EOPNOTSUPP)
+			return EXIT_FAILURE;
+		if (res >= 0)
+			return EXIT_SUCCESS;
+	}
+
+	if (sysfs_name)
+		res = write_file(path_buff, sysfs_name,
+				 argv[1], argc > 2 ? argv[2] : NULL);
+
+	return res;
+}
+
 int handle_sys_setting(struct state *state, int argc, char **argv)
 {
 	struct settings_data *settings = state->cmd->arg;
@@ -99,12 +140,19 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 			 state->mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, settings->sysfs_name,
-				NO_FLAGS, 0, 0, 0);
+		res = sys_read_setting(state, path_buff, settings->sysfs_name);
 		goto out;
 	}
 
 	check_root_or_die("batctl");
+
+	if (settings->parse) {
+		res = settings->parse(state, argc, argv);
+		if (res < 0) {
+			res = EXIT_FAILURE;
+			goto out;
+		}
+	}
 
 	if (!settings->params)
 		goto write_file;
@@ -129,8 +177,8 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 	goto out;
 
 write_file:
-	res = write_file(path_buff, settings->sysfs_name,
-			 argv[1], argc > 2 ? argv[2] : NULL);
+	res = sys_write_setting(state, path_buff, settings->sysfs_name, argc,
+				argv);
 
 out:
 	free(path_buff);

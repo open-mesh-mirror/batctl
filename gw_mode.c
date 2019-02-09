@@ -162,10 +162,211 @@ static int parse_gw(struct state *state, int argc, char *argv[])
 	return 0;
 }
 
+static int print_gw(struct nl_msg *msg, void *arg)
+{
+	static const int mandatory[] = {
+		BATADV_ATTR_GW_MODE,
+	};
+	static const int mandatory_client[] = {
+		BATADV_ATTR_ALGO_NAME,
+		BATADV_ATTR_GW_SEL_CLASS,
+	};
+	static const int mandatory_server[] = {
+		BATADV_ATTR_GW_BANDWIDTH_DOWN,
+		BATADV_ATTR_GW_BANDWIDTH_UP,
+	};
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	int *result = arg;
+	const char *algo;
+	uint8_t gw_mode;
+	uint32_t val;
+	uint32_t down;
+	uint32_t up;
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		return NL_OK;
+	}
+
+	/* ignore entry when attributes are missing */
+	if (missing_mandatory_attrs(attrs, mandatory, ARRAY_SIZE(mandatory)))
+		return NL_OK;
+
+	gw_mode = nla_get_u8(attrs[BATADV_ATTR_GW_MODE]);
+	switch (gw_mode) {
+	case BATADV_GW_MODE_OFF:
+		printf("off\n");
+		break;
+	case BATADV_GW_MODE_CLIENT:
+		if (missing_mandatory_attrs(attrs, mandatory_client,
+		    ARRAY_SIZE(mandatory_client)))
+			return NL_OK;
+
+		algo = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
+		val = nla_get_u32(attrs[BATADV_ATTR_GW_SEL_CLASS]);
+
+		if (strcmp(algo, "BATMAN_V") == 0)
+			printf("client (selection class: %u.%01u MBit)\n",
+			       val / 10, val % 10);
+		else
+			printf("client (selection class: %u)\n", val);
+		break;
+	case BATADV_GW_MODE_SERVER:
+		if (missing_mandatory_attrs(attrs, mandatory_server,
+		    ARRAY_SIZE(mandatory_server)))
+			return NL_OK;
+
+		down = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]);
+		up = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_UP]);
+
+		printf("server (announced bw: %u.%01u/%u.%01u MBit)\n",
+		       down / 10, down % 10, up / 10, up % 10);
+		break;
+	default:
+		printf("unknown\n");
+		break;
+	}
+
+	*result = 0;
+	return NL_STOP;
+}
+
+static int get_gw(struct state *state)
+{
+	return sys_simple_nlquery(state, BATADV_CMD_GET_MESH, NULL, print_gw);
+}
+
+static int set_attrs_gw(struct nl_msg *msg, void *arg __maybe_unused)
+{
+	nla_put_u8(msg, BATADV_ATTR_GW_MODE, gw_globals.mode);
+
+	if (gw_globals.bandwidth_down_found)
+		nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_DOWN,
+			    gw_globals.bandwidth_down);
+
+	if (gw_globals.bandwidth_up_found)
+		nla_put_u32(msg, BATADV_ATTR_GW_BANDWIDTH_UP,
+			    gw_globals.bandwidth_up);
+
+	if (gw_globals.sel_class_found)
+		nla_put_u32(msg, BATADV_ATTR_GW_SEL_CLASS,
+			    gw_globals.sel_class);
+
+	return 0;
+}
+
+static int set_gw(struct state *state)
+{
+	return sys_simple_nlquery(state, BATADV_CMD_SET_MESH, set_attrs_gw,
+				  NULL);
+}
+
+static int gw_read_setting(struct state *state, const char *path_buff)
+{
+	enum batadv_gw_modes gw_mode;
+	int res;
+
+	res = get_gw(state);
+	if (res < 0 && res != -EOPNOTSUPP)
+		return EXIT_FAILURE;
+	if (res >= 0)
+		return EXIT_SUCCESS;
+
+	/* fallback to sysfs */
+	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
+	if (res != EXIT_SUCCESS)
+		goto out;
+
+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	if (strcmp(line_ptr, "client") == 0)
+		gw_mode = BATADV_GW_MODE_CLIENT;
+	else if (strcmp(line_ptr, "server") == 0)
+		gw_mode = BATADV_GW_MODE_SERVER;
+	else
+		gw_mode = BATADV_GW_MODE_OFF;
+
+	free(line_ptr);
+	line_ptr = NULL;
+
+	switch (gw_mode) {
+	case BATADV_GW_MODE_CLIENT:
+		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
+		break;
+	case BATADV_GW_MODE_SERVER:
+		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
+		break;
+	default:
+		printf("off\n");
+		goto out;
+	}
+
+	if (res != EXIT_SUCCESS)
+		goto out;
+
+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
+		line_ptr[strlen(line_ptr) - 1] = '\0';
+
+	switch (gw_mode) {
+	case BATADV_GW_MODE_CLIENT:
+		printf("client (selection class: %s)\n", line_ptr);
+		break;
+	case BATADV_GW_MODE_SERVER:
+		printf("server (announced bw: %s)\n", line_ptr);
+		break;
+	default:
+		goto out;
+	}
+
+out:
+	free(line_ptr);
+	line_ptr = NULL;
+
+	return res;
+}
+
+static int gw_write_setting(struct state *state, const char *path_buff,
+			    int argc, char *argv[])
+{
+	int res = EXIT_FAILURE;
+
+	res = set_gw(state);
+	if (res < 0 && res != -EOPNOTSUPP)
+		return EXIT_FAILURE;
+	if (res >= 0)
+		return EXIT_SUCCESS;
+
+	/* sysfs fallback */
+	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
+	if (res != EXIT_SUCCESS)
+		return res;
+
+	if (argc > 2) {
+		switch (gw_globals.mode) {
+		case BATADV_GW_MODE_CLIENT:
+			res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
+			break;
+		case BATADV_GW_MODE_SERVER:
+			res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
+			break;
+		}
+	}
+
+	return res;
+}
+
 static int gw_mode(struct state *state, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
-	char *path_buff, gw_mode;
+	char *path_buff;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -187,55 +388,7 @@ static int gw_mode(struct state *state, int argc, char **argv)
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
 
 	if (argc == 1) {
-		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
-
-		if (res != EXIT_SUCCESS)
-			goto out;
-
-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
-			line_ptr[strlen(line_ptr) - 1] = '\0';
-
-		if (strcmp(line_ptr, "client") == 0)
-			gw_mode = BATADV_GW_MODE_CLIENT;
-		else if (strcmp(line_ptr, "server") == 0)
-			gw_mode = BATADV_GW_MODE_SERVER;
-		else
-			gw_mode = BATADV_GW_MODE_OFF;
-
-		free(line_ptr);
-		line_ptr = NULL;
-
-		switch (gw_mode) {
-		case BATADV_GW_MODE_CLIENT:
-			res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
-			break;
-		case BATADV_GW_MODE_SERVER:
-			res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
-			break;
-		default:
-			printf("off\n");
-			goto out;
-		}
-
-		if (res != EXIT_SUCCESS)
-			goto out;
-
-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
-			line_ptr[strlen(line_ptr) - 1] = '\0';
-
-		switch (gw_mode) {
-		case BATADV_GW_MODE_CLIENT:
-			printf("client (selection class: %s)\n", line_ptr);
-			break;
-		case BATADV_GW_MODE_SERVER:
-			printf("server (announced bw: %s)\n", line_ptr);
-			break;
-		default:
-			goto out;
-		}
-
-		free(line_ptr);
-		line_ptr = NULL;
+		res = gw_read_setting(state, path_buff);
 		goto out;
 	}
 
@@ -247,28 +400,12 @@ static int gw_mode(struct state *state, int argc, char **argv)
 		goto out;
 	}
 
-	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
-	if (res != EXIT_SUCCESS)
-		goto out;
-
-	if (argc == 2)
-		goto out;
-
-	switch (gw_globals.mode) {
-	case BATADV_GW_MODE_CLIENT:
-		res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
-		break;
-	case BATADV_GW_MODE_SERVER:
-		res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
-		break;
-	}
-
-	goto out;
-
+	res = gw_write_setting(state, path_buff, argc, argv);
 out:
 	free(path_buff);
 	return res;
 }
 
-COMMAND(SUBCOMMAND, gw_mode, "gw", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND, gw_mode, "gw",
+	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"[mode]            \tdisplay or modify the gateway mode");

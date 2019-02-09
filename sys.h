@@ -25,6 +25,12 @@
 
 #include "main.h"
 
+#include <linux/genetlink.h>
+#include <netlink/genl/genl.h>
+
+#include "batman_adv.h"
+#include "netlink.h"
+
 #define SYS_BATIF_PATH_FMT	"/sys/class/net/%s/mesh/"
 #define SYS_IFACE_PATH		"/sys/class/net"
 #define SYS_IFACE_DIR		SYS_IFACE_PATH"/%s/"
@@ -46,5 +52,9 @@ struct settings_data {
 extern const char *sysfs_param_enable[];
 
 int handle_sys_setting(struct state *state, int argc, char **argv);
+
+int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
+		       nl_recvmsg_msg_cb_t attribute_cb,
+		       nl_recvmsg_msg_cb_t callback);
 
 #endif

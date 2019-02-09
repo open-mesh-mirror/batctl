@@ -47,6 +47,65 @@ const char *sysfs_param_enable[] = {
 	NULL,
 };
 
+static int sys_simple_nlerror(struct sockaddr_nl *nla __maybe_unused,
+			      struct nlmsgerr *nlerr,	void *arg)
+{
+	int *result = arg;
+
+	if (nlerr->error != -EOPNOTSUPP)
+		fprintf(stderr, "Error received: %s\n",
+			strerror(-nlerr->error));
+
+	*result = nlerr->error;
+
+	return NL_STOP;
+}
+
+int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
+		       nl_recvmsg_msg_cb_t attribute_cb,
+		       nl_recvmsg_msg_cb_t callback)
+{
+	int result;
+	struct nl_msg *msg;
+	int ret;
+
+	if (!state->sock)
+		return -EOPNOTSUPP;
+
+	if (callback) {
+		result = -EOPNOTSUPP;
+		nl_cb_set(state->cb, NL_CB_VALID, NL_CB_CUSTOM, callback,
+			  &result);
+	} else {
+		result = 0;
+	}
+
+	nl_cb_err(state->cb, NL_CB_CUSTOM, sys_simple_nlerror, &result);
+
+	msg = nlmsg_alloc();
+	if (!msg)
+		return -ENOMEM;
+
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0, 0,
+		    nl_cmd, 1);
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
+
+	if (attribute_cb) {
+		ret = attribute_cb(msg, state);
+		if (ret < 0) {
+			nlmsg_free(msg);
+			return -ENOMEM;
+		}
+	}
+
+	nl_send_auto_complete(state->sock, msg);
+	nlmsg_free(msg);
+
+	nl_recvmsgs(state->sock, state->cb);
+
+	return result;
+}
+
 static void settings_usage(struct state *state)
 {
 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",

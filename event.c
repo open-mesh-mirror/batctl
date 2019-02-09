@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <net/if.h>
 #include <netinet/if_ether.h>
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
@@ -50,6 +51,14 @@ struct event_args {
 	enum event_time_mode mode;
 	struct timeval tv;
 };
+
+static const char *u8_to_boolstr(struct nlattr *attrs)
+{
+	if (nla_get_u8(attrs))
+		return "true";
+	else
+		return "false";
+}
 
 static void event_usage(void)
 {
@@ -86,6 +95,25 @@ static int event_prepare(struct state *state)
 	}
 
 skip_tp_meter:
+
+	mcid = nl_get_multicast_id(state->sock, BATADV_NL_NAME,
+				   BATADV_NL_MCAST_GROUP_CONFIG);
+	if (mcid < 0) {
+		fprintf(stderr, "Failed to resolve batadv config multicast group: %d\n",
+			mcid);
+		/* ignore error for now */
+		goto skip_config;
+	}
+
+	ret = nl_socket_add_membership(state->sock, mcid);
+	if (ret) {
+		fprintf(stderr, "Failed to join batadv config multicast group: %d\n",
+			ret);
+		/* ignore error for now */
+		goto skip_config;
+	}
+
+skip_config:
 
 	return 0;
 }
@@ -145,6 +173,203 @@ static void event_parse_tp_meter(struct nlattr **attrs)
 	printf("tp_meter 0x%08x: %s\n", cookie, result_str);
 }
 
+static void event_parse_set_mesh(struct nlattr **attrs)
+{
+	static const int mesh_mandatory[] = {
+		BATADV_ATTR_MESH_IFINDEX,
+		BATADV_ATTR_ALGO_NAME,
+	};
+	char meshif_buf[IF_NAMESIZE];
+	char *meshif_name;
+	uint32_t mesh_ifindex;
+
+	/* ignore entry when attributes are missing */
+	if (missing_mandatory_attrs(attrs, mesh_mandatory,
+				    ARRAY_SIZE(mesh_mandatory)))
+		return;
+
+	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+	if (!meshif_name)
+		return;
+
+	printf("%s: set mesh:\n", meshif_name);
+
+	if (attrs[BATADV_ATTR_AGGREGATED_OGMS_ENABLED])
+		printf("* aggregated_ogms %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_AGGREGATED_OGMS_ENABLED]));
+
+	if (attrs[BATADV_ATTR_AP_ISOLATION_ENABLED])
+		printf("* ap_isolation %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_AP_ISOLATION_ENABLED]));
+
+	if (attrs[BATADV_ATTR_ISOLATION_MARK])
+		printf("* isolation_mark 0x%08x\n",
+		       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MARK]));
+
+	if (attrs[BATADV_ATTR_ISOLATION_MASK])
+		printf("* isolation_mask 0x%08x\n",
+		       nla_get_u32(attrs[BATADV_ATTR_ISOLATION_MASK]));
+
+	if (attrs[BATADV_ATTR_BONDING_ENABLED])
+		printf("* bonding %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_BONDING_ENABLED]));
+
+	if (attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED])
+		printf("* bridge_loop_avoidance %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_BRIDGE_LOOP_AVOIDANCE_ENABLED]));
+
+	if (attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED])
+		printf("* distributed_arp_table %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED]));
+
+	if (attrs[BATADV_ATTR_FRAGMENTATION_ENABLED])
+		printf("* fragmentation %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_FRAGMENTATION_ENABLED]));
+
+	if (attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]) {
+		uint32_t val;
+
+		val = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]);
+		printf("* gw_bandwidth_down %u.%01u MBit/s\n", val / 10,
+		       val % 10);
+	}
+
+	if (attrs[BATADV_ATTR_GW_BANDWIDTH_UP]) {
+		uint32_t val;
+
+		val = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_UP]);
+		printf("* gw_bandwidth_up %u.%01u MBit/s\n", val / 10,
+		       val % 10);
+	}
+
+	if (attrs[BATADV_ATTR_GW_MODE]) {
+		uint8_t val = nla_get_u8(attrs[BATADV_ATTR_GW_MODE]);
+		const char *valstr;
+
+		switch (val) {
+		case BATADV_GW_MODE_OFF:
+			valstr = "off";
+			break;
+		case BATADV_GW_MODE_CLIENT:
+			valstr = "client";
+			break;
+		case BATADV_GW_MODE_SERVER:
+			valstr = "server";
+			break;
+		default:
+			valstr = "unknown";
+			break;
+		}
+
+		printf("* gw_mode %s\n", valstr);
+	}
+
+	if (attrs[BATADV_ATTR_GW_SEL_CLASS]) {
+		uint32_t val = nla_get_u32(attrs[BATADV_ATTR_GW_SEL_CLASS]);
+		const char *algo = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
+
+		if (strcmp(algo, "BATMAN_V") == 0)
+			printf("* gw_sel_class %u.%01u MBit/s\n", val / 10,
+			       val % 10);
+		else
+			printf("* gw_sel_class %u\n", val);
+	}
+
+	if (attrs[BATADV_ATTR_HOP_PENALTY])
+		printf("* hop_penalty %u\n",
+		       nla_get_u8(attrs[BATADV_ATTR_HOP_PENALTY]));
+
+	if (attrs[BATADV_ATTR_LOG_LEVEL])
+		printf("* log_level 0x%08x\n",
+		       nla_get_u32(attrs[BATADV_ATTR_LOG_LEVEL]));
+
+	if (attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
+		printf("* multicast_forceflood %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));
+
+	if (attrs[BATADV_ATTR_NETWORK_CODING_ENABLED])
+		printf("* network_coding %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]));
+
+	if (attrs[BATADV_ATTR_ORIG_INTERVAL])
+		printf("* orig_interval %u ms\n",
+		       nla_get_u32(attrs[BATADV_ATTR_ORIG_INTERVAL]));
+}
+
+static void event_parse_set_hardif(struct nlattr **attrs)
+{
+	static const int hardif_mandatory[] = {
+		BATADV_ATTR_MESH_IFINDEX,
+		BATADV_ATTR_HARD_IFINDEX,
+	};
+	char meshif_buf[IF_NAMESIZE];
+	char hardif_buf[IF_NAMESIZE];
+	char *meshif_name;
+	char *hardif_name;
+	uint32_t hardif_ifindex;
+	uint32_t mesh_ifindex;
+
+	/* ignore entry when attributes are missing */
+	if (missing_mandatory_attrs(attrs, hardif_mandatory,
+				    ARRAY_SIZE(hardif_mandatory)))
+		return;
+
+	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+	if (!meshif_name)
+		return;
+
+	hardif_ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
+	hardif_name = if_indextoname(hardif_ifindex, hardif_buf);
+	if (!hardif_name)
+		return;
+
+	printf("%s (%s): set hardif:\n", meshif_name, hardif_name);
+
+	if (attrs[BATADV_ATTR_ELP_INTERVAL])
+		printf("* elp_interval %u ms\n",
+		       nla_get_u32(attrs[BATADV_ATTR_ELP_INTERVAL]));
+
+	if (attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]) {
+		uint32_t val;
+
+		val = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT_OVERRIDE]);
+		printf("* throughput_override %u.%01u MBit/s\n", val / 10,
+		       val % 10);
+	}
+}
+
+static void event_parse_set_vlan(struct nlattr **attrs)
+{
+	static const int vlan_mandatory[] = {
+		BATADV_ATTR_MESH_IFINDEX,
+		BATADV_ATTR_VLANID,
+	};
+	char meshif_buf[IF_NAMESIZE];
+	char *meshif_name;
+	uint32_t mesh_ifindex;
+	uint16_t vid;
+
+	/* ignore entry when attributes are missing */
+	if (missing_mandatory_attrs(attrs, vlan_mandatory,
+				    ARRAY_SIZE(vlan_mandatory)))
+		return;
+
+	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+	if (!meshif_name)
+		return;
+
+	vid = nla_get_u16(attrs[BATADV_ATTR_VLANID]);
+
+	printf("%s (vid %u): set vlan:\n", meshif_name, vid);
+
+	if (attrs[BATADV_ATTR_AP_ISOLATION_ENABLED])
+		printf("* ap_isolation %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_AP_ISOLATION_ENABLED]));
+}
+
 static unsigned long long get_timestamp(struct event_args *event_args)
 {
 	unsigned long long prevtime = 0;
@@ -189,6 +414,15 @@ static int event_parse(struct nl_msg *msg, void *arg)
 	switch (ghdr->cmd) {
 	case BATADV_CMD_TP_METER:
 		event_parse_tp_meter(attrs);
+		break;
+	case BATADV_CMD_SET_MESH:
+		event_parse_set_mesh(attrs);
+		break;
+	case BATADV_CMD_SET_HARDIF:
+		event_parse_set_hardif(attrs);
+		break;
+	case BATADV_CMD_SET_VLAN:
+		event_parse_set_vlan(attrs);
 		break;
 	default:
 		printf("Received unknown event %u\n", ghdr->cmd);

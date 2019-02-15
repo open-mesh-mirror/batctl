@@ -270,6 +270,10 @@ static void event_parse_set_mesh(struct nlattr **attrs)
 		printf("* log_level 0x%08x\n",
 		       nla_get_u32(attrs[BATADV_ATTR_LOG_LEVEL]));
 
+	if (attrs[BATADV_ATTR_MULTICAST_FANOUT])
+		printf("* multicast_fanout %u\n",
+		       nla_get_u32(attrs[BATADV_ATTR_MULTICAST_FANOUT]));
+
 	if (attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
 		printf("* multicast_forceflood %s\n",
 		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));

@@ -478,6 +478,16 @@ Usage::
   batctl multicast_forceflood|mff [0|1]
 
 
+batctl multicast_fanout
+=======================
+
+display or modify the multicast fanout setting
+
+Usage::
+
+  batctl multicast_fanout|mo [fanout]
+
+
 batctl mcast_flags
 ==================
 

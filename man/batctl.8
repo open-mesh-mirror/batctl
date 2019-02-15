@@ -111,6 +111,11 @@ disable multicast forceflood. This setting defines whether multicast optimizatio
 flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
 multicast packet with no optimizations.
 .br
+.IP "\fBmulticast_fanout\fP|\fBmo\fP [\fBfanout\fP]"
+If no parameter is given the current multicast fanout setting is displayed. Otherwise the parameter is used to set
+the multicast fanout. The multicast fanout defines the maximum number of packet copies that may be generated for a
+multicast-to-unicast conversion. Once this limit is exceeded distribution will fall back to broadcast.
+.br
 .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
 If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
 level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.

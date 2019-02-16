@@ -67,6 +67,7 @@ extern char module_ver_path[];
 enum command_flags {
 	COMMAND_FLAG_MESH_IFACE = BIT(0),
 	COMMAND_FLAG_NETLINK = BIT(1),
+	COMMAND_FLAG_INVERSE = BIT(2),
 };
 
 enum command_type {

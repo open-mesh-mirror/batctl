@@ -175,6 +175,16 @@ static bool ether_addr_valid(const uint8_t *addr)
 	return true;
 }
 
+static void print_inv_bool(char *line)
+{
+	if (!strncmp("enabled", line, strlen("enabled")))
+		printf("disabled\n");
+	else if (!strncmp("disabled", line, strlen("disabled")))
+		printf("enabled\n");
+	else
+		printf("%s", line);
+}
+
 int read_file(const char *dir, const char *fname, int read_opt,
 	      float orig_timeout, float watch_interval, size_t header_lines)
 {
@@ -237,7 +247,11 @@ read:
 			continue;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
-			printf("%s", line_ptr);
+			if (read_opt & INVERSE_BOOL)
+				print_inv_bool(line_ptr);
+			else
+				printf("%s", line_ptr);
+
 			continue;
 		}
 

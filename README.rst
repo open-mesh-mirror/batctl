@@ -468,14 +468,14 @@ Usage::
 Note that network coding requires a working promiscuous mode on all interfaces.
 
 
-batctl multicast_mode
-=====================
+batctl multicast_forceflood
+===========================
 
-display or modify the multicast mode setting
+display or modify the multicast forceflood setting
 
 Usage::
 
-  batctl multicast_mode|mm [0|1]
+  batctl multicast_forceflood|mff [0|1]
 
 
 batctl mcast_flags

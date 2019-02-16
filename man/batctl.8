@@ -105,9 +105,11 @@ hop penalty. The penalty is can be 0-255 (255 sets originator message's TQ to ze
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.
 .br
-.IP "\fBmulticast_mode\fP|\fBmm\fP [\fB0\fP|\fB1\fP]"
-If no parameter is given the current multicast mode setting is displayed. Otherwise the parameter is used to enable or
-disable multicast optimizations (i.e. disabling means always sending own multicast frames via classic flooding).
+.IP "\fBmulticast_forceflood\fP|\fBmff\fP [\fB0\fP|\fB1\fP]"
+If no parameter is given the current multicast forceflood setting is displayed. Otherwise the parameter is used to enable or
+disable multicast forceflood. This setting defines whether multicast optimizations should be replaced by simple broadcast-like
+flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
+multicast packet with no optimizations.
 .br
 .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
 If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log

@@ -156,7 +156,8 @@ int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
 static void settings_usage(struct state *state)
 {
 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
-		state->cmd->name, state->cmd->abbr, state->cmd->usage);
+		state->cmd->name, state->cmd->abbr,
+		state->cmd->usage ? state->cmd->usage : "");
 
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -h print this help\n");
@@ -167,6 +168,7 @@ static int sys_read_setting(struct state *state, const char *path_buff,
 {
 	struct settings_data *settings = state->cmd->arg;
 	int res = EXIT_FAILURE;
+	int read_opt = NO_FLAGS;
 
 	if (settings->netlink_get) {
 		res = settings->netlink_get(state);
@@ -176,8 +178,12 @@ static int sys_read_setting(struct state *state, const char *path_buff,
 			return EXIT_SUCCESS;
 	}
 
-	if (sysfs_name)
-		res = read_file(path_buff, sysfs_name, NO_FLAGS, 0, 0, 0);
+	if (sysfs_name) {
+		if (state->cmd->flags & COMMAND_FLAG_INVERSE)
+			read_opt |= INVERSE_BOOL;
+
+		res = read_file(path_buff, sysfs_name, read_opt, 0, 0, 0);
+	}
 
 	return res;
 }
@@ -187,6 +193,7 @@ static int sys_write_setting(struct state *state, const char *path_buff,
 {
 	struct settings_data *settings = state->cmd->arg;
 	int res = EXIT_FAILURE;
+	char *argv1 = argv[1];
 
 	if (settings->netlink_set) {
 		res = settings->netlink_set(state);
@@ -196,9 +203,22 @@ static int sys_write_setting(struct state *state, const char *path_buff,
 			return EXIT_SUCCESS;
 	}
 
-	if (sysfs_name)
+	if (sysfs_name) {
+		if (state->cmd->flags & COMMAND_FLAG_INVERSE) {
+			if (!strncmp("0", argv[1], strlen("0")) ||
+			    !strncmp("disable", argv[1], strlen("disable")) ||
+			    !strncmp("disabled", argv[1], strlen("disabled"))) {
+				argv1 = "enabled";
+			} else if (!strncmp("1", argv[1], strlen("1")) ||
+				   !strncmp("enable", argv[1], strlen("enable")) ||
+				   !strncmp("enabled", argv[1], strlen("enabled"))) {
+				argv1 = "disabled";
+			}
+		}
+
 		res = write_file(path_buff, sysfs_name,
-				 argv[1], argc > 2 ? argv[2] : NULL);
+				 argv1, argc > 2 ? argv[2] : NULL);
+	}
 
 	return res;
 }

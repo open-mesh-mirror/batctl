@@ -91,6 +91,7 @@ enum {
 	SKIP_HEADER = 0x100,
 	UNICAST_ONLY = 0x200,
 	MULTICAST_ONLY = 0x400,
+	INVERSE_BOOL = 0x800,
 };
 
 #endif

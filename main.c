@@ -74,6 +74,9 @@ static void print_usage(void)
 			if (cmd->type != type[i])
 				continue;
 
+			if (!cmd->usage)
+				continue;
+
 			if (strcmp(cmd->name, cmd->abbr) == 0)
 				snprintf(buf, sizeof(buf), "%s", cmd->name);
 			else

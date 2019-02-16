@@ -456,7 +456,7 @@ enum batadv_nl_attrs {
 	BATADV_ATTR_LOG_LEVEL,
 
 	/**
-	 * @BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED whether multicast
+	 * @BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED: whether multicast
 	 *  optimizations should be replaced by simple broadcast-like flooding
 	 *  of multicast packets. If set to non-zero then all nodes in the mesh
 	 *  are going to use classic flooding for any multicast packet with no

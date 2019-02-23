@@ -530,6 +530,21 @@ Usage::
   batctl aggregation|ag [0|1]
 
 
+batctl hop_penalty
+==================
+
+display or modify the hop_penalty (0-255)
+
+Usage::
+
+  batctl hop_penalty|hp [penalty]
+
+Example::
+
+  $ batctl penalty
+  30
+
+
 batctl isolation_mark
 =====================
 

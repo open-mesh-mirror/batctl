@@ -97,6 +97,10 @@ when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but 
 If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
 disable fragmentation.
 .br
+.IP "\fBhop_penalty\fP|\fBhp\fP [\fBpenalty\fP]"
+If no parameter is given the current hop penalty setting is displayed. Otherwise the parameter is used to set the
+hop penalty. The penalty is can be 0-255 (255 sets originator message's TQ to zero when forwarded by this hop).
+.br
 .IP "\fBnetwork_coding\fP|\fBnc\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.

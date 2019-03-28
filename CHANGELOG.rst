@@ -1,5 +1,13 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2019.1 (2019-03-28)
+===================
+
+* coding style cleanups and refactoring
+* introduce support for batadv meshif, hardif and vlan configuration via netlink
+* replace multicast_mode with multicast_forceflood settings subcommand
+* add hop_penalty setting subcommand
+
 2019.0 (2019-02-01)
 ===================
 

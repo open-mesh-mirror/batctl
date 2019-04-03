@@ -24,6 +24,8 @@
 #include "sys.h"
 #include "functions.h"
 
+#define IFACE_STATUS_LEN 256
+
 static void interface_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
@@ -31,6 +33,92 @@ static void interface_usage(void)
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -M disable automatic creation/removal of batman-adv interface\n");
 	fprintf(stderr, " \t -h print this help\n");
+}
+
+static int get_iface_status_netlink_parse(struct nl_msg *msg, void *arg)
+{
+
+	struct nlattr *attrs[NUM_BATADV_ATTR];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	char *iface_status = arg;
+	struct genlmsghdr *ghdr;
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return NL_OK;
+
+	ghdr = nlmsg_data(nlh);
+	if (ghdr->cmd != BATADV_CMD_GET_HARDIF)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy))
+		return NL_OK;
+
+	if (attrs[BATADV_ATTR_ACTIVE])
+		strncpy(iface_status, "active\n", IFACE_STATUS_LEN);
+	else
+		strncpy(iface_status, "inactive\n", IFACE_STATUS_LEN);
+
+	iface_status[IFACE_STATUS_LEN - 1] = '\0';
+
+	return NL_STOP;
+}
+
+static char *get_iface_status_netlink(unsigned int meshif, unsigned int hardif,
+				      char *iface_status)
+{
+	struct nl_sock *sock;
+	struct nl_msg *msg;
+	int batadv_family;
+	struct nl_cb *cb;
+	int ret;
+
+	strncpy(iface_status, "<error reading status>\n", IFACE_STATUS_LEN);
+	iface_status[IFACE_STATUS_LEN - 1] = '\0';
+
+	sock = nl_socket_alloc();
+	if (!sock)
+		return iface_status;
+
+	ret = genl_connect(sock);
+	if (ret < 0)
+		goto err_free_sock;
+
+	batadv_family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+	if (ret < 0)
+		goto err_free_sock;
+
+	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb)
+		goto err_free_sock;
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, get_iface_status_netlink_parse,
+		iface_status);
+
+	msg = nlmsg_alloc();
+	if (!msg)
+		goto err_free_cb;
+
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, batadv_family,
+		    0, 0, BATADV_CMD_GET_HARDIF, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, meshif);
+	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, hardif);
+
+	ret = nl_send_auto_complete(sock, msg);
+	if (ret < 0)
+		goto err_free_msg;
+
+	nl_recvmsgs(sock, cb);
+
+err_free_msg:
+	nlmsg_free(msg);
+err_free_cb:
+	nl_cb_put(cb);
+err_free_sock:
+	nl_socket_free(sock);
+
+	return iface_status;
 }
 
 static struct nla_policy link_policy[IFLA_MAX + 1] = {
@@ -45,6 +133,7 @@ struct print_interfaces_rtnl_arg {
 static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 {
 	struct print_interfaces_rtnl_arg *print_arg = arg;
+	char iface_status[IFACE_STATUS_LEN];
 	struct nlattr *attrs[IFLA_MAX + 1];
 	char path_buff[PATH_BUFF_LEN];
 	struct ifinfomsg *ifm;
@@ -75,7 +164,8 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT, ifname);
 	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
 	if (ret != EXIT_SUCCESS)
-		status = "<error reading status>\n";
+		status = get_iface_status_netlink(master, ifm->ifi_index,
+						  iface_status);
 	else
 		status = line_ptr;
 

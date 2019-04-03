@@ -53,7 +53,7 @@ int netlink_simple_request(struct nl_msg *msg);
 int translate_mesh_iface(struct state *state);
 int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len);
 int check_mesh_iface(struct state *state);
-int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
+int check_mesh_iface_ownership(struct state *state, char *hard_iface);
 
 void get_random_bytes(void *buf, size_t buflen);
 void check_root_or_die(const char *cmd);

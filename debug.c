@@ -115,7 +115,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 				return EXIT_FAILURE;
 			}
 
-			if (check_mesh_iface_ownership(state->mesh_iface, optarg) != EXIT_SUCCESS)
+			if (check_mesh_iface_ownership(state, optarg) != EXIT_SUCCESS)
 				return EXIT_FAILURE;
 
 			orig_iface = optarg;

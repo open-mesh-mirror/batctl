@@ -278,7 +278,32 @@ Usage::
 
 Example::
 
-  Distributed ARP Table (bat0):
+  Distributed ARP Table Cache (bat0):
+            IPv4             MAC           last-seen
+   *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
+
+where
+
+IPv4:
+  is the IP address of a client in the mesh network
+MAC:
+  is the MAC address associated to that IP
+last-seen:
+  is the amount of time since last refresh of this entry
+
+
+batctl dat_dht
+=================
+
+display the local D.A.T. DHT
+
+Usage::
+
+  batctl dat_dht|dd
+
+Example::
+
+  Distributed ARP Table DHT (bat0):
             IPv4             MAC           last-seen
    *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
 

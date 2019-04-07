@@ -25,14 +25,14 @@
 #include "main.h"
 #include "netlink.h"
 
-static const int dat_cache_mandatory[] = {
+static const int dat_dht_mandatory[] = {
 	BATADV_ATTR_DAT_CACHE_IP4ADDRESS,
 	BATADV_ATTR_DAT_CACHE_HWADDRESS,
 	BATADV_ATTR_DAT_CACHE_VID,
 	BATADV_ATTR_LAST_SEEN_MSECS,
 };
 
-static int dat_cache_callback(struct nl_msg *msg, void *arg)
+static int dat_dht_callback(struct nl_msg *msg, void *arg)
 {
 	int last_seen_msecs, last_seen_secs, last_seen_mins;
 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
@@ -52,7 +52,7 @@ static int dat_cache_callback(struct nl_msg *msg, void *arg)
 
 	ghdr = nlmsg_data(nlh);
 
-	if (ghdr->cmd != BATADV_CMD_GET_DAT_CACHE)
+	if (ghdr->cmd != BATADV_CMD_GET_DAT_DHT)
 		return NL_OK;
 
 	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
@@ -61,8 +61,8 @@ static int dat_cache_callback(struct nl_msg *msg, void *arg)
 		exit(1);
 	}
 
-	if (missing_mandatory_attrs(attrs, dat_cache_mandatory,
-				    ARRAY_SIZE(dat_cache_mandatory))) {
+	if (missing_mandatory_attrs(attrs, dat_dht_mandatory,
+				    ARRAY_SIZE(dat_dht_mandatory))) {
 		fputs("Missing attributes from kernel\n", stderr);
 		exit(1);
 	}
@@ -99,14 +99,14 @@ static int dat_cache_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-static int netlink_print_dat_cache(struct state *state, char *orig_iface,
-				   int read_opts, float orig_timeout,
-				   float watch_interval)
+static int netlink_print_dat_dht(struct state *state, char *orig_iface,
+				 int read_opts, float orig_timeout,
+				 float watch_interval)
 {
 	char *header;
 	int ret;
 
-	ret = asprintf(&header, "Distributed ARP Table Cache (%s):\n%s\n",
+	ret = asprintf(&header, "Distributed ARP Table DHT (%s):\n%s\n",
 		       state->mesh_iface,
 		       "          IPv4             MAC        VID   last-seen");
 
@@ -115,17 +115,17 @@ static int netlink_print_dat_cache(struct state *state, char *orig_iface,
 
 	ret = netlink_print_common(state, orig_iface, read_opts,
 				   orig_timeout, watch_interval, header,
-				   BATADV_CMD_GET_DAT_CACHE,
-				   dat_cache_callback);
+				   BATADV_CMD_GET_DAT_DHT,
+				   dat_dht_callback);
 
 	free(header);
 	return ret;
 }
 
-static struct debug_table_data batctl_debug_table_dat_cache = {
-	.netlink_fn = netlink_print_dat_cache,
+static struct debug_table_data batctl_debug_table_dat_dht = {
+	.netlink_fn = netlink_print_dat_dht,
 };
 
-COMMAND_NAMED(DEBUGTABLE, dat_cache, "dc", handle_debug_table,
+COMMAND_NAMED(DEBUGTABLE, dat_dht, "dd", handle_debug_table,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
-	      &batctl_debug_table_dat_cache, "");
+	      &batctl_debug_table_dat_dht, "");

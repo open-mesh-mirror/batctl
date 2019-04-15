@@ -85,7 +85,7 @@ static char *get_iface_status_netlink(unsigned int meshif, unsigned int hardif,
 		goto err_free_sock;
 
 	batadv_family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (ret < 0)
+	if (batadv_family < 0)
 		goto err_free_sock;
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);

@@ -27,7 +27,6 @@
 #include "main.h"
 #include "functions.h"
 #include "bat-hosts.h"
-#include "debugfs.h"
 #include "icmp_helper.h"
 
 
@@ -73,7 +72,6 @@ static int ping(struct state *state, int argc, char **argv)
 	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
 	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
 	size_t packet_len;
-	char *debugfs_mnt;
 	int disable_translate_mac = 0;
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
@@ -143,12 +141,6 @@ static int ping(struct state *state, int argc, char **argv)
 	mac_string = ether_ntoa_long(dst_mac);
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
-
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt) {
-		fprintf(stderr, "Error - can't mount or find debugfs\n");
-		goto out;
-	}
 
 	icmp_interfaces_init();
 	packet_len = sizeof(struct batadv_icmp_packet);

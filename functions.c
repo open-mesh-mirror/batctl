@@ -353,98 +353,12 @@ out:
 	return res;
 }
 
-static int translate_mac_debugfs(const char *mesh_iface,
-				 const struct ether_addr *mac,
-				 struct ether_addr *mac_out)
-{
-	enum {
-		tg_start,
-		tg_mac,
-		tg_via,
-		tg_originator,
-	} pos;
-	char full_path[MAX_PATH+1];
-	char *debugfs_mnt;
-	struct ether_addr *mac_tmp;
-	FILE *f = NULL;
-	size_t len = 0;
-	char *line = NULL;
-	char *input, *saveptr, *token;
-	int line_invalid;
-	bool found = false;
-
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt)
-		return -EOPNOTSUPP;
-
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" DEBUG_TRANSTABLE_GLOBAL, mesh_iface, full_path, sizeof(full_path));
-
-	f = fopen(full_path, "r");
-	if (!f)
-		return -EOPNOTSUPP;
-
-	while (getline(&line, &len, f) != -1) {
-		line_invalid = 0;
-		pos = tg_start;
-		input = line;
-
-		while ((token = strtok_r(input, " \t", &saveptr))) {
-			input = NULL;
-
-			switch (pos) {
-			case tg_start:
-				if (strcmp(token, "*") != 0)
-					line_invalid = 1;
-				else
-					pos = tg_mac;
-				break;
-			case tg_mac:
-				mac_tmp = ether_aton(token);
-				if (!mac_tmp || memcmp(mac_tmp, mac,
-						       ETH_ALEN) != 0)
-					line_invalid = 1;
-				else
-					pos = tg_via;
-				break;
-			case tg_via:
-				if (strcmp(token, "via") == 0)
-					pos = tg_originator;
-				break;
-			case tg_originator:
-				mac_tmp = ether_aton(token);
-				if (!mac_tmp) {
-					line_invalid = 1;
-				} else {
-					memcpy(mac_out, mac_tmp, ETH_ALEN);
-					found = true;
-					goto out;
-				}
-				break;
-			}
-
-			if (line_invalid)
-				break;
-		}
-	}
-
-out:
-	if (f)
-		fclose(f);
-	free(line);
-
-	if (found)
-		return 0;
-	else
-		return -ENOENT;
-}
-
 struct ether_addr *translate_mac(const char *mesh_iface,
 				 const struct ether_addr *mac)
 {
 	struct ether_addr in_mac;
 	static struct ether_addr out_mac;
 	struct ether_addr *mac_result;
-	int ret;
 
 	/* input mac has to be copied because it could be in the shared
 	 * ether_aton buffer
@@ -456,10 +370,7 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	if (!ether_addr_valid(in_mac.ether_addr_octet))
 		return mac_result;
 
-	ret = translate_mac_netlink(mesh_iface, &in_mac, mac_result);
-
-	if (ret == -EOPNOTSUPP)
-		translate_mac_debugfs(mesh_iface, &in_mac, mac_result);
+	translate_mac_netlink(mesh_iface, &in_mac, mac_result);
 
 	return mac_result;
 }

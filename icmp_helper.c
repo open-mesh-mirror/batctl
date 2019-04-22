@@ -294,94 +294,6 @@ err:
 	return NL_OK;
 }
 
-static int get_nexthop_debugfs(const char *mesh_iface,
-			       struct ether_addr *mac,
-			       uint8_t nexthop[ETH_ALEN],
-			       char ifname[IF_NAMESIZE])
-{
-	char *tptr;
-	char *temp1, *temp2;
-	char *dest, *neigh, *iface;
-	int lnum, tnum;
-	struct ether_addr *mac_tmp;
-	char path[1024];
-	FILE *f = NULL;
-	size_t len = 0;
-	char *line = NULL;
-	char *primary_info;
-
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" "originators", mesh_iface, path, sizeof(path));
-
-	f = fopen(path, "r");
-	if (!f)
-		return -EOPNOTSUPP;
-
-	lnum = 0;
-	while (getline(&line, &len, f) != -1) {
-		lnum++;
-
-		/* find primary mac */
-		if (lnum == 1) {
-			primary_info = strstr(line, "MainIF/MAC: ");
-			if (!primary_info)
-				continue;
-
-			primary_info += 12;
-			temp1 = strstr(primary_info, "/");
-			if (!temp1)
-				continue;
-
-			temp1++;
-			temp2 = strstr(line, " ");
-			if (!temp2)
-				continue;
-
-			temp2[0] = '\0';
-			mac_tmp = ether_aton(temp1);
-			if (!mac_tmp)
-				continue;
-
-			memcpy(primary_mac, mac_tmp, ETH_ALEN);
-		}
-
-		if (lnum < 3)
-			continue;
-
-		/* find correct neighbor */
-		for (tptr = line, tnum = 0;; tptr = NULL, tnum++) {
-			tptr = strtok_r(tptr, "\t []()", &temp2);
-			if (!tptr)
-				break;
-			switch (tnum) {
-			case 0: dest = tptr; break;
-			case 2: break;
-			case 3: neigh = tptr; break;
-			case 4: iface = tptr; break;
-			default: break;
-			}
-		}
-		if (tnum <= 4)
-			continue;
-
-		mac_tmp = ether_aton(dest);
-		if (!mac_tmp || memcmp(mac_tmp, mac, ETH_ALEN) != 0)
-			continue;
-
-		mac_tmp = ether_aton(neigh);
-		if (!mac_tmp)
-			continue;
-
-		memcpy(nexthop, mac_tmp, ETH_ALEN);
-		strncpy(ifname, iface, IF_NAMESIZE);
-		ifname[IF_NAMESIZE - 1] = '\0';
-		break;
-	}
-	free(line);
-	fclose(f);
-
-	return 0;
-}
-
 static void icmp_interface_unmark(void)
 {
 	struct icmp_interface *iface;
@@ -478,8 +390,6 @@ int icmp_interface_write(const char *mesh_iface,
 	memcpy(&mac, icmp_packet->dst, ETH_ALEN);
 
 	ret = get_nexthop_netlink(mesh_iface, &mac, nexthop, ifname);
-	if (ret == -EOPNOTSUPP)
-		ret = get_nexthop_debugfs(mesh_iface, &mac, nexthop, ifname);
 	if (ret < 0)
 		goto dst_unreachable;
 

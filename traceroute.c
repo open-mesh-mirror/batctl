@@ -24,7 +24,6 @@
 #include "main.h"
 #include "functions.h"
 #include "bat-hosts.h"
-#include "debugfs.h"
 #include "icmp_helper.h"
 
 
@@ -52,7 +51,6 @@ static int traceroute(struct state *state, int argc, char **argv)
 	int ret = EXIT_FAILURE, res, i;
 	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta[NUM_PACKETS];
-	char *debugfs_mnt;
 	int disable_translate_mac = 0;
 
 	while ((optchar = getopt(argc, argv, "hnT")) != -1) {
@@ -102,12 +100,6 @@ static int traceroute(struct state *state, int argc, char **argv)
 		dst_mac = translate_mac(state->mesh_iface, dst_mac);
 
 	mac_string = ether_ntoa_long(dst_mac);
-
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt) {
-		fprintf(stderr, "Error - can't mount or find debugfs\n");
-		goto out;
-	}
 
 	icmp_interfaces_init();
 

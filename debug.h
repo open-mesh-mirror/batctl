@@ -19,7 +19,6 @@
 #define DEBUG_DAT_CACHE "dat_cache"
 #define DEBUG_NC_NODES "nc_nodes"
 #define DEBUG_MCAST_FLAGS "mcast_flags"
-#define DEBUG_LOG "log"
 #define DEBUG_ROUTING_ALGOS "routing_algos"
 
 struct debug_table_data {

@@ -386,28 +386,6 @@ Example::
   1000
 
 
-batctl log
-==========
-
-read the log produced by the kernel module
-
-Usage::
-
-  batctl log|l
-
-Example::
-
-  $ batctl log
-  [       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:01:01 via prev OG: fe:fe:00:00:01:01 seqno 670, tq 245, TTL 49, V 8, IDF 1)
-  [       400] Drop packet: originator packet from myself (via neighbour)
-  [       400] Received BATMAN packet via NB: fe:fe:00:00:02:01 IF: eth0 [fe:fe:00:00:01:01] (from OG: fe:fe:00:00:02:01 via prev OG: fe:fe:00:00:02:01 seqno 545, tq 255, TTL 50, V 8, IDF 0)
-  [       400] updating last_seqno: old 544, new 545
-  [       400] bidirectional: orig = fe:fe:00:00:02:01 neigh = fe:fe:00:00:02:01 => own_bcast = 64, real recv = 64, local tq: 255, asym_penalty: 255, total tq: 255
-  [       400] update_originator(): Searching and updating originator entry of received packet
-  [       400] Updating existing last-hop neighbour of originator
-  [...]
-
-
 batctl loglevel
 ===============
 

@@ -275,11 +275,8 @@ read:
 			if (!bat_host)
 				goto print_plain_buff;
 
-			if (read_opt & LOG_MODE)
-				printf("%s", bat_host->name);
-			else
-				/* keep table format */
-				printf("%17s", bat_host->name);
+			/* keep table format */
+			printf("%17s", bat_host->name);
 
 			goto written;
 

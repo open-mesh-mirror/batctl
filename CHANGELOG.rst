@@ -1,5 +1,14 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2019.2 (2019-05-23)
+===================
+
+* coding style cleanups and refactoring
+* add multicast_fanout setting subcommand
+* implement netlink based support for remaining sysfs-only features
+* drop support for deprecated log command support
+* remove non-netlink support for translating MAC addresses to originators
+
 2019.1 (2019-03-28)
 ===================
 

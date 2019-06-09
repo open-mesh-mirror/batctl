@@ -196,6 +196,45 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
 	       BATADV_PRINT_VID(ntohs(tvlv->vid)));
 }
 
+static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
+				       ssize_t buff_len)
+{
+	struct batadv_tvlv_mcast_data *tvlv = buff;
+	uint8_t flags;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV MCASTv1", sizeof(*tvlv), buff_len);
+		return;
+	}
+
+	flags = tvlv->flags;
+
+	printf("\tTVLV MCASTv1: [%c%c%c]\n",
+	       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
+	       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
+	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
+}
+
+static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
+{
+	struct batadv_tvlv_mcast_data *tvlv = buff;
+	uint8_t flags;
+
+	if (buff_len != sizeof(*tvlv)) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV MCASTv2", sizeof(*tvlv), buff_len);
+		return;
+	}
+
+	flags = tvlv->flags;
+
+	printf("\tTVLV MCASTv2: [%c%c%c]\n",
+	       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
+	       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
+	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
+}
+
 typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
 
 static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
@@ -237,6 +276,16 @@ static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
 		switch (version) {
 		case 1:
 			return batctl_tvlv_parse_roam_v1;
+		default:
+			return NULL;
+		}
+
+	case BATADV_TVLV_MCAST:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_mcast_v1;
+		case 2:
+			return batctl_tvlv_parse_mcast_v2;
 		default:
 			return NULL;
 		}

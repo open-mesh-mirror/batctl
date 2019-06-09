@@ -930,6 +930,30 @@ static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
+static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+{
+	struct batadv_frag_packet *frag_packet;
+	struct ether_header *ether_header;
+
+	LEN_CHECK((size_t)buff_len - sizeof(*ether_header),
+		  sizeof(*frag_packet), "BAT UCAST FRAG");
+
+	ether_header = (struct ether_header *)packet_buff;
+	frag_packet = (struct batadv_frag_packet *)(packet_buff + sizeof(*ether_header));
+
+	if (!time_printed)
+		time_printed = print_time();
+
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost,
+				   read_opt));
+
+	printf("%s: UCAST FRAG, seqno %d, no %d, ttl %hhu\n",
+	       get_name_by_macaddr((struct ether_addr *)frag_packet->dest,
+				   read_opt),
+	       frag_packet->seqno, frag_packet->no, frag_packet->ttl);
+}
+
 static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
@@ -1040,6 +1064,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_UNICAST:
 			if (dump_level & DUMP_TYPE_BATUCAST)
 				dump_batman_ucast(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BATADV_UNICAST_FRAG:
+			if (dump_level & DUMP_TYPE_BATFRAG)
+				dump_batman_ucast_frag(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)

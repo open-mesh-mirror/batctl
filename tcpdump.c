@@ -56,7 +56,7 @@ static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
 				       DUMP_TYPE_BATELP | DUMP_TYPE_BATICMP |
 				       DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST |
 				       DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG |
-				       DUMP_TYPE_NONBAT;
+				       DUMP_TYPE_NONBAT | DUMP_TYPE_BATCODED;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -80,6 +80,7 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
 	fprintf(stderr, " \t\t%3d - batman unicast tvlv packets\n", DUMP_TYPE_BATUTVLV);
 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
+	fprintf(stderr, " \t\t%3d - batman coded packets\n", DUMP_TYPE_BATCODED);
 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
 
@@ -981,6 +982,32 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
+static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+{
+	struct batadv_coded_packet *coded_packet;
+	struct ether_header *ether_header;
+
+	LEN_CHECK((size_t)buff_len - sizeof(*ether_header), sizeof(*coded_packet), "BAT CODED");
+
+	ether_header = (struct ether_header *)packet_buff;
+	coded_packet = (struct batadv_coded_packet *)(packet_buff + sizeof(*ether_header));
+
+	if (!time_printed)
+		time_printed = print_time();
+
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost,
+				   read_opt));
+
+	printf("%s|%s: CODED, ttvn %d|%d, ttl %hhu\n",
+	       get_name_by_macaddr((struct ether_addr *)coded_packet->first_orig_dest,
+				   read_opt),
+	       get_name_by_macaddr((struct ether_addr *)coded_packet->second_dest,
+				   read_opt),
+	       coded_packet->first_ttvn, coded_packet->second_ttvn,
+	       coded_packet->ttl);
+}
+
 static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
@@ -1072,6 +1099,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BATADV_CODED:
+			if (dump_level & DUMP_TYPE_BATCODED)
+				dump_batman_coded(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)

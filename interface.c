@@ -67,18 +67,18 @@ static int get_iface_status_netlink_parse(struct nl_msg *msg, void *arg)
 static char *get_iface_status_netlink(unsigned int meshif, unsigned int hardif,
 				      char *iface_status)
 {
+	char *ret_status = NULL;
 	struct nl_sock *sock;
 	struct nl_msg *msg;
 	int batadv_family;
 	struct nl_cb *cb;
 	int ret;
 
-	strncpy(iface_status, "<error reading status>\n", IFACE_STATUS_LEN);
-	iface_status[IFACE_STATUS_LEN - 1] = '\0';
+	iface_status[0] = '\0';
 
 	sock = nl_socket_alloc();
 	if (!sock)
-		return iface_status;
+		return NULL;
 
 	ret = genl_connect(sock);
 	if (ret < 0)
@@ -111,6 +111,9 @@ static char *get_iface_status_netlink(unsigned int meshif, unsigned int hardif,
 
 	nl_recvmsgs(sock, cb);
 
+	if (strlen(iface_status) > 0)
+		ret_status = iface_status;
+
 err_free_msg:
 	nlmsg_free(msg);
 err_free_cb:
@@ -118,7 +121,7 @@ err_free_cb:
 err_free_sock:
 	nl_socket_free(sock);
 
-	return iface_status;
+	return ret_status;
 }
 
 static struct nla_policy link_policy[IFLA_MAX + 1] = {
@@ -161,13 +164,17 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	if (master != print_arg->ifindex)
 		goto err;
 
-	snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT, ifname);
-	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-	if (ret != EXIT_SUCCESS)
-		status = get_iface_status_netlink(master, ifm->ifi_index,
-						  iface_status);
-	else
-		status = line_ptr;
+	status = get_iface_status_netlink(master, ifm->ifi_index, iface_status);
+	if (!status) {
+		snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT,
+			 ifname);
+		ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS,
+				0, 0, 0);
+		if (ret != EXIT_SUCCESS)
+			status = "<error reading status>\n";
+		else
+			status = line_ptr;
+	}
 
 	printf("%s: %s", ifname, status);
 

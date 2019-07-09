@@ -402,6 +402,23 @@ Example::
   200
 
 
+batctl throughput override
+==========================
+
+display or modify the throughput override in kbit/s for hard interface
+
+Usage::
+
+  batctl hardif $hardif throughput_override|to [kbit]
+
+Example::
+
+  $ batctl hardif eth0 throughput_override 15000
+  $ batctl hardif eth0 throughput_override 15mbit
+  $ batctl hardif eth0 throughput_override
+  15.0 MBit
+
+
 batctl loglevel
 ===============
 

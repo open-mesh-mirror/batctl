@@ -97,6 +97,10 @@ the bonding mode.
 batctl will monitor for events from the netlink kernel interface of batman-adv. The local timestamp of the event will be printed
 when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but with relative timestamps.
 .br
+.IP "\fBhardif <hardif>\fP \fBelp_interval\fP|\fBet\fP [\fBinterval\fP]"
+If no parameter is given the current ELP interval setting of the hard interface is displayed otherwise the parameter is used to set the
+ELP interval. The interval is in units of milliseconds.
+.br
 .IP "\fBfragmentation\fP|\fBf\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
 disable fragmentation.

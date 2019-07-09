@@ -386,6 +386,22 @@ Example::
   1000
 
 
+batctl elp interval
+===================
+
+display or modify the elp interval in ms for hard interface
+
+Usage::
+
+  batctl hardif $hardif elp_interval|et [interval]
+
+Example::
+
+  $ batctl hardif eth0 elp_interval 200
+  $ batctl hardif eth0 elp_interval
+  200
+
+
 batctl loglevel
 ===============
 

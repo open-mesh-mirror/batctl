@@ -56,13 +56,20 @@ enum command_flags {
 	COMMAND_FLAG_INVERSE = BIT(2),
 };
 
+enum selector_prefix {
+	SP_NONE_OR_MESHIF,
+	SP_VLAN,
+};
+
 enum command_type {
 	SUBCOMMAND,
+	SUBCOMMAND_VID,
 	DEBUGTABLE,
 };
 
 struct state {
 	char *arg_iface;
+	enum selector_prefix selector;
 	char mesh_iface[IF_NAMESIZE];
 	unsigned int mesh_ifindex;
 	int vid;
@@ -84,7 +91,7 @@ struct command {
 };
 
 #define COMMAND_NAMED(_type, _name, _abbr, _handler, _flags, _arg, _usage) \
-	static const struct command command_ ## _name = { \
+	static const struct command command_ ## _name ## _ ## _type = { \
 		.type = (_type), \
 		.name = (#_name), \
 		.abbr = _abbr, \
@@ -93,8 +100,8 @@ struct command {
 		.arg = (_arg), \
 		.usage = (_usage), \
 	}; \
-	static const struct command *__command_ ## _name \
-	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name
+	static const struct command *__command_ ## _name ## _ ## _type \
+	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name ## _ ## _type
 
 #define COMMAND(_type, _handler, _abbr, _flags, _arg, _usage) \
 	COMMAND_NAMED(_type, _handler, _abbr, _handler, _flags, _arg, _usage)

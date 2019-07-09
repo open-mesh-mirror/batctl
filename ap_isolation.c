@@ -28,7 +28,7 @@ static int get_attrs_ap_isolation(struct nl_msg *msg, void *arg)
 {
 	struct state *state = arg;
 
-	if (state->vid >= 0)
+	if (state->selector == SP_VLAN)
 		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
 
 	return 0;
@@ -38,7 +38,7 @@ static int get_ap_isolation(struct state *state)
 {
 	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
 
-	if (state->vid >= 0)
+	if (state->selector == SP_VLAN)
 		nl_cmd = BATADV_CMD_GET_VLAN;
 
 	return sys_simple_nlquery(state, nl_cmd, get_attrs_ap_isolation,
@@ -53,7 +53,7 @@ static int set_attrs_ap_isolation(struct nl_msg *msg, void *arg)
 
 	nla_put_u8(msg, BATADV_ATTR_AP_ISOLATION_ENABLED, data->val);
 
-	if (state->vid >= 0)
+	if (state->selector == SP_VLAN)
 		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
 
 	return 0;
@@ -63,7 +63,7 @@ static int set_ap_isolation(struct state *state)
 {
 	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
 
-	if (state->vid >= 0)
+	if (state->selector == SP_VLAN)
 		nl_cmd = BATADV_CMD_SET_VLAN;
 
 	return sys_simple_nlquery(state, nl_cmd, set_attrs_ap_isolation, NULL);
@@ -81,3 +81,8 @@ COMMAND_NAMED(SUBCOMMAND, ap_isolation, "ap", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_ap_isolation,
 	      "[0|1]             \tdisplay or modify ap_isolation setting");
+
+COMMAND_NAMED(SUBCOMMAND_VID, ap_isolation, "ap", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
+	      &batctl_settings_ap_isolation,
+	      "[0|1]             \tdisplay or modify ap_isolation setting for vlan device or id");

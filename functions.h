@@ -50,7 +50,9 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 struct ether_addr *resolve_mac(const char *asc);
 int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
 int netlink_simple_request(struct nl_msg *msg);
-int translate_mesh_iface(struct state *state);
+int translate_mesh_iface_vlan(struct state *state, const char *vlandev);
+int translate_vlan_iface(struct state *state, const char *vlandev);
+int translate_vid(struct state *state, const char *vidstr);
 int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len);
 int check_mesh_iface(struct state *state);
 int check_mesh_iface_ownership(struct state *state, char *hard_iface);

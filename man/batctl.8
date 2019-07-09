@@ -46,7 +46,7 @@ performances, is also included.
 .SH OPTIONS
 .TP
 .I \fBoptions:
-\-m     specify mesh interface or VLAN created on top of a mesh interface (default 'bat0')
+\-m     specify mesh interface (default 'bat0')
 .br
 \-h     print general batctl help
 .br
@@ -70,7 +70,11 @@ originator interval. The interval is in units of milliseconds.
 .br
 .IP "\fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current ap isolation setting is displayed. Otherwise the parameter is used to enable or
-disable ap isolation. This command can be used in conjunction with "\-m" option to target per VLAN configurations.
+disable ap isolation.
+.br
+.IP "<\fBvlan <vdev>\fP|\fBvid <vid>\fP> \fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
+If no parameter is given the current ap isolation setting for the specified VLAN is displayed. Otherwise the parameter is used to enable or
+disable ap isolation for the specified VLAN.
 .br
 .IP "\fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable

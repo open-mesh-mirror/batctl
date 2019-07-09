@@ -28,48 +28,75 @@ extern const struct command *__stop___command[];
 
 static void print_usage(void)
 {
-	enum command_type type[] = {
-		SUBCOMMAND,
-		DEBUGTABLE,
+	struct {
+		const char *label;
+		uint32_t types;
+	} type[] = {
+		{
+			.label = "commands:\n",
+			.types = BIT(SUBCOMMAND) |
+				 BIT(SUBCOMMAND_VID),
+		},
+		{
+			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
+			.types = BIT(DEBUGTABLE),
+		},
+	};
+	const char *default_prefixes[] = {
+		"",
+		NULL,
+	};
+	const char *vlan_prefixes[] = {
+		"vlan <vdev> ",
+		"vid <vid> ",
+		NULL,
 	};
 	const struct command **p;
-	char buf[32];
+	const char **prefixes;
+	const char **prefix;
+	char buf[64];
 	size_t i;
 
 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
 	fprintf(stderr, "options:\n");
-	fprintf(stderr, " \t-m mesh interface or VLAN created on top of a mesh interface (default 'bat0')\n");
+	fprintf(stderr, " \t-m mesh interface (default 'bat0')\n");
 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
 	fprintf(stderr, " \t-v print version\n");
 
 	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
 		fprintf(stderr, "\n");
 
-		switch (type[i]) {
-		case SUBCOMMAND:
-			fprintf(stderr, "commands:\n");
-			break;
-		case DEBUGTABLE:
-			fprintf(stderr, "debug tables:                                   \tdisplay the corresponding debug table\n");
-			break;
-		}
+		fprintf(stderr, "%s", type[i].label);
 
 		for (p = __start___command; p < __stop___command; p++) {
 			const struct command *cmd = *p;
 
-			if (cmd->type != type[i])
+			if (!(BIT(cmd->type) & type[i].types))
 				continue;
 
 			if (!cmd->usage)
 				continue;
 
-			if (strcmp(cmd->name, cmd->abbr) == 0)
-				snprintf(buf, sizeof(buf), "%s", cmd->name);
-			else
-				snprintf(buf, sizeof(buf), "%s|%s", cmd->name,
-					 cmd->abbr);
+			switch (cmd->type) {
+			case SUBCOMMAND_VID:
+				prefixes = vlan_prefixes;
+				break;
+			default:
+				prefixes = default_prefixes;
+				break;
+			}
 
-			fprintf(stderr, " \t%-27s%s\n", buf, cmd->usage);
+			for (prefix = &prefixes[0]; *prefix; prefix++) {
+				if (strcmp(cmd->name, cmd->abbr) == 0)
+					snprintf(buf, sizeof(buf), "%s%s",
+						 *prefix, cmd->name);
+				else
+					snprintf(buf, sizeof(buf), "%s%s|%s",
+						 *prefix, cmd->name, cmd->abbr);
+
+				fprintf(stderr, " \t%-35s%s\n", buf,
+					cmd->usage);
+			}
 		}
 	}
 }
@@ -93,12 +120,16 @@ static void version(void)
 	exit(EXIT_SUCCESS);
 }
 
-static const struct command *find_command(const char *name)
+static const struct command *find_command_by_types(uint32_t types,
+						   const char *name)
 {
 	const struct command **p;
 
 	for (p = __start___command; p < __stop___command; p++) {
 		const struct command *cmd = *p;
+
+		if (!(BIT(cmd->type) & types))
+			continue;
 
 		if (strcmp(cmd->name, name) == 0)
 			return cmd;
@@ -110,13 +141,123 @@ static const struct command *find_command(const char *name)
 	return NULL;
 }
 
+static const struct command *find_command(struct state *state, const char *name)
+{
+	uint32_t types;
+
+	switch (state->selector) {
+	case SP_NONE_OR_MESHIF:
+		types = BIT(SUBCOMMAND) |
+			BIT(DEBUGTABLE);
+		break;
+	case SP_VLAN:
+		types = BIT(SUBCOMMAND_VID);
+		break;
+	default:
+		return NULL;
+	}
+
+	return find_command_by_types(types, name);
+}
+
+static int detect_selector_prefix(int argc, char *argv[],
+				  enum selector_prefix *selector)
+{
+	/* not enough remaining arguments to detect anything */
+	if (argc < 2)
+		return -EINVAL;
+
+	/* only detect selector prefix which identifies meshif */
+	if (strcmp(argv[0], "vlan") == 0) {
+		*selector = SP_VLAN;
+		return 2;
+	}
+
+	return 0;
+}
+
+static int parse_meshif_args(struct state *state, int argc, char *argv[])
+{
+	enum selector_prefix selector;
+	int parsed_args;
+	char *dev_arg;
+	int ret;
+
+	parsed_args = detect_selector_prefix(argc, argv, &selector);
+	if (parsed_args < 1)
+		goto fallback_meshif_vlan;
+
+	dev_arg = argv[parsed_args - 1];
+
+	switch (selector) {
+	case SP_VLAN:
+		ret = translate_vlan_iface(state, dev_arg);
+		if (ret < 0) {
+			fprintf(stderr, "Error - invalid vlan device %s: %s\n",
+				dev_arg, strerror(-ret));
+			return ret;
+		}
+
+		return parsed_args;
+	case SP_NONE_OR_MESHIF:
+		/* not allowed - see detect_selector_prefix */
+		break;
+	}
+
+fallback_meshif_vlan:
+	/* parse vlan as part of -m parameter or mesh_dfl_iface */
+	translate_mesh_iface_vlan(state, state->arg_iface);
+	return 0;
+}
+
+static int parse_dev_args(struct state *state, int argc, char *argv[])
+{
+	int dev_arguments;
+	int ret;
+
+	/* try to parse selector prefix which can be used to identify meshif */
+	dev_arguments = parse_meshif_args(state, argc, argv);
+	if (dev_arguments < 0)
+		return dev_arguments;
+
+	/* try to parse secondary prefix selectors which cannot be used to
+	 * identify the meshif
+	 */
+	argv += dev_arguments;
+	argc -= dev_arguments;
+
+	switch (state->selector) {
+	case SP_NONE_OR_MESHIF:
+		/* continue below */
+		break;
+	default:
+		return dev_arguments;
+	}
+
+	/* enough room for additional selectors? */
+	if (argc < 2)
+		return dev_arguments;
+
+	if (strcmp(argv[0], "vid") == 0) {
+		ret = translate_vid(state, argv[1]);
+		if (ret < 0)
+			return ret;
+
+		return dev_arguments + 2;
+	}
+
+	return dev_arguments;
+}
+
 int main(int argc, char **argv)
 {
 	const struct command *cmd;
 	struct state state = {
 		.arg_iface = mesh_dfl_iface,
+		.selector = SP_NONE_OR_MESHIF,
 		.cmd = NULL,
 	};
+	int dev_arguments;
 	int opt;
 	int ret;
 
@@ -152,7 +293,20 @@ int main(int argc, char **argv)
 	argc -= optind;
 	optind = 0;
 
-	cmd = find_command(argv[0]);
+	/* parse arguments to identify vlan, ... */
+	dev_arguments = parse_dev_args(&state, argc, argv);
+	if (dev_arguments < 0)
+		goto err;
+
+	argv += dev_arguments;
+	argc -= dev_arguments;
+
+	if (argc == 0) {
+		fprintf(stderr, "Error - no command specified\n");
+		goto err;
+	}
+
+	cmd = find_command(&state, argv[0]);
 	if (!cmd) {
 		fprintf(stderr,
 			"Error - no valid command or debug table specified: %s\n",
@@ -161,8 +315,6 @@ int main(int argc, char **argv)
 	}
 
 	state.cmd = cmd;
-
-	translate_mesh_iface(&state);
 
 	if (cmd->flags & COMMAND_FLAG_MESH_IFACE &&
 	    check_mesh_iface(&state) < 0) {

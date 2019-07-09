@@ -919,32 +919,44 @@ free_sock:
 	return 0;
 }
 
-int translate_mesh_iface(struct state *state)
+int translate_vlan_iface(struct state *state, const char *vlandev)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int arg_ifindex;
 
-	arg_ifindex = if_nametoindex(state->arg_iface);
+	arg_ifindex = if_nametoindex(vlandev);
 	if (arg_ifindex == 0)
-		goto fallback_meshif;
+		return -ENODEV;
 
 	query_rtnl_link_single(arg_ifindex, &link_data);
 	if (!link_data.vid_found)
-		goto fallback_meshif;
+		return -ENODEV;
 
 	if (!link_data.link_found)
-		goto fallback_meshif;
+		return -EINVAL;
 
 	if (!link_data.kind_found)
-		goto fallback_meshif;
+		return -EINVAL;
 
 	if (strcmp(link_data.kind, "vlan") != 0)
-		goto fallback_meshif;
+		return -EINVAL;
 
 	if (!if_indextoname(link_data.link, state->mesh_iface))
-		goto fallback_meshif;
+		return -ENODEV;
 
 	state->vid = link_data.vid;
+	state->selector = SP_VLAN;
+
+	return 0;
+}
+
+int translate_mesh_iface_vlan(struct state *state, const char *vlandev)
+{
+	int ret;
+
+	ret = translate_vlan_iface(state, vlandev);
+	if (ret < 0)
+		goto fallback_meshif;
 
 	return 0;
 
@@ -952,9 +964,36 @@ fallback_meshif:
 	/* if there is no vid then the argument must be the
 	 * mesh interface
 	 */
-	snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s",
-		 state->arg_iface);
-	state->vid = -1;
+	snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s", vlandev);
+	state->selector = SP_NONE_OR_MESHIF;
+
+	return 0;
+}
+
+int translate_vid(struct state *state, const char *vidstr)
+{
+	unsigned long vid;
+	char *endptr;
+
+	if (vidstr[0] == '\0') {
+		fprintf(stderr, "Error - unparsable vid\n");
+		return -EINVAL;
+	}
+
+	vid = strtoul(vidstr, &endptr, 0);
+	if (!endptr || *endptr != '\0') {
+		fprintf(stderr, "Error - unparsable vid\n");
+		return -EINVAL;
+	}
+
+	if (vid > 4095) {
+		fprintf(stderr, "Error - too large vid (max 4095)\n");
+		return -ERANGE;
+	}
+
+	/* get mesh interface and overwrite vid afterwards */
+	state->vid = vid;
+	state->selector = SP_VLAN;
 
 	return 0;
 }

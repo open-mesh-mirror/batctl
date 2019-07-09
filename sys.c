@@ -141,9 +141,35 @@ int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
 
 static void settings_usage(struct state *state)
 {
-	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters] %s\n",
-		state->cmd->name, state->cmd->abbr,
-		state->cmd->usage ? state->cmd->usage : "");
+	const char *default_prefixes[] = {
+		"",
+		NULL,
+	};
+	const char *vlan_prefixes[] = {
+		"vlan <vdev> ",
+		"vid <vid> ",
+		NULL,
+	};
+	const char *linestart = "Usage:";
+	const char **prefixes;
+	const char **prefix;
+
+	switch (state->cmd->type) {
+	case SUBCOMMAND_VID:
+		prefixes = vlan_prefixes;
+		break;
+	default:
+		prefixes = default_prefixes;
+		break;
+	}
+
+	for (prefix = &prefixes[0]; *prefix; prefix++) {
+		fprintf(stderr, "%s batctl [options] %s%s|%s [parameters] %s\n",
+			linestart, *prefix, state->cmd->name, state->cmd->abbr,
+			state->cmd->usage ? state->cmd->usage : "");
+
+		linestart = "      ";
+	}
 
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -h print this help\n");
@@ -233,15 +259,19 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	/* if the specified interface is a VLAN then change the path to point
-	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
-	 */
-	if (state->vid >= 0)
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
-			 state->mesh_iface, state->vid);
-	else
+	switch (state->selector) {
+	case SP_NONE_OR_MESHIF:
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
 			 state->mesh_iface);
+		break;
+	case SP_VLAN:
+		/* if the specified interface is a VLAN then change the path to
+		 * point to the proper "vlan%{vid}" subfolder in the sysfs tree.
+		 */
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
+			 state->mesh_iface, state->vid);
+		break;
+	}
 
 	if (argc == 1) {
 		res = sys_read_setting(state, path_buff, settings->sysfs_name);

@@ -1020,11 +1020,11 @@ int translate_hard_iface(struct state *state, const char *hardif)
 	return 0;
 }
 
-static int check_mesh_iface_netlink(struct state *state)
+static int check_mesh_iface_netlink(unsigned int ifindex)
 {
 	struct rtnl_link_iface_data link_data;
 
-	query_rtnl_link_single(state->mesh_ifindex, &link_data);
+	query_rtnl_link_single(ifindex, &link_data);
 	if (!link_data.kind_found)
 		return -1;
 
@@ -1032,6 +1032,36 @@ static int check_mesh_iface_netlink(struct state *state)
 		return -1;
 
 	return 0;
+}
+
+int guess_netdev_type(const char *netdev, enum selector_prefix *type)
+{
+	struct rtnl_link_iface_data link_data;
+	unsigned int netdev_ifindex;
+
+	netdev_ifindex = if_nametoindex(netdev);
+	if (netdev_ifindex == 0)
+		return -ENODEV;
+
+	query_rtnl_link_single(netdev_ifindex, &link_data);
+
+	if (link_data.kind_found && strcmp(link_data.kind, "batadv") == 0) {
+		*type = SP_MESHIF;
+		return 0;
+	}
+
+	if (link_data.master_found &&
+	    check_mesh_iface_netlink(link_data.master) >= 0) {
+		*type = SP_HARDIF;
+		return 0;
+	}
+
+	if (link_data.kind_found && strcmp(link_data.kind, "vlan") == 0) {
+		*type = SP_VLAN;
+		return 0;
+	}
+
+	return -EINVAL;
 }
 
 static int check_mesh_iface_sysfs(struct state *state)
@@ -1060,7 +1090,7 @@ int check_mesh_iface(struct state *state)
 	if (state->mesh_ifindex == 0)
 		return -1;
 
-	ret = check_mesh_iface_netlink(state);
+	ret = check_mesh_iface_netlink(state->mesh_ifindex);
 	if (ret == 0)
 		return ret;
 

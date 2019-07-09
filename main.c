@@ -204,6 +204,32 @@ static int detect_selector_prefix(int argc, char *argv[],
 	return 0;
 }
 
+static int guess_selector_prefix(int argc, char *argv[],
+				 enum selector_prefix *selector)
+{
+	int ret;
+
+	/* check if there is a direct hit with full prefix */
+	ret = detect_selector_prefix(argc, argv, selector);
+	if (ret > 0)
+		return ret;
+
+	/* not enough remaining arguments to detect anything */
+	if (argc < 1)
+		return -EINVAL;
+
+	/* don't try to parse subcommand names as network interface */
+	if (find_command_by_types(0xffffffff, argv[0]))
+		return -EEXIST;
+
+	/* check if it is a netdev - and if it exists, try to guess what kind */
+	ret = guess_netdev_type(argv[0], selector);
+	if (ret < 0)
+		return ret;
+
+	return 1;
+}
+
 static int parse_meshif_args(struct state *state, int argc, char *argv[])
 {
 	enum selector_prefix selector;
@@ -211,7 +237,7 @@ static int parse_meshif_args(struct state *state, int argc, char *argv[])
 	char *dev_arg;
 	int ret;
 
-	parsed_args = detect_selector_prefix(argc, argv, &selector);
+	parsed_args = guess_selector_prefix(argc, argv, &selector);
 	if (parsed_args < 1)
 		goto fallback_meshif_vlan;
 

@@ -998,6 +998,28 @@ int translate_vid(struct state *state, const char *vidstr)
 	return 0;
 }
 
+int translate_hard_iface(struct state *state, const char *hardif)
+{
+	struct rtnl_link_iface_data link_data;
+	unsigned int arg_ifindex;
+
+	arg_ifindex = if_nametoindex(hardif);
+	if (arg_ifindex == 0)
+		return -ENODEV;
+
+	query_rtnl_link_single(arg_ifindex, &link_data);
+	if (!link_data.master_found)
+		return -ENOLINK;
+
+	if (!if_indextoname(link_data.master, state->mesh_iface))
+		return -ENOLINK;
+
+	state->hif = arg_ifindex;
+	state->selector = SP_HARDIF;
+
+	return 0;
+}
+
 static int check_mesh_iface_netlink(struct state *state)
 {
 	struct rtnl_link_iface_data link_data;

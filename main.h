@@ -59,11 +59,13 @@ enum command_flags {
 enum selector_prefix {
 	SP_NONE_OR_MESHIF,
 	SP_VLAN,
+	SP_HARDIF,
 };
 
 enum command_type {
 	SUBCOMMAND,
 	SUBCOMMAND_VID,
+	SUBCOMMAND_HIF,
 	DEBUGTABLE,
 };
 
@@ -72,7 +74,11 @@ struct state {
 	enum selector_prefix selector;
 	char mesh_iface[IF_NAMESIZE];
 	unsigned int mesh_ifindex;
-	int vid;
+	char hard_iface[IF_NAMESIZE];
+	union {
+		unsigned int hif;
+		int vid;
+	};
 	const struct command *cmd;
 
 	struct nl_sock *sock;

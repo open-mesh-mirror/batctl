@@ -35,7 +35,8 @@ static void print_usage(void)
 		{
 			.label = "commands:\n",
 			.types = BIT(SUBCOMMAND) |
-				 BIT(SUBCOMMAND_VID),
+				 BIT(SUBCOMMAND_VID) |
+				 BIT(SUBCOMMAND_HIF),
 		},
 		{
 			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
@@ -49,6 +50,10 @@ static void print_usage(void)
 	const char *vlan_prefixes[] = {
 		"vlan <vdev> ",
 		"vid <vid> ",
+		NULL,
+	};
+	const char *hardif_prefixes[] = {
+		"hardif <netdev> ",
 		NULL,
 	};
 	const struct command **p;
@@ -80,6 +85,9 @@ static void print_usage(void)
 			switch (cmd->type) {
 			case SUBCOMMAND_VID:
 				prefixes = vlan_prefixes;
+				break;
+			case SUBCOMMAND_HIF:
+				prefixes = hardif_prefixes;
 				break;
 			default:
 				prefixes = default_prefixes;
@@ -153,6 +161,9 @@ static const struct command *find_command(struct state *state, const char *name)
 	case SP_VLAN:
 		types = BIT(SUBCOMMAND_VID);
 		break;
+	case SP_HARDIF:
+		types = BIT(SUBCOMMAND_HIF);
+		break;
 	default:
 		return NULL;
 	}
@@ -170,6 +181,9 @@ static int detect_selector_prefix(int argc, char *argv[],
 	/* only detect selector prefix which identifies meshif */
 	if (strcmp(argv[0], "vlan") == 0) {
 		*selector = SP_VLAN;
+		return 2;
+	} else if (strcmp(argv[0], "hardif") == 0) {
+		*selector = SP_HARDIF;
 		return 2;
 	}
 
@@ -197,7 +211,17 @@ static int parse_meshif_args(struct state *state, int argc, char *argv[])
 				dev_arg, strerror(-ret));
 			return ret;
 		}
+		return parsed_args;
+	case SP_HARDIF:
+		ret = translate_hard_iface(state, dev_arg);
+		if (ret < 0) {
+			fprintf(stderr, "Error - invalid hardif %s: %s\n",
+				dev_arg, strerror(-ret));
+			return ret;
+		}
 
+		snprintf(state->hard_iface, sizeof(state->hard_iface), "%s",
+			 dev_arg);
 		return parsed_args;
 	case SP_NONE_OR_MESHIF:
 		/* not allowed - see detect_selector_prefix */

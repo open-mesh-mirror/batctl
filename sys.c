@@ -150,6 +150,10 @@ static void settings_usage(struct state *state)
 		"vid <vid> ",
 		NULL,
 	};
+	const char *hardif_prefixes[] = {
+		"hardif <netdev> ",
+		NULL,
+	};
 	const char *linestart = "Usage:";
 	const char **prefixes;
 	const char **prefix;
@@ -157,6 +161,9 @@ static void settings_usage(struct state *state)
 	switch (state->cmd->type) {
 	case SUBCOMMAND_VID:
 		prefixes = vlan_prefixes;
+		break;
+	case SUBCOMMAND_HIF:
+		prefixes = hardif_prefixes;
 		break;
 	default:
 		prefixes = default_prefixes;
@@ -270,6 +277,14 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 		 */
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
 			 state->mesh_iface, state->vid);
+		break;
+	case SP_HARDIF:
+		/* if a hard interface was specified then change the path to
+		 * point to the proper ${hardif}/batman-adv path in the sysfs
+		 * tree.
+		 */
+		snprintf(path_buff, PATH_BUFF_LEN, SYS_HARDIF_PATH,
+			 state->hard_iface);
 		break;
 	}
 

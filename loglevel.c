@@ -212,6 +212,6 @@ out:
 	return res;
 }
 
-COMMAND(SUBCOMMAND, loglevel, "ll",
+COMMAND(SUBCOMMAND_MIF, loglevel, "ll",
 	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"[level]           \tdisplay or modify the log level");

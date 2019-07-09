@@ -35,6 +35,7 @@ static void print_usage(void)
 		{
 			.label = "commands:\n",
 			.types = BIT(SUBCOMMAND) |
+				 BIT(SUBCOMMAND_MIF) |
 				 BIT(SUBCOMMAND_VID) |
 				 BIT(SUBCOMMAND_HIF),
 		},
@@ -47,9 +48,13 @@ static void print_usage(void)
 		"",
 		NULL,
 	};
+	const char *meshif_prefixes[] = {
+		"meshif <netdev> ",
+		NULL,
+	};
 	const char *vlan_prefixes[] = {
 		"vlan <vdev> ",
-		"vid <vid> ",
+		"meshif <netdev> vid <vid> ",
 		NULL,
 	};
 	const char *hardif_prefixes[] = {
@@ -64,7 +69,6 @@ static void print_usage(void)
 
 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
 	fprintf(stderr, "options:\n");
-	fprintf(stderr, " \t-m mesh interface (default 'bat0')\n");
 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
 	fprintf(stderr, " \t-v print version\n");
 
@@ -83,6 +87,10 @@ static void print_usage(void)
 				continue;
 
 			switch (cmd->type) {
+			case DEBUGTABLE:
+			case SUBCOMMAND_MIF:
+				prefixes = meshif_prefixes;
+				break;
 			case SUBCOMMAND_VID:
 				prefixes = vlan_prefixes;
 				break;
@@ -102,7 +110,7 @@ static void print_usage(void)
 					snprintf(buf, sizeof(buf), "%s%s|%s",
 						 *prefix, cmd->name, cmd->abbr);
 
-				fprintf(stderr, " \t%-35s%s\n", buf,
+				fprintf(stderr, " \t%-43s%s\n", buf,
 					cmd->usage);
 			}
 		}
@@ -155,8 +163,11 @@ static const struct command *find_command(struct state *state, const char *name)
 
 	switch (state->selector) {
 	case SP_NONE_OR_MESHIF:
-		types = BIT(SUBCOMMAND) |
-			BIT(DEBUGTABLE);
+		types = BIT(SUBCOMMAND);
+		/* fall through */
+	case SP_MESHIF:
+		types |= BIT(SUBCOMMAND_MIF) |
+			 BIT(DEBUGTABLE);
 		break;
 	case SP_VLAN:
 		types = BIT(SUBCOMMAND_VID);
@@ -179,7 +190,10 @@ static int detect_selector_prefix(int argc, char *argv[],
 		return -EINVAL;
 
 	/* only detect selector prefix which identifies meshif */
-	if (strcmp(argv[0], "vlan") == 0) {
+	if (strcmp(argv[0], "meshif") == 0) {
+		*selector = SP_MESHIF;
+		return 2;
+	} else if (strcmp(argv[0], "vlan") == 0) {
 		*selector = SP_VLAN;
 		return 2;
 	} else if (strcmp(argv[0], "hardif") == 0) {
@@ -204,6 +218,11 @@ static int parse_meshif_args(struct state *state, int argc, char *argv[])
 	dev_arg = argv[parsed_args - 1];
 
 	switch (selector) {
+	case SP_MESHIF:
+		snprintf(state->mesh_iface, sizeof(state->mesh_iface), "%s",
+			 dev_arg);
+		state->selector = SP_MESHIF;
+		return parsed_args;
 	case SP_VLAN:
 		ret = translate_vlan_iface(state, dev_arg);
 		if (ret < 0) {
@@ -252,6 +271,7 @@ static int parse_dev_args(struct state *state, int argc, char *argv[])
 
 	switch (state->selector) {
 	case SP_NONE_OR_MESHIF:
+	case SP_MESHIF:
 		/* continue below */
 		break;
 	default:
@@ -297,6 +317,7 @@ int main(int argc, char **argv)
 					"Error - multiple mesh interfaces specified\n");
 				goto err;
 			}
+			fprintf(stderr, "Warning - option -m was deprecated in will be removed in the future\n");
 
 			state.arg_iface = argv[2];
 			break;

@@ -55,7 +55,7 @@ static struct settings_data batctl_settings_fragmentation = {
 	.netlink_set = set_fragmentation,
 };
 
-COMMAND_NAMED(SUBCOMMAND, fragmentation, "f", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, fragmentation, "f", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_fragmentation,
 	      "[0|1]             \tdisplay or modify fragmentation setting");

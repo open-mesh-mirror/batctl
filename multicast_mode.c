@@ -75,6 +75,6 @@ static struct settings_data batctl_settings_multicast_mode = {
 	.netlink_set = set_multicast_mode,
 };
 
-COMMAND_NAMED(SUBCOMMAND, multicast_mode, "mm", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, multicast_mode, "mm", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_multicast_mode, NULL);

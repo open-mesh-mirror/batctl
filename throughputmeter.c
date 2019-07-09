@@ -529,5 +529,5 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND, throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, throughputmeter, "tp", COMMAND_FLAG_MESH_IFACE, NULL,
 	"<destination>     \tstart a throughput measurement");

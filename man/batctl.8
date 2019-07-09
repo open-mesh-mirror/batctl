@@ -54,42 +54,42 @@ performances, is also included.
 .br
 .TP
 .I \fBcommands:
-.IP "\fBinterface\fP|\fBif\fP [\fB-M\fP] [\fBadd\fP|\fBdel iface(s)\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP [\fB-M\fP] [\fBadd\fP|\fBdel iface(s)\fP]"
 If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
 In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to
 add or delete. Multiple interfaces can be specified.
 The "\-M" option tells batctl to not automatically create the batman-adv interface on "add" or to destroy it when "del"
 removed all interfaces which belonged to it.
-.IP "\fBinterface\fP|\fBif\fP [\fBcreate\fP|\fBdestroy\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP [\fBcreate\fP|\fBdestroy\fP]"
 A batman-adv interface without attached interfaces can be created using "create". The parameter "destroy" can be used to
 free all attached interfaces and remove batman-adv interface.
 .br
-.IP "\fBorig_interval\fP|\fBit\fP [\fBinterval\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBorig_interval\fP|\fBit\fP [\fBinterval\fP]"
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the
 originator interval. The interval is in units of milliseconds.
 .br
-.IP "\fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current ap isolation setting is displayed. Otherwise the parameter is used to enable or
 disable ap isolation.
 .br
-.IP "<\fBvlan <vdev>\fP|\fBvid <vid>\fP> \fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
+.IP "<\fBvlan <vdev>\fP|[\fBmeshif <netdev>\fP] \fBvid <vid>\fP> \fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current ap isolation setting for the specified VLAN is displayed. Otherwise the parameter is used to enable or
 disable ap isolation for the specified VLAN.
 .br
-.IP "\fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable
 or disable the bridge loop avoidance. Bridge loop avoidance support has to be enabled when compiling the module otherwise
 this option won't be available.
 .br
-.IP "\fBdistributed_arp_table\fP|\fBdat\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBdistributed_arp_table\fP|\fBdat\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current distributed arp table setting is displayed. Otherwise the parameter is used to
 enable or disable the distributed arp table.
 .br
-.IP "\fBaggregation\fP|\fBag\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBaggregation\fP|\fBag\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current aggregation setting is displayed. Otherwise the parameter is used to enable or disable
 OGM packet aggregation.
 .br
-.IP "\fBbonding\fP|\fBb\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBbonding\fP|\fBb\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current bonding mode setting is displayed. Otherwise the parameter is used to enable or disable
 the bonding mode.
 .br
@@ -101,30 +101,30 @@ when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but 
 If no parameter is given the current ELP interval setting of the hard interface is displayed otherwise the parameter is used to set the
 ELP interval. The interval is in units of milliseconds.
 .br
-.IP "\fBfragmentation\fP|\fBf\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBfragmentation\fP|\fBf\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current fragmentation mode setting is displayed. Otherwise the parameter is used to enable or
 disable fragmentation.
 .br
-.IP "\fBhop_penalty\fP|\fBhp\fP [\fBpenalty\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBhop_penalty\fP|\fBhp\fP [\fBpenalty\fP]"
 If no parameter is given the current hop penalty setting is displayed. Otherwise the parameter is used to set the
 hop penalty. The penalty is can be 0-255 (255 sets originator message's TQ to zero when forwarded by this hop).
 .br
-.IP "\fBnetwork_coding\fP|\fBnc\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBnetwork_coding\fP|\fBnc\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.
 .br
-.IP "\fBmulticast_forceflood\fP|\fBmff\fP [\fB0\fP|\fB1\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBmulticast_forceflood\fP|\fBmff\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current multicast forceflood setting is displayed. Otherwise the parameter is used to enable or
 disable multicast forceflood. This setting defines whether multicast optimizations should be replaced by simple broadcast-like
 flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
 multicast packet with no optimizations.
 .br
-.IP "\fBmulticast_fanout\fP|\fBmo\fP [\fBfanout\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBmulticast_fanout\fP|\fBmo\fP [\fBfanout\fP]"
 If no parameter is given the current multicast fanout setting is displayed. Otherwise the parameter is used to set
 the multicast fanout. The multicast fanout defines the maximum number of packet copies that may be generated for a
 multicast-to-unicast conversion. Once this limit is exceeded distribution will fall back to broadcast.
 .br
-.IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
+.IP "[\fBmeshif <netdev>\fP] \fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
 If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
 level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
 Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
@@ -135,7 +135,7 @@ Level 'all' enables all messages. The messages are sent to the batman-adv debug 
 Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
 won't be available.
 .br
-.IP "\fBgw_mode|gw\fP [\fBoff\fP|\fBclient\fP|\fBserver\fP] [\fBsel_class|bandwidth\fP]\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBgw_mode|gw\fP [\fBoff\fP|\fBclient\fP|\fBserver\fP] [\fBsel_class|bandwidth\fP]\fP"
 If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode. The
 second (optional) argument specifies the selection class (if 'client' was the first argument) or the gateway bandwidth (if 'server'
 was the first argument). If the node is a server this parameter is used to inform other nodes in the network about
@@ -213,7 +213,7 @@ the parameter is used to set the throughput override for the specified hard
 interface.
 Just enter any number (optionally followed by "kbit" or "mbit").
 .br
-.IP "\fBisolation_mark\fP|\fBmark\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBisolation_mark\fP|\fBmark\fP"
 If no parameter is given the current isolation mark value is displayed.
 Otherwise the parameter is used to set or unset the isolation mark used by the
 Extended Isolation feature.
@@ -293,12 +293,12 @@ List of debug tables:
 .RE
 .RE
 .br
-.IP "\fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
 
 Translates a destination (hostname, IP, MAC, bat_host-name) to the originator
 mac address responsible for it.
 .br
-.IP "\fBstatistics\fP|\fBs\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBstatistics\fP|\fBs\fP"
 Retrieve traffic counters from batman-adv kernel module. The output may vary depending on which features have been compiled
 into the kernel module.
 .br
@@ -313,7 +313,7 @@ tt - translation table counters
 All counters without a prefix concern payload (pure user data) traffic.
 .RE
 .br
-.IP "\fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
 Layer 2 ping of a MAC address or bat\-host name.  batctl will try to find the bat\-host name if the given parameter was
 not a MAC address. It can also try to guess the MAC address using an IPv4/IPv6 address or a hostname when
 the IPv4/IPv6 address was configured on top of the batman-adv interface of the destination device and both source and
@@ -324,7 +324,7 @@ interval between pings and the timeout time for replies, both in seconds. When r
 messages will be recorded. With "\-T" you can disable the automatic translation of a client MAC address to the originator
 address which is responsible for this client.
 .br
-.IP "\fBtraceroute\fP|\fBtr\fP [\fB\-n\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBtraceroute\fP|\fBtr\fP [\fB\-n\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
 Layer 2 traceroute to a MAC address or bat\-host name. batctl will try to find the bat\-host name if the given parameter
 was not a MAC address. It can also try to guess the MAC address using an IPv4/IPv6 address or a hostname when
 the IPv4/IPv6 address was configured on top of the batman-adv interface of the destination device and both source and
@@ -376,7 +376,7 @@ specific sequence number, min. Furthermore using "\-o" you can filter the output
 given batctl will not replace the MAC addresses with bat\-host names in the output.
 .RE
 .br
-.IP "\fBthroughputmeter\fP|\fBtp\fP \fBMAC\fP"
+.IP "[\fBmeshif <netdev>\fP] \fBthroughputmeter\fP|\fBtp\fP \fBMAC\fP"
 This command starts a throughput test entirely controlled by batman module in
 kernel space: the computational resources needed to align memory and copy data
 between user and kernel space that are required by other user space tools may

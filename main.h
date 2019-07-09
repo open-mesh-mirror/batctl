@@ -58,12 +58,14 @@ enum command_flags {
 
 enum selector_prefix {
 	SP_NONE_OR_MESHIF,
+	SP_MESHIF,
 	SP_VLAN,
 	SP_HARDIF,
 };
 
 enum command_type {
 	SUBCOMMAND,
+	SUBCOMMAND_MIF,
 	SUBCOMMAND_VID,
 	SUBCOMMAND_HIF,
 	DEBUGTABLE,

@@ -134,7 +134,7 @@ static struct settings_data batctl_settings_isolation_mark = {
 	.netlink_set = set_isolation_mark,
 };
 
-COMMAND_NAMED(SUBCOMMAND, isolation_mark, "mark", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, isolation_mark, "mark", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_isolation_mark,
 	      "[mark]            \tdisplay or modify isolation_mark setting");

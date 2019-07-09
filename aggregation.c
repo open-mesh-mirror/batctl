@@ -55,7 +55,7 @@ static struct settings_data batctl_settings_aggregation = {
 	.netlink_set = set_aggregated_ogms,
 };
 
-COMMAND_NAMED(SUBCOMMAND, aggregation, "ag", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, aggregation, "ag", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_aggregation,
 	      "[0|1]             \tdisplay or modify aggregation setting");

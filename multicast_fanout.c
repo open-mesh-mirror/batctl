@@ -95,7 +95,7 @@ static struct settings_data batctl_settings_multicast_fanout = {
 	.netlink_set = set_multicast_fanout,
 };
 
-COMMAND_NAMED(SUBCOMMAND, multicast_fanout, "mo", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, multicast_fanout, "mo", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_multicast_fanout,
 	      "[fanout]        \tdisplay or modify multicast_fanout setting");

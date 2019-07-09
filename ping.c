@@ -323,5 +323,5 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND, ping, "p", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, ping, "p", COMMAND_FLAG_MESH_IFACE, NULL,
 	"<destination>     \tping another batman adv host via layer 2");

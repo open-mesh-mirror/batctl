@@ -55,7 +55,7 @@ static struct settings_data batctl_settings_network_coding = {
 	.netlink_set = set_network_coding,
 };
 
-COMMAND_NAMED(SUBCOMMAND, network_coding, "nc", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, network_coding, "nc", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_network_coding,
 	      "[0|1]             \tdisplay or modify network_coding setting");

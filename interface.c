@@ -541,5 +541,5 @@ err:
 	return EXIT_FAILURE;
 }
 
-COMMAND(SUBCOMMAND, interface, "if", 0, NULL,
+COMMAND(SUBCOMMAND_MIF, interface, "if", 0, NULL,
 	"[add|del iface(s)]\tdisplay or modify the interface settings");

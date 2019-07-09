@@ -55,7 +55,7 @@ static struct settings_data batctl_settings_bridge_loop_avoidance = {
 	.netlink_set = set_bridge_loop_avoidance,
 };
 
-COMMAND_NAMED(SUBCOMMAND, bridge_loop_avoidance, "bl", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, bridge_loop_avoidance, "bl", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_bridge_loop_avoidance,
 	      "[0|1]             \tdisplay or modify bridge_loop_avoidance setting");

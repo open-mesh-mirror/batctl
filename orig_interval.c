@@ -95,7 +95,7 @@ static struct settings_data batctl_settings_orig_interval = {
 	.netlink_set = set_orig_interval,
 };
 
-COMMAND_NAMED(SUBCOMMAND, orig_interval, "it", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, orig_interval, "it", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_orig_interval,
 	      "[interval]        \tdisplay or modify orig_interval setting");

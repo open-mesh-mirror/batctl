@@ -392,6 +392,6 @@ out:
 	return res;
 }
 
-COMMAND(SUBCOMMAND, gw_mode, "gw",
+COMMAND(SUBCOMMAND_MIF, gw_mode, "gw",
 	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"[mode]            \tdisplay or modify the gateway mode");

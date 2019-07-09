@@ -64,5 +64,5 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND, translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
 	"<destination>     \ttranslate a destination to the originator responsible for it");

@@ -54,7 +54,7 @@ static struct settings_data batctl_settings_bonding = {
 	.netlink_set = set_bonding,
 };
 
-COMMAND_NAMED(SUBCOMMAND, bonding, "b", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, bonding, "b", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_bonding,
 	      "[0|1]             \tdisplay or modify bonding setting");

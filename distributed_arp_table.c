@@ -55,7 +55,7 @@ static struct settings_data batctl_settings_distributed_arp_table = {
 	.netlink_set = set_distributed_arp_table,
 };
 
-COMMAND_NAMED(SUBCOMMAND, distributed_arp_table, "dat", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, distributed_arp_table, "dat", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_distributed_arp_table,
 	      "[0|1]             \tdisplay or modify distributed_arp_table setting");

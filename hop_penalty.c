@@ -95,7 +95,7 @@ static struct settings_data batctl_settings_hop_penalty = {
 	.netlink_set = set_hop_penalty,
 };
 
-COMMAND_NAMED(SUBCOMMAND, hop_penalty, "hp", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, hop_penalty, "hp", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_hop_penalty,
 	      "[penalty]         \tdisplay or modify hop_penalty setting");

@@ -75,7 +75,7 @@ static struct settings_data batctl_settings_multicast_forceflood = {
 	.netlink_set = set_multicast_forceflood,
 };
 
-COMMAND_NAMED(SUBCOMMAND, multicast_forceflood, "mff", handle_sys_setting,
+COMMAND_NAMED(SUBCOMMAND_MIF, multicast_forceflood, "mff", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK | COMMAND_FLAG_INVERSE,
 	      &batctl_settings_multicast_forceflood,
 	      "[0|1]             \tdisplay or modify multicast_forceflood setting");

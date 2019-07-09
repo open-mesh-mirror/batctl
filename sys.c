@@ -145,9 +145,13 @@ static void settings_usage(struct state *state)
 		"",
 		NULL,
 	};
+	const char *meshif_prefixes[] = {
+		"meshif <netdev> ",
+		NULL,
+	};
 	const char *vlan_prefixes[] = {
 		"vlan <vdev> ",
-		"vid <vid> ",
+		"meshif <netdev> vid <vid> ",
 		NULL,
 	};
 	const char *hardif_prefixes[] = {
@@ -159,6 +163,9 @@ static void settings_usage(struct state *state)
 	const char **prefix;
 
 	switch (state->cmd->type) {
+	case SUBCOMMAND_MIF:
+		prefixes = meshif_prefixes;
+		break;
 	case SUBCOMMAND_VID:
 		prefixes = vlan_prefixes;
 		break;
@@ -268,6 +275,7 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 
 	switch (state->selector) {
 	case SP_NONE_OR_MESHIF:
+	case SP_MESHIF:
 		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
 			 state->mesh_iface);
 		break;

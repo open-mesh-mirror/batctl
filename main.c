@@ -159,7 +159,7 @@ static const struct command *find_command_by_types(uint32_t types,
 
 static const struct command *find_command(struct state *state, const char *name)
 {
-	uint32_t types;
+	uint32_t types = 0;
 
 	switch (state->selector) {
 	case SP_NONE_OR_MESHIF:

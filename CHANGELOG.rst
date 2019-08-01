@@ -1,5 +1,15 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2019.3 (2019-08-01)
+===================
+
+* add tcpdump support for MCAST TVLV, unicast fragments and coded packets
+* implement support for multicast RTR flags
+* avoid some kernel deprecation warning by using more generic netlink over
+  sysfs
+* use type specific prefixes to select mesh interface or vlan instead of '-m'
+* add support for hardif specific settings
+
 2019.2 (2019-05-23)
 ===================
 

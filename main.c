@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 					"Error - multiple mesh interfaces specified\n");
 				goto err;
 			}
-			fprintf(stderr, "Warning - option -m was deprecated in will be removed in the future\n");
+			fprintf(stderr, "Warning - option -m was deprecated and will be removed in the future\n");
 
 			state.arg_iface = argv[2];
 			break;

@@ -1,5 +1,10 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2019.4 (2019-10-25)
+===================
+
+* fix deprecation warning for option '-m'
+
 2019.3 (2019-08-01)
 ===================
 

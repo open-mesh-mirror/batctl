@@ -465,6 +465,7 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		goto out;
 	}
 
+	ret = EXIT_FAILURE;
 	switch (result.return_value) {
 	case BATADV_TP_REASON_DST_UNREACHABLE:
 		fprintf(stderr, "Destination unreachable\n");

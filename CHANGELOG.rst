@@ -1,5 +1,12 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2020.1 (2020-04-24)
+===================
+
+* bugs squashed:
+
+  - Fix error code on throughputmeter errors
+
 2020.0 (2020-03-04)
 ===================
 

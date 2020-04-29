@@ -15,6 +15,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
+#include <endian.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <netinet/in.h>
@@ -1144,10 +1145,10 @@ static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, i
 			return -1;
 
 		radiotap_hdr = (struct radiotap_header*)packet_buff;
-		if (buff_len <= radiotap_hdr->it_len)
+		if (buff_len <= le16toh(radiotap_hdr->it_len))
 			return -1;
 		else
-			return radiotap_hdr->it_len;
+			return le16toh(radiotap_hdr->it_len);
 	}
 
 	return -1;

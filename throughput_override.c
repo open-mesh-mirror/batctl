@@ -66,7 +66,7 @@ static int print_throughput_override(struct nl_msg *msg, void *arg)
 	return NL_STOP;
 }
 
-static int get_attrs_elp_isolation(struct nl_msg *msg, void *arg)
+static int get_attrs_throughput_override(struct nl_msg *msg, void *arg)
 {
 	struct state *state = arg;
 
@@ -78,7 +78,8 @@ static int get_attrs_elp_isolation(struct nl_msg *msg, void *arg)
 static int get_throughput_override(struct state *state)
 {
 	return sys_simple_nlquery(state, BATADV_CMD_GET_HARDIF,
-				  get_attrs_elp_isolation, print_throughput_override);
+				  get_attrs_throughput_override,
+				  print_throughput_override);
 }
 
 static int set_attrs_throughput_override(struct nl_msg *msg, void *arg)

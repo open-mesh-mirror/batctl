@@ -562,7 +562,7 @@ Usage::
 
 Example::
 
-  $ batctl penalty
+  $ batctl hop_penalty
   30
 
 

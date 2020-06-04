@@ -109,6 +109,10 @@ disable fragmentation.
 If no parameter is given the current hop penalty setting is displayed. Otherwise the parameter is used to set the
 hop penalty. The penalty is can be 0-255 (255 sets originator message's TQ to zero when forwarded by this hop).
 .br
+.IP "[\fBhardif <hardif>\fP] \fBhop_penalty\fP|\fBhp\fP [\fBpenalty\fP]"
+If no parameter is given the current hop penalty setting of the hard interface is displayed. Otherwise the parameter is used to set the
+hop penalty. The penalty can be 0-255 (255 sets originator message's TQ to zero when forwarded over this interface).
+.br
 .IP "[\fBmeshif <netdev>\fP] \fBnetwork_coding\fP|\fBnc\fP [\fB0\fP|\fB1\fP]"
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.

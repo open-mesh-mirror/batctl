@@ -564,6 +564,11 @@ Example::
 
   $ batctl hop_penalty
   30
+  $ batctl hardif eth0 hop_penalty
+  0
+  $ batctl hardif eth0 hop_penalty 50
+  $ batctl hardif eth0 hop_penalty
+  50
 
 
 batctl isolation_mark

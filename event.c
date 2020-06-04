@@ -317,6 +317,10 @@ static void event_parse_set_hardif(struct nlattr **attrs)
 
 	printf("%s (%s): set hardif:\n", meshif_name, hardif_name);
 
+	if (attrs[BATADV_ATTR_HOP_PENALTY])
+		printf("* hop_penalty %u\n",
+		       nla_get_u8(attrs[BATADV_ATTR_HOP_PENALTY]));
+
 	if (attrs[BATADV_ATTR_ELP_INTERVAL])
 		printf("* elp_interval %u ms\n",
 		       nla_get_u32(attrs[BATADV_ATTR_ELP_INTERVAL]));

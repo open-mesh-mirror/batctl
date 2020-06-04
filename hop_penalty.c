@@ -70,6 +70,22 @@ static int get_hop_penalty(struct state *state)
 				  NULL, print_hop_penalty);
 }
 
+static int get_attrs_hop_penalty_if(struct nl_msg *msg, void *arg)
+{
+	struct state *state = arg;
+
+	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
+
+	return 0;
+}
+
+static int get_hop_penalty_if(struct state *state)
+{
+	return sys_simple_nlquery(state, BATADV_CMD_GET_HARDIF,
+				  get_attrs_hop_penalty_if,
+				  print_hop_penalty);
+}
+
 static int set_attrs_hop_penalty(struct nl_msg *msg, void *arg)
 {
 	struct state *state = arg;
@@ -87,6 +103,24 @@ static int set_hop_penalty(struct state *state)
 				  set_attrs_hop_penalty, NULL);
 }
 
+static int set_attrs_hop_penalty_if(struct nl_msg *msg, void *arg)
+{
+	struct state *state = arg;
+	struct settings_data *settings = state->cmd->arg;
+	struct hop_penalty_data *data = settings->data;
+
+	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
+	nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY, data->hop_penalty);
+
+	return 0;
+}
+
+static int set_hop_penalty_if(struct state *state)
+{
+	return sys_simple_nlquery(state, BATADV_CMD_SET_HARDIF,
+				  set_attrs_hop_penalty_if, NULL);
+}
+
 static struct settings_data batctl_settings_hop_penalty = {
 	.sysfs_name = "hop_penalty",
 	.data = &hop_penalty,
@@ -95,7 +129,20 @@ static struct settings_data batctl_settings_hop_penalty = {
 	.netlink_set = set_hop_penalty,
 };
 
+static struct settings_data batctl_settings_hop_penalty_if = {
+	.sysfs_name = NULL,
+	.data = &hop_penalty,
+	.parse = parse_hop_penalty,
+	.netlink_get = get_hop_penalty_if,
+	.netlink_set = set_hop_penalty_if,
+};
+
 COMMAND_NAMED(SUBCOMMAND_MIF, hop_penalty, "hp", handle_sys_setting,
 	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
 	      &batctl_settings_hop_penalty,
+	      "[penalty]         \tdisplay or modify hop_penalty setting");
+
+COMMAND_NAMED(SUBCOMMAND_HIF, hop_penalty, "hp", handle_sys_setting,
+	      COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK,
+	      &batctl_settings_hop_penalty_if,
 	      "[penalty]         \tdisplay or modify hop_penalty setting");

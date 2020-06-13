@@ -31,7 +31,7 @@ static void interface_usage(void)
 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
 	fprintf(stderr, "       batctl [options] interface [parameters] [create|destroy]\n");
 	fprintf(stderr, "parameters:\n");
-	fprintf(stderr, " \t -M disable automatic creation/removal of batman-adv interface\n");
+	fprintf(stderr, " \t -M disable automatic creation of batman-adv interface\n");
 	fprintf(stderr, " \t -h print this help\n");
 }
 
@@ -535,7 +535,8 @@ static int interface(struct state *state, int argc, char **argv)
 	if (!manual_mode && rest_argv[0][0] == 'd') {
 		cnt = count_interfaces(state->mesh_iface);
 		if (cnt == 0 && pre_cnt > 0)
-			destroy_interface(state->mesh_iface);
+			fprintf(stderr, "Warning: %s has no interfaces and can be destroyed with: batctl meshif %s interface destroy\n",
+				state->mesh_iface, state->mesh_iface);
 	}
 
 	return EXIT_SUCCESS;

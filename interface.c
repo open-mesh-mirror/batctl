@@ -386,6 +386,7 @@ static int interface(struct state *state, int argc, char **argv)
 	int ret;
 	unsigned int ifindex;
 	unsigned int ifmaster;
+	unsigned int pre_cnt;
 	const char *long_op;
 	unsigned int cnt;
 	int rest_argc;
@@ -502,6 +503,8 @@ static int interface(struct state *state, int argc, char **argv)
 		goto err;
 	}
 
+	pre_cnt = count_interfaces(state->mesh_iface);
+
 	for (i = 1; i < rest_argc; i++) {
 		ifindex = if_nametoindex(rest_argv[i]);
 
@@ -531,7 +534,7 @@ static int interface(struct state *state, int argc, char **argv)
 	/* check if there is no interface left and then destroy mesh_iface */
 	if (!manual_mode && rest_argv[0][0] == 'd') {
 		cnt = count_interfaces(state->mesh_iface);
-		if (cnt == 0)
+		if (cnt == 0 && pre_cnt > 0)
 			destroy_interface(state->mesh_iface);
 	}
 

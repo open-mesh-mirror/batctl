@@ -17,7 +17,7 @@
 #include <netlink/netlink.h>
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2020.2"
+#define SOURCE_VERSION "2020.3"
 #endif
 
 #define EXIT_NOSUCCESS 2

@@ -1,5 +1,14 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2020.2 (2020-07-06)
+===================
+
+* coding style cleanups and refactoring
+* drop support for automatic destruction of empty meshifs
+* bugs squashed:
+
+  - Fix parsing of radiotap headers on big endian systems
+
 2020.1 (2020-04-24)
 ===================
 

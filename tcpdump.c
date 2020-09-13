@@ -589,13 +589,15 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			break;
 		case ICMP6_ECHO_REQUEST:
 			printf(" echo request, id: %d, seq: %d, length: %hu\n",
-			       icmphdr->icmp6_id, icmphdr->icmp6_seq,
-			       iphdr->ip6_plen);
+			       ntohs(icmphdr->icmp6_id),
+			       ntohs(icmphdr->icmp6_seq),
+			       ntohs(iphdr->ip6_plen));
 			break;
 		case ICMP6_ECHO_REPLY:
 			printf(" echo reply, id: %d, seq: %d, length: %hu\n",
-			       icmphdr->icmp6_id, icmphdr->icmp6_seq,
-			       iphdr->ip6_plen);
+			       ntohs(icmphdr->icmp6_id),
+			       ntohs(icmphdr->icmp6_seq),
+			       ntohs(iphdr->ip6_plen));
 			break;
 		case ICMP6_TIME_EXCEEDED:
 			printf(" time exceeded in-transit, length %zu\n",

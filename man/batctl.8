@@ -60,9 +60,11 @@ In order to add or delete interfaces specify "add" or "del" as first argument an
 add or delete. Multiple interfaces can be specified.
 The "\-M" option tells batctl to not automatically create the batman-adv interface on "add". It can also be used to
 suppress the warning about the manual destruction when "del" removed all interfaces which belonged to it.
-.IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP [\fBcreate\fP|\fBdestroy\fP]"
-A batman-adv interface without attached interfaces can be created using "create". The parameter "destroy" can be used to
-free all attached interfaces and remove batman-adv interface.
+.IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP \fBcreate\fP [\fBrouting_algo|ra RA_NAME\fP]"
+A batman-adv interface without attached interfaces can be created using "create". The parameter routing_algo
+can be used to overwrite the (default) routing algorithm.
+.IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP \fBdestroy\fP"
+Remove all attached interfaces and destroy the batman-adv interface.
 .br
 .IP "[\fBmeshif <netdev>\fP] \fBorig_interval\fP|\fBit\fP [\fBinterval\fP]"
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the

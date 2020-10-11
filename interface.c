@@ -29,7 +29,8 @@
 static void interface_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
-	fprintf(stderr, "       batctl [options] interface [parameters] [create|destroy]\n");
+	fprintf(stderr, "       batctl [options] interface [parameters] create [routing_algo|ra RA_NAME]\n");
+	fprintf(stderr, "       batctl [options] interface [parameters] destroy\n");
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -M disable automatic creation of batman-adv interface\n");
 	fprintf(stderr, " \t -h print this help\n");
@@ -256,12 +257,47 @@ static unsigned int count_interfaces(char *mesh_iface)
 	return count_arg.count;
 }
 
-static int create_interface(const char *mesh_iface)
+struct interface_create_params {
+	const char *routing_algo;
+};
+
+static int
+interface_parse_create_params(int argc, char **argv,
+			      struct interface_create_params *create_params)
+{
+	int pos = 1;
+
+	while (pos < argc) {
+		if (strcmp(argv[pos], "routing_algo") == 0 ||
+		    strcmp(argv[pos], "ra") == 0) {
+			pos++;
+			if (pos >= argc) {
+				fprintf(stderr,
+					"Error - missing parameter for 'routing_algo'\n");
+				return -EINVAL;
+			}
+
+			create_params->routing_algo = argv[pos];
+			pos++;
+		} else {
+			fprintf(stderr,
+				"Error - unknown parameter '%s'\n",
+				argv[pos]);
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
+static int create_interface(const char *mesh_iface,
+			    const struct interface_create_params *create_param)
 {
 	struct ifinfomsg rt_hdr = {
 		.ifi_family = IFLA_UNSPEC,
 	};
 	struct nlattr *linkinfo;
+	struct nlattr *linkdata;
 	struct nl_msg *msg;
 	int err = 0;
 	int ret;
@@ -296,6 +332,22 @@ static int create_interface(const char *mesh_iface)
 		goto err_free_msg;
 	}
 
+	linkdata = nla_nest_start(msg, IFLA_INFO_DATA);
+	if (!linkdata) {
+		err = -ENOMEM;
+		goto err_free_msg;
+	}
+
+	if (create_param->routing_algo) {
+		ret = nla_put_string(msg, IFLA_BATADV_ALGO_NAME,
+				     create_param->routing_algo);
+		if (ret < 0) {
+			err = -ENOMEM;
+			goto err_free_msg;
+		}
+	}
+
+	nla_nest_end(msg, linkdata);
 	nla_nest_end(msg, linkinfo);
 
 	err = netlink_simple_request(msg);
@@ -382,6 +434,7 @@ err_free_msg:
 
 static int interface(struct state *state, int argc, char **argv)
 {
+	struct interface_create_params create_params = {};
 	int i, optchar;
 	int ret;
 	unsigned int ifindex;
@@ -438,7 +491,6 @@ static int interface(struct state *state, int argc, char **argv)
 			goto err;
 		}
 		break;
-	case 'c':
 	case 'D':
 		if (rest_argc != 1) {
 			fprintf(stderr,
@@ -448,13 +500,20 @@ static int interface(struct state *state, int argc, char **argv)
 			goto err;
 		}
 		break;
+	case 'c':
+		ret = interface_parse_create_params(rest_argc, rest_argv,
+						    &create_params);
+		if (ret) {
+			interface_usage();
+			goto err;
+		}
 	default:
 		break;
 	}
 
 	switch (rest_argv[0][0]) {
 	case 'c':
-		ret = create_interface(state->mesh_iface);
+		ret = create_interface(state->mesh_iface, &create_params);
 		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to add create batman-adv interface: %s\n",
@@ -478,7 +537,7 @@ static int interface(struct state *state, int argc, char **argv)
 	/* get index of batman-adv interface - or try to create it */
 	ifmaster = if_nametoindex(state->mesh_iface);
 	if (!manual_mode && !ifmaster && rest_argv[0][0] == 'a') {
-		ret = create_interface(state->mesh_iface);
+		ret = create_interface(state->mesh_iface, &create_params);
 		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to create batman-adv interface: %s\n",

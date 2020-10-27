@@ -1,5 +1,12 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2020.4 (2020-10-27)
+===================
+
+* bugs squashed:
+
+   - Fix endianness in ICMPv6 Echo Request/Reply parsing
+
 2020.3 (2020-08-24)
 ===================
 

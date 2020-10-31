@@ -107,8 +107,6 @@ static int netlink_print_bla_claim(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_claimtable = {
-	.debugfs_name = DEBUG_CLAIMTABLE,
-	.header_lines = 2,
 	.netlink_fn = netlink_print_bla_claim,
 };
 

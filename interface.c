@@ -169,8 +169,7 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	if (!status) {
 		snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT,
 			 ifname);
-		ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS,
-				0, 0, 0);
+		ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
 		if (ret != EXIT_SUCCESS)
 			status = "<error reading status>\n";
 		else

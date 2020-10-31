@@ -136,8 +136,6 @@ static int netlink_print_transglobal(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_transglobal = {
-	.debugfs_name = "transtable_global",
-	.header_lines = 2,
 	.netlink_fn = netlink_print_transglobal,
 	.option_unicast_only = 1,
 	.option_multicast_only = 1,

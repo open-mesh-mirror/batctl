@@ -28,7 +28,6 @@
 
 #include "batadv_packet.h"
 #include "debug.h"
-#include "debugfs.h"
 #include "functions.h"
 #include "list.h"
 #include "netlink.h"

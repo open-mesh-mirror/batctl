@@ -32,7 +32,6 @@
 #include "functions.h"
 #include "genl.h"
 #include "netlink.h"
-#include "debugfs.h"
 
 static struct ether_addr *dst_mac;
 static char *tp_mesh_iface;

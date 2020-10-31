@@ -13,7 +13,6 @@ export CONFIG_BATCTL_BISECT=n
 BINARY_NAME = batctl
 
 obj-y += bat-hosts.o
-obj-y += debugfs.o
 obj-y += debug.o
 obj-y += functions.o
 obj-y += genl.o
@@ -58,7 +57,6 @@ $(eval $(call add_command,mcast_flags,y))
 $(eval $(call add_command,multicast_fanout,y))
 $(eval $(call add_command,multicast_forceflood,y))
 $(eval $(call add_command,multicast_mode,y))
-$(eval $(call add_command,nc_nodes,y))
 $(eval $(call add_command,neighbors,y))
 $(eval $(call add_command,network_coding,y))
 $(eval $(call add_command,orig_interval,y))

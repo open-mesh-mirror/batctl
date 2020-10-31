@@ -145,8 +145,6 @@ static int netlink_print_gateways(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_gateways = {
-	.debugfs_name = "gateways",
-	.header_lines = 1,
 	.netlink_fn = netlink_print_gateways,
 };
 

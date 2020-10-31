@@ -43,8 +43,7 @@ char *ether_ntoa_long(const struct ether_addr *addr);
 char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
 int file_exists(const char *fpath);
-int read_file(const char *dir, const char *path, int read_opt,
-	      float orig_timeout, float watch_interval, size_t header_lines);
+int read_file(const char *dir, const char *path, int read_opt);
 int write_file(const char *dir, const char *fname, const char *arg1,
 	       const char *arg2);
 struct ether_addr *translate_mac(const char *mesh_iface,

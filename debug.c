@@ -13,7 +13,6 @@
 #include <errno.h>
 
 #include "debug.h"
-#include "debugfs.h"
 #include "functions.h"
 #include "netlink.h"
 #include "sys.h"
@@ -47,8 +46,6 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 {
 	struct debug_table_data *debug_table = state->cmd->arg;
 	int optchar, read_opt = USE_BAT_HOSTS;
-	char full_path[MAX_PATH+1];
-	char *debugfs_mnt;
 	char *orig_iface = NULL;
 	float orig_timeout = 0.0f;
 	float watch_interval = 1;
@@ -147,25 +144,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt) {
-		fprintf(stderr, "Error - can't mount or find debugfs\n");
-		return EXIT_FAILURE;
-	}
-
-	if (debug_table->netlink_fn) {
-		err = debug_table->netlink_fn(state , orig_iface, read_opt,
-					      orig_timeout, watch_interval);
-		if (err != -EOPNOTSUPP)
-			return err;
-	}
-
-	if (orig_iface)
-		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface, full_path, sizeof(full_path));
-	else
-		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", state->mesh_iface, full_path, sizeof(full_path));
-
-	return read_file(full_path, debug_table->debugfs_name,
-			 read_opt, orig_timeout, watch_interval,
-			 debug_table->header_lines);
+	err = debug_table->netlink_fn(state , orig_iface, read_opt,
+				      orig_timeout, watch_interval);
+	return err;
 }

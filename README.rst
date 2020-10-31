@@ -18,11 +18,11 @@ settings.
 How does it work ?
 ==================
 
-batctl uses the debugfs/batman_adv/bat0/socket device provided by the B.A.T.M.A.N.
-advanced kernel module to inject custom icmp packets into the data flow. That's why
-ping and traceroute work almost like their IP based counterparts. Tcpdump was
-designed because B.A.T.M.A.N. advanced encapsulates all traffic within batman
-packets, so that the normal tcpdump would not recognize the packets.
+batctl uses the raw packet sockets to inject custom icmp packets into the data
+flow. That's why ping and traceroute work almost like their IP based
+counterparts. Tcpdump was designed because B.A.T.M.A.N. advanced encapsulates
+all traffic within batman packets, so that the normal tcpdump would not
+recognize the packets.
 
 
 The bat-hosts file

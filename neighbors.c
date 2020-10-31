@@ -118,8 +118,6 @@ static int netlink_print_neighbors(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_neighbors = {
-	.debugfs_name = "neighbors",
-	.header_lines = 2,
 	.netlink_fn = netlink_print_neighbors,
 };
 

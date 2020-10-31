@@ -96,7 +96,7 @@ static int log_level_read_setting(struct state *state, const char *path_buff)
 	if (res >= 0)
 		return EXIT_SUCCESS;
 
-	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF, 0, 0, 0);
+	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)
 		return res;
 

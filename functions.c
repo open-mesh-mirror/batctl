@@ -43,7 +43,6 @@
 #include "bat-hosts.h"
 #include "sys.h"
 #include "debug.h"
-#include "debugfs.h"
 #include "netlink.h"
 
 #define PATH_BUFF_LEN 400
@@ -140,14 +139,6 @@ static void file_open_problem_dbg(const char *dir, const char *full_path)
 	fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");
 }
 
-static int str_is_mcast_addr(char *addr)
-{
-	struct ether_addr *mac_addr = ether_aton(addr);
-
-	return !mac_addr ? 0 :
-		mac_addr->ether_addr_octet[0] & 0x01;
-}
-
 static bool ether_addr_valid(const uint8_t *addr)
 {
 	/* no multicast address */
@@ -171,66 +162,27 @@ static void print_inv_bool(char *line)
 		printf("%s", line);
 }
 
-int read_file(const char *dir, const char *fname, int read_opt,
-	      float orig_timeout, float watch_interval, size_t header_lines)
+int read_file(const char *dir, const char *fname, int read_opt)
 {
-	struct ether_addr *mac_addr;
-	struct bat_host *bat_host;
 	int res = EXIT_FAILURE;
-	float last_seen;
-	char full_path[500], *buff_ptr, *space_ptr, extra_char;
+	char full_path[500];
 	size_t len = 0;
 	FILE *fp = NULL;
-	size_t line;
-
-	if (read_opt & USE_BAT_HOSTS)
-		bat_hosts_init(read_opt);
 
 	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
 
-open:
-	line = 0;
 	fp = fopen(full_path, "r");
-
 	if (!fp) {
 		if (!(read_opt & SILENCE_ERRORS))
 			file_open_problem_dbg(dir, full_path);
 
-		goto out;
+		return res;
 	}
 
-	if (read_opt & CLR_CONT_READ)
-		/* clear screen, set cursor back to 0,0 */
-		printf("\033[2J\033[0;0f");
-
-read:
 	while (getline(&line_ptr, &len, fp) != -1) {
-		if (line++ < header_lines && read_opt & SKIP_HEADER)
-			continue;
-
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
-
-		/* skip timed out originators */
-		if (read_opt & NO_OLD_ORIGS)
-			if (sscanf(line_ptr, "%*s %f", &last_seen)
-			    && (last_seen > orig_timeout))
-				continue;
-
-		/* translation table: skip multicast */
-		if (line > header_lines &&
-		    read_opt & UNICAST_ONLY &&
-		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
-		    str_is_mcast_addr(line_ptr+3))
-			continue;
-
-		/* translation table: skip unicast */
-		if (line > header_lines &&
-		    read_opt & MULTICAST_ONLY &&
-		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
-		    !str_is_mcast_addr(line_ptr+3))
-			continue;
 
 		if (!(read_opt & USE_BAT_HOSTS)) {
 			if (read_opt & INVERSE_BOOL)
@@ -241,81 +193,13 @@ read:
 			continue;
 		}
 
-		/* replace mac addresses with bat host names */
-		buff_ptr = line_ptr;
-
-		while ((space_ptr = strchr(buff_ptr, ' ')) != NULL) {
-
-			*space_ptr = '\0';
-			extra_char = '\0';
-
-			if (strlen(buff_ptr) == ETH_STR_LEN + 1) {
-				extra_char = buff_ptr[ETH_STR_LEN];
-				switch (extra_char) {
-				case ',':
-				case ')':
-					buff_ptr[ETH_STR_LEN] = '\0';
-					break;
-				default:
-					extra_char = '\0';
-					break;
-				}
-			}
-
-			if (strlen(buff_ptr) != ETH_STR_LEN)
-				goto print_plain_buff;
-
-			mac_addr = ether_aton(buff_ptr);
-
-			if (!mac_addr)
-				goto print_plain_buff;
-
-			bat_host = bat_hosts_find_by_mac((char *)mac_addr);
-
-			if (!bat_host)
-				goto print_plain_buff;
-
-			/* keep table format */
-			printf("%17s", bat_host->name);
-
-			goto written;
-
-print_plain_buff:
-			printf("%s", buff_ptr);
-
-written:
-			if (extra_char != '\0')
-				printf("%c", extra_char);
-
-			printf(" ");
-			buff_ptr = space_ptr + 1;
-		}
-
-		printf("%s", buff_ptr);
-	}
-
-	if (read_opt & CONT_READ) {
-		usleep(1000000 * watch_interval);
-		goto read;
-	}
-
-	if (read_opt & CLR_CONT_READ) {
-		if (fp)
-			fclose(fp);
-		usleep(1000000 * watch_interval);
-		goto open;
+		printf("%s", line_ptr);
 	}
 
 	if (line_ptr)
 		res = EXIT_SUCCESS;
 
-out:
-	if (fp)
-		fclose(fp);
-
-	if (read_opt & USE_BAT_HOSTS)
-		bat_hosts_free();
-
+	fclose(fp);
 	return res;
 }
 
@@ -391,7 +275,7 @@ int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len)
 	}
 
 	snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, mesh_iface);
-	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
 	if (ret != EXIT_SUCCESS) {
 		ret = -ENOENT;
 		goto free_path_buf;
@@ -1129,7 +1013,7 @@ static int check_mesh_iface_ownership_sysfs(struct state *state,
 
 	/* check if this device actually belongs to the mesh interface */
 	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
 	if (res != EXIT_SUCCESS) {
 		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
 			path_buff, strerror(errno));

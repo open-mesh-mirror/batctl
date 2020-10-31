@@ -102,8 +102,6 @@ static int netlink_print_bla_backbone(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_backbonetable = {
-	.debugfs_name = DEBUG_BACKBONETABLE,
-	.header_lines = 2,
 	.netlink_fn = netlink_print_bla_backbone,
 };
 

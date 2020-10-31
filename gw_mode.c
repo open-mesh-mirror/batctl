@@ -266,7 +266,7 @@ static int gw_read_setting(struct state *state, const char *path_buff)
 		return EXIT_SUCCESS;
 
 	/* fallback to sysfs */
-	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
+	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)
 		goto out;
 
@@ -285,10 +285,10 @@ static int gw_read_setting(struct state *state, const char *path_buff)
 
 	switch (gw_mode) {
 	case BATADV_GW_MODE_CLIENT:
-		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF, 0, 0, 0);
+		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF);
 		break;
 	case BATADV_GW_MODE_SERVER:
-		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF, 0, 0, 0);
+		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF);
 		break;
 	default:
 		printf("off\n");

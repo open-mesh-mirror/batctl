@@ -123,8 +123,6 @@ static int netlink_print_dat_cache(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_dat_cache = {
-	.debugfs_name = DEBUG_DAT_CACHE,
-	.header_lines = 2,
 	.netlink_fn = netlink_print_dat_cache,
 };
 

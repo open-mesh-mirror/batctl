@@ -196,8 +196,6 @@ static int netlink_print_originators(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_originators = {
-	.debugfs_name = "originators",
-	.header_lines = 2,
 	.netlink_fn = netlink_print_originators,
 	.option_timeout_interval = 1,
 	.option_orig_iface = 1,

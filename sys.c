@@ -208,7 +208,7 @@ static int sys_read_setting(struct state *state, const char *path_buff,
 		if (state->cmd->flags & COMMAND_FLAG_INVERSE)
 			read_opt |= INVERSE_BOOL;
 
-		res = read_file(path_buff, sysfs_name, read_opt, 0, 0, 0);
+		res = read_file(path_buff, sysfs_name, read_opt);
 	}
 
 	return res;

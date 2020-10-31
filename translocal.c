@@ -132,8 +132,6 @@ static int netlink_print_translocal(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_translocal = {
-	.debugfs_name = "transtable_local",
-	.header_lines = 2,
 	.netlink_fn = netlink_print_translocal,
 	.option_unicast_only = 1,
 	.option_multicast_only = 1,

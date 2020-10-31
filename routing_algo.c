@@ -19,7 +19,6 @@
 #include "batadv_packet.h"
 #include "batman_adv.h"
 #include "debug.h"
-#include "debugfs.h"
 #include "functions.h"
 #include "main.h"
 #include "netlink.h"
@@ -133,28 +132,11 @@ err_free_sock:
 	return last_err;
 }
 
-static int debug_print_routing_algos(void)
-{
-	char full_path[MAX_PATH+1];
-	char *debugfs_mnt;
-
-	debugfs_mnt = debugfs_mount(NULL);
-	if (!debugfs_mnt) {
-		fprintf(stderr, "Error - can't mount or find debugfs\n");
-		return -1;
-	}
-
-	debugfs_make_path(DEBUG_BATIF_PATH_FMT, "", full_path, sizeof(full_path));
-	return read_file(full_path, DEBUG_ROUTING_ALGOS, 0, 0, 0, 0);
-}
-
 static int print_routing_algos(void)
 {
 	int err;
 
 	err = netlink_print_routing_algos();
-	if (err == -EOPNOTSUPP)
-		err = debug_print_routing_algos();
 	return err;
 }
 
@@ -303,7 +285,7 @@ static int routing_algo(struct state *state __maybe_unused, int argc, char **arg
 
 	print_ra_interfaces();
 
-	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF, 0, 0, 0);
+	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)
 		return EXIT_FAILURE;
 

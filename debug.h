@@ -12,18 +12,7 @@
 #include <stddef.h>
 #include "main.h"
 
-#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
-#define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
-#define DEBUG_BACKBONETABLE "bla_backbone_table"
-#define DEBUG_CLAIMTABLE "bla_claim_table"
-#define DEBUG_DAT_CACHE "dat_cache"
-#define DEBUG_NC_NODES "nc_nodes"
-#define DEBUG_MCAST_FLAGS "mcast_flags"
-#define DEBUG_ROUTING_ALGOS "routing_algos"
-
 struct debug_table_data {
-	const char *debugfs_name;
-	size_t header_lines;
 	int (*netlink_fn)(struct state *state, char *hard_iface, int read_opt,
 			 float orig_timeout, float watch_interval);
 	unsigned int option_unicast_only:1;

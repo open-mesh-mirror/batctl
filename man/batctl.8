@@ -243,9 +243,7 @@ Example 3: 16 or 0x0F
 .I \fBdebug tables:
 .IP
 The batman-adv kernel module comes with a variety of debug tables containing various information about the state of the mesh
-seen by each individual node. These tables are exported via debugfs and easily accessible via batctl. You will need debugfs
-support compiled into your kernel and preferably have mounted the debugfs to a well-known mountpoint. If debugfs is not
-mounted batctl will attempt to do this step for you.
+seen by each individual node.
 
 All of the debug tables support the following options:
 .RS 10
@@ -290,9 +288,6 @@ List of debug tables:
 .RE
 .RS 10
 \- dat_cache|dc (compile time option)
-.RE
-.RS 10
-\- nc_nodes|nn (compile time option)
 .RE
 .RS 10
 \- mcast_flags|mf (compile time option)

@@ -154,8 +154,6 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
 }
 
 static struct debug_table_data batctl_debug_table_mcast_flags = {
-	.debugfs_name = DEBUG_MCAST_FLAGS,
-	.header_lines = 6,
 	.netlink_fn = netlink_print_mcast_flags,
 };
 

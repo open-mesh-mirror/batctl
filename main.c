@@ -123,7 +123,7 @@ static void version(void)
 
 	printf("batctl %s [batman-adv: ", SOURCE_VERSION);
 
-	ret = read_file("", module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
+	ret = read_file(module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
 	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
 		line_ptr[strlen(line_ptr) - 1] = '\0';
 
@@ -397,10 +397,7 @@ int main(int argc, char **argv)
 
 	if (cmd->flags & COMMAND_FLAG_NETLINK) {
 		ret = netlink_create(&state);
-		if (ret < 0 && ret != -EOPNOTSUPP) {
-			/* TODO handle -EOPNOTSUPP as error when fallbacks were
-			 * removed
-			 */
+		if (ret < 0) {
 			fprintf(stderr,
 				"Error - failed to connect to batadv\n");
 			exit(EXIT_FAILURE);

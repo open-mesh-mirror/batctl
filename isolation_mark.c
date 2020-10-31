@@ -127,7 +127,6 @@ static int set_isolation_mark(struct state *state)
 }
 
 static struct settings_data batctl_settings_isolation_mark = {
-	.sysfs_name = "isolation_mark",
 	.data = &isolation_mark,
 	.parse = parse_isolation_mark,
 	.netlink_get = get_isolation_mark,

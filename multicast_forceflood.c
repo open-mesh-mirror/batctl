@@ -68,7 +68,6 @@ static int set_multicast_forceflood(struct state *state)
 }
 
 static struct settings_data batctl_settings_multicast_forceflood = {
-	.sysfs_name = "multicast_mode",
 	.data = &multicast_forceflood,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_multicast_forceflood,

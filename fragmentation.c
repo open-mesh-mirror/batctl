@@ -48,7 +48,6 @@ static int set_fragmentation(struct state *state)
 }
 
 static struct settings_data batctl_settings_fragmentation = {
-	.sysfs_name = "fragmentation",
 	.data = &fragmentation,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_fragmentation,

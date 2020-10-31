@@ -88,7 +88,6 @@ static int set_multicast_fanout(struct state *state)
 }
 
 static struct settings_data batctl_settings_multicast_fanout = {
-	.sysfs_name = NULL,
 	.data = &multicast_fanout,
 	.parse = parse_multicast_fanout,
 	.netlink_get = get_multicast_fanout,

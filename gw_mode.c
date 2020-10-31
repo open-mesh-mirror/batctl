@@ -254,105 +254,31 @@ static int set_gw(struct state *state)
 				  NULL);
 }
 
-static int gw_read_setting(struct state *state, const char *path_buff)
+static int gw_read_setting(struct state *state)
 {
-	enum batadv_gw_modes gw_mode;
 	int res;
 
 	res = get_gw(state);
-	if (res < 0 && res != -EOPNOTSUPP)
+	if (res < 0)
 		return EXIT_FAILURE;
-	if (res >= 0)
-		return EXIT_SUCCESS;
-
-	/* fallback to sysfs */
-	res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF);
-	if (res != EXIT_SUCCESS)
-		goto out;
-
-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-		line_ptr[strlen(line_ptr) - 1] = '\0';
-
-	if (strcmp(line_ptr, "client") == 0)
-		gw_mode = BATADV_GW_MODE_CLIENT;
-	else if (strcmp(line_ptr, "server") == 0)
-		gw_mode = BATADV_GW_MODE_SERVER;
 	else
-		gw_mode = BATADV_GW_MODE_OFF;
-
-	free(line_ptr);
-	line_ptr = NULL;
-
-	switch (gw_mode) {
-	case BATADV_GW_MODE_CLIENT:
-		res = read_file(path_buff, SYS_GW_SEL, USE_READ_BUFF);
-		break;
-	case BATADV_GW_MODE_SERVER:
-		res = read_file(path_buff, SYS_GW_BW, USE_READ_BUFF);
-		break;
-	default:
-		printf("off\n");
-		goto out;
-	}
-
-	if (res != EXIT_SUCCESS)
-		goto out;
-
-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-		line_ptr[strlen(line_ptr) - 1] = '\0';
-
-	switch (gw_mode) {
-	case BATADV_GW_MODE_CLIENT:
-		printf("client (selection class: %s)\n", line_ptr);
-		break;
-	case BATADV_GW_MODE_SERVER:
-		printf("server (announced bw: %s)\n", line_ptr);
-		break;
-	default:
-		goto out;
-	}
-
-out:
-	free(line_ptr);
-	line_ptr = NULL;
-
-	return res;
+		return EXIT_SUCCESS;
 }
 
-static int gw_write_setting(struct state *state, const char *path_buff,
-			    int argc, char *argv[])
+static int gw_write_setting(struct state *state)
 {
 	int res = EXIT_FAILURE;
 
 	res = set_gw(state);
-	if (res < 0 && res != -EOPNOTSUPP)
+	if (res < 0)
 		return EXIT_FAILURE;
-	if (res >= 0)
+	else
 		return EXIT_SUCCESS;
-
-	/* sysfs fallback */
-	res = write_file(path_buff, SYS_GW_MODE, argv[1], NULL);
-	if (res != EXIT_SUCCESS)
-		return res;
-
-	if (argc > 2) {
-		switch (gw_globals.mode) {
-		case BATADV_GW_MODE_CLIENT:
-			res = write_file(path_buff, SYS_GW_SEL, argv[2], NULL);
-			break;
-		case BATADV_GW_MODE_SERVER:
-			res = write_file(path_buff, SYS_GW_BW, argv[2], NULL);
-			break;
-		}
-	}
-
-	return res;
 }
 
 static int gw_mode(struct state *state, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
-	char *path_buff;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -365,31 +291,16 @@ static int gw_mode(struct state *state, int argc, char **argv)
 		}
 	}
 
-	path_buff = malloc(PATH_BUFF_LEN);
-	if (!path_buff) {
-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-		return EXIT_FAILURE;
-	}
-
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
-
-	if (argc == 1) {
-		res = gw_read_setting(state, path_buff);
-		goto out;
-	}
+	if (argc == 1)
+		return gw_read_setting(state);
 
 	check_root_or_die("batctl gw_mode");
 
 	res = parse_gw(state, argc, argv);
-	if (res < 0) {
-		res = EXIT_FAILURE;
-		goto out;
-	}
+	if (res < 0)
+		return EXIT_FAILURE;
 
-	res = gw_write_setting(state, path_buff, argc, argv);
-out:
-	free(path_buff);
-	return res;
+	return gw_write_setting(state);
 }
 
 COMMAND(SUBCOMMAND_MIF, gw_mode, "gw",

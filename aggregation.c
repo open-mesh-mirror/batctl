@@ -48,7 +48,6 @@ static int set_aggregated_ogms(struct state *state)
 }
 
 static struct settings_data batctl_settings_aggregation = {
-	.sysfs_name = "aggregated_ogms",
 	.data = &aggregated_ogms,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_aggregated_ogms,

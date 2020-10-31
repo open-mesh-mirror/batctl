@@ -48,7 +48,6 @@ static int set_bridge_loop_avoidance(struct state *state)
 }
 
 static struct settings_data batctl_settings_bridge_loop_avoidance = {
-	.sysfs_name = "bridge_loop_avoidance",
 	.data = &bridge_loop_avoidance,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_bridge_loop_avoidance,

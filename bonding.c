@@ -47,7 +47,6 @@ static int set_bonding(struct state *state)
 }
 
 static struct settings_data batctl_settings_bonding = {
-	.sysfs_name = "bonding",
 	.data = &bonding,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_bonding,

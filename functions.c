@@ -117,18 +117,8 @@ int file_exists(const char *fpath)
 	return stat(fpath, &st) == 0;
 }
 
-static void file_open_problem_dbg(const char *dir, const char *full_path)
+static void file_open_problem_dbg(const char *full_path)
 {
-	struct stat st;
-
-	if (strstr(dir, "/sys/")) {
-		if (stat("/sys/", &st) != 0) {
-			fprintf(stderr, "Error - the folder '/sys/' was not found on the system\n");
-			fprintf(stderr, "Please make sure that the sys filesystem is properly mounted\n");
-			return;
-		}
-	}
-
 	if (!file_exists(module_ver_path)) {
 		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
 		return;
@@ -152,29 +142,16 @@ static bool ether_addr_valid(const uint8_t *addr)
 	return true;
 }
 
-static void print_inv_bool(char *line)
-{
-	if (!strncmp("enabled", line, strlen("enabled")))
-		printf("disabled\n");
-	else if (!strncmp("disabled", line, strlen("disabled")))
-		printf("enabled\n");
-	else
-		printf("%s", line);
-}
-
-int read_file(const char *dir, const char *fname, int read_opt)
+int read_file(const char *full_path, int read_opt)
 {
 	int res = EXIT_FAILURE;
-	char full_path[500];
 	size_t len = 0;
 	FILE *fp = NULL;
-
-	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
 
 	fp = fopen(full_path, "r");
 	if (!fp) {
 		if (!(read_opt & SILENCE_ERRORS))
-			file_open_problem_dbg(dir, full_path);
+			file_open_problem_dbg(full_path);
 
 		return res;
 	}
@@ -184,15 +161,6 @@ int read_file(const char *dir, const char *fname, int read_opt)
 		if (read_opt & USE_READ_BUFF)
 			break;
 
-		if (!(read_opt & USE_BAT_HOSTS)) {
-			if (read_opt & INVERSE_BOOL)
-				print_inv_bool(line_ptr);
-			else
-				printf("%s", line_ptr);
-
-			continue;
-		}
-
 		printf("%s", line_ptr);
 	}
 
@@ -200,40 +168,6 @@ int read_file(const char *dir, const char *fname, int read_opt)
 		res = EXIT_SUCCESS;
 
 	fclose(fp);
-	return res;
-}
-
-int write_file(const char *dir, const char *fname, const char *arg1,
-	       const char *arg2)
-{
-	int fd = -1, res = EXIT_FAILURE;
-	char full_path[500];
-	ssize_t write_len;
-
-	snprintf(full_path, sizeof(full_path), "%s%s", dir, fname);
-
-	fd = open(full_path, O_WRONLY);
-
-	if (fd < 0) {
-		file_open_problem_dbg(dir, full_path);
-		goto out;
-	}
-
-	if (arg2)
-		write_len = dprintf(fd, "%s %s", arg1, arg2);
-	else
-		write_len = write(fd, arg1, strlen(arg1) + 1);
-
-	if (write_len < 0) {
-		fprintf(stderr, "Error - can't write to file '%s': %s\n", full_path, strerror(errno));
-		goto out;
-	}
-
-	res = EXIT_SUCCESS;
-
-out:
-	if (fd >= 0)
-		close(fd);
 	return res;
 }
 
@@ -261,40 +195,7 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 
 int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len)
 {
-	char *path_buff;
-	int ret;
-
-	ret = get_algoname_netlink(mesh_iface, algoname, algoname_len);
-	if (ret != -EOPNOTSUPP)
-		return ret;
-
-	path_buff = malloc(PATH_BUFF_LEN);
-	if (!path_buff) {
-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-		return -ENOMEM;
-	}
-
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, mesh_iface);
-	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
-	if (ret != EXIT_SUCCESS) {
-		ret = -ENOENT;
-		goto free_path_buf;
-	}
-
-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-		line_ptr[strlen(line_ptr) - 1] = '\0';
-
-	strncpy(algoname, line_ptr, algoname_len);
-	if (algoname_len > 0)
-		algoname[algoname_len - 1] = '\0';
-
-free_path_buf:
-	free(path_buff);
-
-	free(line_ptr);
-	line_ptr = NULL;
-
-	return ret;
+	return get_algoname_netlink(mesh_iface, algoname, algoname_len);
 }
 
 static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
@@ -948,45 +849,16 @@ int guess_netdev_type(const char *netdev, enum selector_prefix *type)
 	return -EINVAL;
 }
 
-static int check_mesh_iface_sysfs(struct state *state)
-{
-	char path_buff[PATH_BUFF_LEN];
-	DIR *dir;
-
-	/* try to open the mesh sys directory */
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
-		 state->mesh_iface);
-
-	dir = opendir(path_buff);
-	if (!dir)
-		return -1;
-
-	closedir(dir);
-
-	return 0;
-}
-
 int check_mesh_iface(struct state *state)
 {
-	int ret;
-
 	state->mesh_ifindex = if_nametoindex(state->mesh_iface);
 	if (state->mesh_ifindex == 0)
 		return -1;
 
-	ret = check_mesh_iface_netlink(state->mesh_ifindex);
-	if (ret == 0)
-		return ret;
-
-	ret = check_mesh_iface_sysfs(state);
-	if (ret == 0)
-		return ret;
-
-	return -1;
+	return check_mesh_iface_netlink(state->mesh_ifindex);
 }
 
-static int check_mesh_iface_ownership_netlink(struct state *state,
-					      char *hard_iface)
+int check_mesh_iface_ownership(struct state *state, char *hard_iface)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int hardif_index;
@@ -1003,49 +875,6 @@ static int check_mesh_iface_ownership_netlink(struct state *state,
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
-}
-
-static int check_mesh_iface_ownership_sysfs(struct state *state,
-					    char *hard_iface)
-{
-	char path_buff[PATH_BUFF_LEN];
-	int res;
-
-	/* check if this device actually belongs to the mesh interface */
-	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
-	if (res != EXIT_SUCCESS) {
-		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
-			path_buff, strerror(errno));
-		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
-		return EXIT_FAILURE;
-	}
-
-	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-		line_ptr[strlen(line_ptr) - 1] = '\0';
-
-	if (strcmp(line_ptr, state->mesh_iface) != 0) {
-		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
-			hard_iface, line_ptr, state->mesh_iface);
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
-
-int check_mesh_iface_ownership(struct state *state, char *hard_iface)
-{
-	int ret;
-
-	ret = check_mesh_iface_ownership_netlink(state, hard_iface);
-	if (ret == EXIT_SUCCESS)
-		return EXIT_SUCCESS;
-
-	ret = check_mesh_iface_ownership_sysfs(state, hard_iface);
-	if (ret == EXIT_SUCCESS)
-		return ret;
-
-	return EXIT_FAILURE;
 }
 
 static int get_random_bytes_syscall(void *buf __maybe_unused,

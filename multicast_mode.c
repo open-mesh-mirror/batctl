@@ -68,7 +68,6 @@ static int set_multicast_mode(struct state *state)
 }
 
 static struct settings_data batctl_settings_multicast_mode = {
-	.sysfs_name = "multicast_mode",
 	.data = &multicast_mode,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_multicast_mode,

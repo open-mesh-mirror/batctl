@@ -101,7 +101,6 @@ static int set_throughput_override(struct state *state)
 }
 
 static struct settings_data batctl_settings_throughput_override = {
-	.sysfs_name = "throughput_override",
 	.data = &throughput_override,
 	.parse = parse_throughput_override,
 	.netlink_get = get_throughput_override,

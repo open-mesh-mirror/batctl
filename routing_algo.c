@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <netinet/if_ether.h>
 #include <netlink/netlink.h>
@@ -15,6 +16,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "batadv_packet.h"
 #include "batman_adv.h"
@@ -73,7 +77,7 @@ static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
 	return NL_OK;
 }
 
-static int netlink_print_routing_algos(void)
+static int print_routing_algos(void)
 {
 	struct nl_sock *sock;
 	struct nl_msg *msg;
@@ -132,12 +136,28 @@ err_free_sock:
 	return last_err;
 }
 
-static int print_routing_algos(void)
+static int write_default_ra(const char *full_path, const char *arg1)
 {
-	int err;
+	ssize_t write_len;
+	int fd = -1;
 
-	err = netlink_print_routing_algos();
-	return err;
+	fd = open(full_path, O_WRONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Error - can't open file '%s': %s\n", full_path,
+			strerror(errno));
+
+		return EXIT_FAILURE;
+	}
+
+	write_len = write(fd, arg1, strlen(arg1) + 1);
+	close(fd);
+	if (write_len < 0) {
+		fprintf(stderr, "Error - can't write to file '%s': %s\n",
+			full_path, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }
 
 static struct nla_policy link_policy[IFLA_MAX + 1] = {
@@ -278,14 +298,12 @@ static int routing_algo(struct state *state __maybe_unused, int argc, char **arg
 
 	check_root_or_die("batctl routing_algo");
 
-	if (argc == 2) {
-		res = write_file(SYS_SELECTED_RA_PATH, "", argv[1], NULL);
-		return EXIT_FAILURE;
-	}
+	if (argc == 2)
+		return write_default_ra(SYS_SELECTED_RA_PATH, argv[1]);
 
 	print_ra_interfaces();
 
-	res = read_file("", SYS_SELECTED_RA_PATH, USE_READ_BUFF);
+	res = read_file(SYS_SELECTED_RA_PATH, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)
 		return EXIT_FAILURE;
 

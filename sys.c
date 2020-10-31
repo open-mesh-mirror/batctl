@@ -189,61 +189,33 @@ static void settings_usage(struct state *state)
 	fprintf(stderr, " \t -h print this help\n");
 }
 
-static int sys_read_setting(struct state *state, const char *path_buff,
-			    const char *sysfs_name)
+static int sys_read_setting(struct state *state)
 {
 	struct settings_data *settings = state->cmd->arg;
 	int res = EXIT_FAILURE;
-	int read_opt = NO_FLAGS;
 
 	if (settings->netlink_get) {
 		res = settings->netlink_get(state);
-		if (res < 0 && res != -EOPNOTSUPP)
+		if (res < 0)
 			return EXIT_FAILURE;
-		if (res >= 0)
+		else
 			return EXIT_SUCCESS;
-	}
-
-	if (sysfs_name) {
-		if (state->cmd->flags & COMMAND_FLAG_INVERSE)
-			read_opt |= INVERSE_BOOL;
-
-		res = read_file(path_buff, sysfs_name, read_opt);
 	}
 
 	return res;
 }
 
-static int sys_write_setting(struct state *state, const char *path_buff,
-			    const char *sysfs_name, int argc, char **argv)
+static int sys_write_setting(struct state *state)
 {
 	struct settings_data *settings = state->cmd->arg;
 	int res = EXIT_FAILURE;
-	char *argv1 = argv[1];
 
 	if (settings->netlink_set) {
 		res = settings->netlink_set(state);
-		if (res < 0 && res != -EOPNOTSUPP)
+		if (res < 0)
 			return EXIT_FAILURE;
-		if (res >= 0)
+		else
 			return EXIT_SUCCESS;
-	}
-
-	if (sysfs_name) {
-		if (state->cmd->flags & COMMAND_FLAG_INVERSE) {
-			if (!strncmp("0", argv[1], strlen("0")) ||
-			    !strncmp("disable", argv[1], strlen("disable")) ||
-			    !strncmp("disabled", argv[1], strlen("disabled"))) {
-				argv1 = "enabled";
-			} else if (!strncmp("1", argv[1], strlen("1")) ||
-				   !strncmp("enable", argv[1], strlen("enable")) ||
-				   !strncmp("enabled", argv[1], strlen("enabled"))) {
-				argv1 = "disabled";
-			}
-		}
-
-		res = write_file(path_buff, sysfs_name,
-				 argv1, argc > 2 ? argv[2] : NULL);
 	}
 
 	return res;
@@ -253,7 +225,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 {
 	struct settings_data *settings = state->cmd->arg;
 	int optchar, res = EXIT_FAILURE;
-	char *path_buff;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -266,55 +237,16 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 		}
 	}
 
-	/* prepare the classic path */
-	path_buff = malloc(PATH_BUFF_LEN);
-	if (!path_buff) {
-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-		return EXIT_FAILURE;
-	}
-
-	switch (state->selector) {
-	case SP_NONE_OR_MESHIF:
-	case SP_MESHIF:
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT,
-			 state->mesh_iface);
-		break;
-	case SP_VLAN:
-		/* if the specified interface is a VLAN then change the path to
-		 * point to the proper "vlan%{vid}" subfolder in the sysfs tree.
-		 */
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH,
-			 state->mesh_iface, state->vid);
-		break;
-	case SP_HARDIF:
-		/* if a hard interface was specified then change the path to
-		 * point to the proper ${hardif}/batman-adv path in the sysfs
-		 * tree.
-		 */
-		snprintf(path_buff, PATH_BUFF_LEN, SYS_HARDIF_PATH,
-			 state->hard_iface);
-		break;
-	}
-
-	if (argc == 1) {
-		res = sys_read_setting(state, path_buff, settings->sysfs_name);
-		goto out;
-	}
+	if (argc == 1)
+		return sys_read_setting(state);
 
 	check_root_or_die("batctl");
 
 	if (settings->parse) {
 		res = settings->parse(state, argc, argv);
-		if (res < 0) {
-			res = EXIT_FAILURE;
-			goto out;
-		}
+		if (res < 0)
+			return EXIT_FAILURE;
 	}
 
-	res = sys_write_setting(state, path_buff, settings->sysfs_name, argc,
-				argv);
-
-out:
-	free(path_buff);
-	return res;
+	return sys_write_setting(state);
 }

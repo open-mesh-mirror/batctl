@@ -139,7 +139,6 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	struct print_interfaces_rtnl_arg *print_arg = arg;
 	char iface_status[IFACE_STATUS_LEN];
 	struct nlattr *attrs[IFLA_MAX + 1];
-	char path_buff[PATH_BUFF_LEN];
 	struct ifinfomsg *ifm;
 	char *ifname;
 	int ret;
@@ -166,20 +165,10 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 		goto err;
 
 	status = get_iface_status_netlink(master, ifm->ifi_index, iface_status);
-	if (!status) {
-		snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT,
-			 ifname);
-		ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS);
-		if (ret != EXIT_SUCCESS)
-			status = "<error reading status>\n";
-		else
-			status = line_ptr;
-	}
+	if (!status)
+		status = "<error reading status>\n";
 
 	printf("%s: %s", ifname, status);
-
-	free(line_ptr);
-	line_ptr = NULL;
 
 err:
 	return NL_OK;

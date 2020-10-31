@@ -98,7 +98,6 @@ static int set_elp_interval(struct state *state)
 }
 
 static struct settings_data batctl_settings_elp_interval = {
-	.sysfs_name = "elp_interval",
 	.data = &elp_interval,
 	.parse = parse_elp_interval,
 	.netlink_get = get_elp_interval,

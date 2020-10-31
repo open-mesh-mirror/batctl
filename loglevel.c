@@ -86,44 +86,31 @@ static int set_log_level(struct state *state)
 				  set_attrs_log_level, NULL);
 }
 
-static int log_level_read_setting(struct state *state, const char *path_buff)
+static int log_level_read_setting(struct state *state)
 {
 	int res;
 
 	res = get_log_level(state);
-	if (res < 0 && res != -EOPNOTSUPP)
+	if (res < 0)
 		return EXIT_FAILURE;
-	if (res >= 0)
+	else
 		return EXIT_SUCCESS;
-
-	res = read_file(path_buff, SYS_LOG_LEVEL, USE_READ_BUFF);
-	if (res != EXIT_SUCCESS)
-		return res;
-
-	log_level_globals.log_level = strtol(line_ptr, (char **) NULL, 10);
-
-	return res;
 }
 
-static int log_level_write_setting(struct state *state, const char *path_buff)
+static int log_level_write_setting(struct state *state)
 {
 	int res;
-	char str[4];
 
 	res = set_log_level(state);
-	if (res < 0 && res != -EOPNOTSUPP)
+	if (res < 0)
 		return EXIT_FAILURE;
-	if (res >= 0)
+	else
 		return EXIT_SUCCESS;
-
-	snprintf(str, sizeof(str), "%i", log_level_globals.log_level);
-	return write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
 }
 
 static int loglevel(struct state *state, int argc, char **argv)
 {
 	int optchar, res = EXIT_FAILURE;
-	char *path_buff;
 	int i;
 
 	log_level_globals.log_level = 0;
@@ -138,14 +125,6 @@ static int loglevel(struct state *state, int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
-
-	path_buff = malloc(PATH_BUFF_LEN);
-	if (!path_buff) {
-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-		return EXIT_FAILURE;
-	}
-
-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, state->mesh_iface);
 
 	if (argc != 1) {
 		check_root_or_die("batctl loglevel");
@@ -175,17 +154,16 @@ static int loglevel(struct state *state, int argc, char **argv)
 				log_level_globals.log_level |= BIT(7);
 			else {
 				log_level_usage();
-				goto out;
+				return EXIT_FAILURE;
 			}
 		}
 
-		log_level_write_setting(state, path_buff);
-		goto out;
+		return log_level_write_setting(state);
 	}
 
-	res = log_level_read_setting(state, path_buff);
+	res = log_level_read_setting(state);
 	if (res != EXIT_SUCCESS)
-		goto out;
+		return res;
 
 	printf("[%c] %s (%s)\n", (!log_level_globals.log_level) ? 'x' : ' ',
 	       "all debug output disabled", "none");
@@ -207,8 +185,6 @@ static int loglevel(struct state *state, int argc, char **argv)
 	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(7)) ? 'x' : ' ',
 	       "messages related to throughput meter", "tp");
 
-out:
-	free(path_buff);
 	return res;
 }
 

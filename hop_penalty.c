@@ -122,7 +122,6 @@ static int set_hop_penalty_if(struct state *state)
 }
 
 static struct settings_data batctl_settings_hop_penalty = {
-	.sysfs_name = "hop_penalty",
 	.data = &hop_penalty,
 	.parse = parse_hop_penalty,
 	.netlink_get = get_hop_penalty,
@@ -130,7 +129,6 @@ static struct settings_data batctl_settings_hop_penalty = {
 };
 
 static struct settings_data batctl_settings_hop_penalty_if = {
-	.sysfs_name = NULL,
 	.data = &hop_penalty,
 	.parse = parse_hop_penalty,
 	.netlink_get = get_hop_penalty_if,

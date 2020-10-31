@@ -88,7 +88,6 @@ static int set_orig_interval(struct state *state)
 }
 
 static struct settings_data batctl_settings_orig_interval = {
-	.sysfs_name = "orig_interval",
 	.data = &orig_interval,
 	.parse = parse_orig_interval,
 	.netlink_get = get_orig_interval,

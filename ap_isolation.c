@@ -70,7 +70,6 @@ static int set_ap_isolation(struct state *state)
 }
 
 static struct settings_data batctl_settings_ap_isolation = {
-	.sysfs_name = "ap_isolation",
 	.data = &ap_isolation,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_ap_isolation,

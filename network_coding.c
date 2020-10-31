@@ -48,7 +48,6 @@ static int set_network_coding(struct state *state)
 }
 
 static struct settings_data batctl_settings_network_coding = {
-	.sysfs_name = "network_coding",
 	.data = &network_coding,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_network_coding,

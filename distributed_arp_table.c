@@ -48,7 +48,6 @@ static int set_distributed_arp_table(struct state *state)
 }
 
 static struct settings_data batctl_settings_distributed_arp_table = {
-	.sysfs_name = "distributed_arp_table",
 	.data = &distributed_arp_table,
 	.parse = parse_simple_boolean,
 	.netlink_get = get_distributed_arp_table,

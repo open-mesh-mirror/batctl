@@ -36,7 +36,7 @@ static int get_attrs_ap_isolation(struct nl_msg *msg, void *arg)
 
 static int get_ap_isolation(struct state *state)
 {
-	enum batadv_nl_commands nl_cmd = BATADV_CMD_SET_MESH;
+	enum batadv_nl_commands nl_cmd = BATADV_CMD_GET_MESH;
 
 	if (state->selector == SP_VLAN)
 		nl_cmd = BATADV_CMD_GET_VLAN;

@@ -526,7 +526,7 @@ static int interface(struct state *state, int argc, char **argv)
 	ifmaster = if_nametoindex(state->mesh_iface);
 	if (!manual_mode && !ifmaster && rest_argv[0][0] == 'a') {
 		ret = create_interface(state->mesh_iface, &create_params);
-		if (ret < 0) {
+		if (ret < 0 && ret != -EEXIST) {
 			fprintf(stderr,
 				"Error - failed to create batman-adv interface: %s\n",
 				strerror(-ret));

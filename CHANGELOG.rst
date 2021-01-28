@@ -1,5 +1,15 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2021.0 (2021-01-28)
+===================
+
+* Drop support for batman-adv's sysfs+debugfs
+* allow to select routing algorithm during creation of interface
+* bugs squashed:
+
+  - fix query of meshif's ap_isolation status
+  - ignore "interface already exists" error during "interface add"
+
 2020.4 (2020-10-27)
 ===================
 

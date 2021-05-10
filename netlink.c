@@ -693,9 +693,16 @@ static int get_nexthop_netlink_cb(struct nl_msg *msg, void *arg)
 
 	/* save result */
 	memcpy(opts->nexthop, neigh, ETH_ALEN);
-	ifname = if_indextoname(index, opts->ifname);
-	if (!ifname)
-		return NL_OK;
+
+	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
+		ifname = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
+		strncpy(opts->ifname, ifname, IFNAMSIZ);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		ifname = if_indextoname(index, opts->ifname);
+		if (!ifname)
+			return NL_OK;
+	}
 
 	opts->found = true;
 	opts->query_opts.err = 0;

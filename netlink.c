@@ -677,7 +677,7 @@ static const int translate_mac_netlink_mandatory[] = {
 
 struct translate_mac_netlink_opts {
 	struct ether_addr mac;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -765,7 +765,7 @@ struct get_nexthop_netlink_opts {
 	struct ether_addr mac;
 	uint8_t *nexthop;
 	char *ifname;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -865,7 +865,7 @@ static const int get_primarymac_netlink_mandatory[] = {
 
 struct get_primarymac_netlink_opts {
 	uint8_t *primarymac;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 
@@ -938,7 +938,7 @@ int get_primarymac_netlink(struct state *state, uint8_t *primarymac)
 struct get_algoname_netlink_opts {
 	char *algoname;
 	size_t algoname_len;
-	bool found;
+	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
 

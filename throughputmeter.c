@@ -38,16 +38,16 @@ static struct state *tp_state;
 
 struct tp_result {
 	int error;
-	bool found;
 	uint32_t cookie;
 	uint8_t return_value;
+	uint8_t found:1;
 	uint32_t test_time;
 	uint64_t total_bytes;
 };
 
 struct tp_cookie {
 	int error;
-	bool found;
+	uint8_t found:1;
 	uint32_t cookie;
 };
 

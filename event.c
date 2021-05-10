@@ -174,10 +174,15 @@ static void event_parse_set_mesh(struct nlattr **attrs)
 				    ARRAY_SIZE(mesh_mandatory)))
 		return;
 
-	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
-	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
-	if (!meshif_name)
-		return;
+	if (attrs[BATADV_ATTR_MESH_IFNAME]) {
+		meshif_name = nla_get_string(attrs[BATADV_ATTR_MESH_IFNAME]);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+		meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+		if (!meshif_name)
+			return;
+	}
 
 	printf("%s: set mesh:\n", meshif_name);
 
@@ -305,15 +310,25 @@ static void event_parse_set_hardif(struct nlattr **attrs)
 				    ARRAY_SIZE(hardif_mandatory)))
 		return;
 
-	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
-	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
-	if (!meshif_name)
-		return;
+	if (attrs[BATADV_ATTR_MESH_IFNAME]) {
+		meshif_name = nla_get_string(attrs[BATADV_ATTR_MESH_IFNAME]);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+		meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+		if (!meshif_name)
+			return;
+	}
 
-	hardif_ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
-	hardif_name = if_indextoname(hardif_ifindex, hardif_buf);
-	if (!hardif_name)
-		return;
+	if (attrs[BATADV_ATTR_MESH_IFNAME]) {
+		hardif_name = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		hardif_ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
+		hardif_name = if_indextoname(hardif_ifindex, hardif_buf);
+		if (!hardif_name)
+			return;
+	}
 
 	printf("%s (%s): set hardif:\n", meshif_name, hardif_name);
 
@@ -350,10 +365,15 @@ static void event_parse_set_vlan(struct nlattr **attrs)
 				    ARRAY_SIZE(vlan_mandatory)))
 		return;
 
-	mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
-	meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
-	if (!meshif_name)
-		return;
+	if (attrs[BATADV_ATTR_MESH_IFNAME]) {
+		meshif_name = nla_get_string(attrs[BATADV_ATTR_MESH_IFNAME]);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		mesh_ifindex = nla_get_u32(attrs[BATADV_ATTR_MESH_IFINDEX]);
+		meshif_name = if_indextoname(mesh_ifindex, meshif_buf);
+		if (!meshif_name)
+			return;
+	}
 
 	vid = nla_get_u16(attrs[BATADV_ATTR_VLANID]);
 

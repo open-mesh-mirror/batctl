@@ -79,58 +79,35 @@ static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
 	return NL_OK;
 }
 
-static int print_routing_algos(void)
+static int print_routing_algos(struct state *state)
 {
-	struct nl_sock *sock;
 	struct nl_msg *msg;
 	struct nl_cb *cb;
-	int family;
 	struct print_opts opts = {
 		.callback = routing_algos_callback,
 	};
 
-	sock = nl_socket_alloc();
-	if (!sock)
+	msg = nlmsg_alloc();
+	if (!msg)
 		return -ENOMEM;
 
-	genl_connect(sock);
-
-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0) {
-		last_err = -EOPNOTSUPP;
-		goto err_free_sock;
-	}
-
-	msg = nlmsg_alloc();
-	if (!msg) {
-		last_err = -ENOMEM;
-		goto err_free_sock;
-	}
-
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
-		    BATADV_CMD_GET_ROUTING_ALGOS, 1);
-
-	nl_send_auto_complete(sock, msg);
-
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0,
+		    NLM_F_DUMP, BATADV_CMD_GET_ROUTING_ALGOS, 1);
+	nl_send_auto_complete(state->sock, msg);
 	nlmsg_free(msg);
 
 	opts.remaining_header = strdup("Available routing algorithms:\n");
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
-	if (!cb) {
-		last_err = -ENOMEM;
-		goto err_free_sock;
-	}
+	if (!cb)
+		return -ENOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
 		  &opts);
 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, netlink_stop_callback, NULL);
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
-	nl_recvmsgs(sock, cb);
-
-err_free_sock:
-	nl_socket_free(sock);
+	nl_recvmsgs(state->sock, cb);
 
 	if (!last_err)
 		netlink_print_remaining_header(&opts);
@@ -316,19 +293,23 @@ static int routing_algo(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 
 	print_ra_interfaces(state);
-	netlink_destroy(state);
 
 	res = read_file(SYS_SELECTED_RA_PATH, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)
-		return EXIT_FAILURE;
+		goto err_free_netlink;
 
 	printf("Selected routing algorithm (used when next batX interface is created):\n");
 	printf(" => %s\n", line_ptr);
 	free(line_ptr);
 	line_ptr = NULL;
 
-	print_routing_algos();
-	return EXIT_SUCCESS;
+	print_routing_algos(state);
+	res = EXIT_SUCCESS;
+
+err_free_netlink:
+	netlink_destroy(state);
+
+	return res;
 }
 
 COMMAND(SUBCOMMAND, routing_algo, "ra", 0, NULL,

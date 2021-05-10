@@ -89,15 +89,10 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
 		w = 'W';
 	if (flags & BATADV_TT_CLIENT_ISOLA)
 		i = 'I';
-
-	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
+	if (flags & BATADV_TT_CLIENT_NOPURGE)
 		p = 'P';
-	} else {
-		if (!attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
-			fputs("Received invalid data from kernel.\n", stderr);
-			exit(1);
-		}
 
+	if (attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
 		last_seen_msecs = nla_get_u32(
 			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
 		last_seen_secs = last_seen_msecs / 1000;

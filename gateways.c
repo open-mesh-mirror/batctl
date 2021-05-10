@@ -122,8 +122,7 @@ static int netlink_print_gateways(struct state *state, char *orig_iface,
 
 	/* only parse routing algorithm name */
 	last_err = -EINVAL;
-	info_header = netlink_get_info(state->mesh_ifindex,
-				       BATADV_CMD_GET_ORIGINATORS, NULL);
+	info_header = netlink_get_info(state, BATADV_CMD_GET_ORIGINATORS, NULL);
 	free(info_header);
 
 	if (strlen(algo_name_buf) == 0)

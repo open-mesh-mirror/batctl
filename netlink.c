@@ -339,60 +339,46 @@ static int info_callback(struct nl_msg *msg, void *arg)
 			opts->remaining_header = NULL;
 	}
 
-	return NL_STOP;
+	return NL_OK;
 }
 
-char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
+char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
 {
-	struct nl_sock *sock;
 	struct nl_msg *msg;
 	struct nl_cb *cb;
-	int family;
 	struct print_opts opts = {
 		.read_opt = 0,
 		.nl_cmd = nl_cmd,
 		.remaining_header = NULL,
 		.static_header = header,
 	};
-
-	sock = nl_socket_alloc();
-	if (!sock)
-		return NULL;
-
-	genl_connect(sock);
-
-	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
-	if (family < 0) {
-		nl_socket_free(sock);
-		return NULL;
-	}
+	int ret;
 
 	msg = nlmsg_alloc();
-	if (!msg) {
-		nl_socket_free(sock);
+	if (!msg)
 		return NULL;
-	}
 
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0, 0,
 		    BATADV_CMD_GET_MESH_INFO, 1);
 
-	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, state->mesh_ifindex);
 
-	nl_send_auto_complete(sock, msg);
+	nl_send_auto_complete(state->sock, msg);
 
 	nlmsg_free(msg);
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	if (!cb)
-		goto err_free_sock;
+		return NULL;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, &opts);
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
-	nl_recvmsgs(sock, cb);
+	ret = nl_recvmsgs(state->sock, cb);
+	if (ret < 0)
+		return opts.remaining_header;
 
-err_free_sock:
-	nl_socket_free(sock);
+	nl_wait_for_ack(state->sock);
 
 	return opts.remaining_header;
 }
@@ -458,7 +444,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 			printf("\033[2J\033[0;0f");
 
 		if (!(read_opt & SKIP_HEADER))
-			opts.remaining_header = netlink_get_info(state->mesh_ifindex,
+			opts.remaining_header = netlink_get_info(state,
 								 nl_cmd,
 								 header);
 

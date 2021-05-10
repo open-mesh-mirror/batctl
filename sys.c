@@ -107,7 +107,13 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
 	nl_send_auto_complete(state->sock, msg);
 	nlmsg_free(msg);
 
-	nl_recvmsgs(state->sock, state->cb);
+	if (callback) {
+		ret = nl_recvmsgs(state->sock, state->cb);
+		if (ret < 0)
+			return ret;
+	}
+
+	nl_wait_for_ack(state->sock);
 
 	return result;
 }

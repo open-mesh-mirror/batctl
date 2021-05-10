@@ -31,13 +31,13 @@ int netlink_create(struct state *state);
 void netlink_destroy(struct state *state);
 
 char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header);
-int translate_mac_netlink(const char *mesh_iface, const struct ether_addr *mac,
+int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 			  struct ether_addr *mac_out);
-int get_nexthop_netlink(const char *mesh_iface, const struct ether_addr *mac,
+int get_nexthop_netlink(struct state *state, const struct ether_addr *mac,
 			uint8_t *nexthop, char *ifname);
-int get_primarymac_netlink(const char *mesh_iface, uint8_t *primarymac);
-int get_algoname_netlink(const char *mesh_iface, char *algoname,
-			 size_t algoname_len);
+int get_primarymac_netlink(struct state *state, uint8_t *primarymac);
+int get_algoname_netlink(struct state *state, unsigned int mesh_ifindex,
+			 char *algoname, size_t algoname_len);
 
 extern struct nla_policy batadv_netlink_policy[];
 

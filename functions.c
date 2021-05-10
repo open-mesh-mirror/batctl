@@ -171,7 +171,7 @@ int read_file(const char *full_path, int read_opt)
 	return res;
 }
 
-struct ether_addr *translate_mac(const char *mesh_iface,
+struct ether_addr *translate_mac(struct state *state,
 				 const struct ether_addr *mac)
 {
 	struct ether_addr in_mac;
@@ -188,14 +188,16 @@ struct ether_addr *translate_mac(const char *mesh_iface,
 	if (!ether_addr_valid(in_mac.ether_addr_octet))
 		return mac_result;
 
-	translate_mac_netlink(mesh_iface, &in_mac, mac_result);
+	translate_mac_netlink(state, &in_mac, mac_result);
 
 	return mac_result;
 }
 
-int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len)
+int get_algoname(struct state *state, unsigned int mesh_ifindex,
+		 char *algoname, size_t algoname_len)
 {
-	return get_algoname_netlink(mesh_iface, algoname, algoname_len);
+	return get_algoname_netlink(state, mesh_ifindex, algoname,
+				    algoname_len);
 }
 
 static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
@@ -340,10 +342,7 @@ static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
 	}
 
 err:
-	if (nl_arg->found)
-		return NL_STOP;
-	else
-		return NL_OK;
+	return NL_OK;
 }
 
 static struct ether_addr *resolve_mac_from_cache(int ai_family,

@@ -35,7 +35,7 @@ struct icmp_interface {
 };
 
 int icmp_interfaces_init(void);
-int icmp_interface_write(const char *mesh_iface,
+int icmp_interface_write(struct state *state,
 			 struct batadv_icmp_header *icmp_packet, size_t len);
 void icmp_interfaces_clean(void);
 ssize_t icmp_interface_read(struct batadv_icmp_header *icmp_packet, size_t len,

@@ -46,7 +46,8 @@ static bool is_throughput_select_class(struct state *state)
 	char algoname[32];
 	int ret;
 
-	ret = get_algoname(state->mesh_iface, algoname, sizeof(algoname));
+	ret = get_algoname(state, state->mesh_ifindex, algoname,
+			   sizeof(algoname));
 
 	/* no algo name -> assume that it is a pre-B.A.T.M.A.N. V version */
 	if (ret < 0)

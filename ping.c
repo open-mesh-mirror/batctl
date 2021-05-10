@@ -136,7 +136,7 @@ static int ping(struct state *state, int argc, char **argv)
 	}
 
 	if (!disable_translate_mac)
-		dst_mac = translate_mac(state->mesh_iface, dst_mac);
+		dst_mac = translate_mac(state, dst_mac);
 
 	mac_string = ether_ntoa_long(dst_mac);
 	signal(SIGINT, sig_handler);
@@ -177,7 +177,7 @@ static int ping(struct state *state, int argc, char **argv)
 
 		icmp_packet_out.seqno = htons(++seq_counter);
 
-		res = icmp_interface_write(state->mesh_iface,
+		res = icmp_interface_write(state,
 					   (struct batadv_icmp_header *)&icmp_packet_out,
 					   packet_len);
 		if (res < 0) {
@@ -323,5 +323,6 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND_MIF, ping, "p", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, ping, "p",
+	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"<destination>     \tping another batman adv host via layer 2");

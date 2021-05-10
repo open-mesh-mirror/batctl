@@ -314,13 +314,11 @@ static void icmp_interface_sweep(void)
 	}
 }
 
-static int icmp_interface_update(const char *mesh_iface)
+static int icmp_interface_update(struct state *state)
 {
 	struct icmp_interface_update_arg update_arg;
 
-	update_arg.ifindex = if_nametoindex(mesh_iface);
-	if (!update_arg.ifindex)
-		return -errno;
+	update_arg.ifindex = state->mesh_ifindex;
 
 	/* unmark current interface - will be marked again by query */
 	icmp_interface_unmark();
@@ -331,7 +329,7 @@ static int icmp_interface_update(const char *mesh_iface)
 	/* remove old interfaces */
 	icmp_interface_sweep();
 
-	get_primarymac_netlink(mesh_iface, primary_mac);
+	get_primarymac_netlink(state, primary_mac);
 
 	return 0;
 }
@@ -355,7 +353,7 @@ static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
 	return (int)writev(iface->sock, vector, 2);
 }
 
-int icmp_interface_write(const char *mesh_iface,
+int icmp_interface_write(struct state *state,
 			 struct batadv_icmp_header *icmp_packet, size_t len)
 {
 	struct batadv_icmp_packet_rr *icmp_packet_rr;
@@ -380,7 +378,7 @@ int icmp_interface_write(const char *mesh_iface,
 	if (icmp_packet->msg_type != BATADV_ECHO_REQUEST)
 		return -EINVAL;
 
-	icmp_interface_update(mesh_iface);
+	icmp_interface_update(state);
 
 	if (list_empty(&interface_list))
 		return -EFAULT;
@@ -388,7 +386,7 @@ int icmp_interface_write(const char *mesh_iface,
 	/* find best neighbor */
 	memcpy(&mac, icmp_packet->dst, ETH_ALEN);
 
-	ret = get_nexthop_netlink(mesh_iface, &mac, nexthop, ifname);
+	ret = get_nexthop_netlink(state, &mac, nexthop, ifname);
 	if (ret < 0)
 		goto dst_unreachable;
 

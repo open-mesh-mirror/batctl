@@ -44,7 +44,7 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
 char *get_name_by_macstr(char *mac_str, int read_opt);
 int file_exists(const char *fpath);
 int read_file(const char *full_path, int read_opt);
-struct ether_addr *translate_mac(const char *mesh_iface,
+struct ether_addr *translate_mac(struct state *state,
 				 const struct ether_addr *mac);
 struct ether_addr *resolve_mac(const char *asc);
 int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
@@ -54,7 +54,8 @@ int translate_vlan_iface(struct state *state, const char *vlandev);
 int translate_vid(struct state *state, const char *vidstr);
 int translate_hard_iface(struct state *state, const char *hardif);
 int guess_netdev_type(const char *netdev, enum selector_prefix *type);
-int get_algoname(const char *mesh_iface, char *algoname, size_t algoname_len);
+int get_algoname(struct state *state, unsigned int mesh_ifindex,
+		 char *algoname, size_t algoname_len);
 int check_mesh_iface(struct state *state);
 int check_mesh_iface_ownership(struct state *state, char *hard_iface);
 

@@ -97,7 +97,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 	}
 
 	if (!disable_translate_mac)
-		dst_mac = translate_mac(state->mesh_iface, dst_mac);
+		dst_mac = translate_mac(state, dst_mac);
 
 	mac_string = ether_ntoa_long(dst_mac);
 
@@ -124,7 +124,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 			icmp_packet_out.seqno = htons(++seq_counter);
 			time_delta[i] = 0.0;
 
-			res = icmp_interface_write(state->mesh_iface,
+			res = icmp_interface_write(state,
 					   (struct batadv_icmp_header *)&icmp_packet_out,
 					   sizeof(icmp_packet_out));
 			if (res < 0) {
@@ -209,5 +209,6 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND_MIF, traceroute, "tr", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, traceroute, "tr",
+	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"<destination>     \ttraceroute another batman adv host via layer 2");

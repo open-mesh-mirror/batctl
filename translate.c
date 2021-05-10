@@ -50,7 +50,7 @@ static int translate(struct state *state, int argc, char **argv)
 		}
 	}
 
-	dst_mac = translate_mac(state->mesh_iface, dst_mac);
+	dst_mac = translate_mac(state, dst_mac);
 	if (dst_mac) {
 		mac_string = ether_ntoa_long(dst_mac);
 		printf("%s\n", mac_string);
@@ -64,5 +64,6 @@ out:
 	return ret;
 }
 
-COMMAND(SUBCOMMAND_MIF, translate, "t", COMMAND_FLAG_MESH_IFACE, NULL,
+COMMAND(SUBCOMMAND_MIF, translate, "t",
+	COMMAND_FLAG_MESH_IFACE | COMMAND_FLAG_NETLINK, NULL,
 	"<destination>     \ttranslate a destination to the originator responsible for it");

@@ -168,6 +168,7 @@ static struct nla_policy link_policy[IFLA_MAX + 1] = {
 
 struct print_ra_interfaces_rtnl_arg {
 	uint8_t header_shown:1;
+	struct state *state;
 };
 
 static int print_ra_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
@@ -190,7 +191,8 @@ static int print_ra_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 
 	mesh_iface = nla_get_string(attrs[IFLA_IFNAME]);
 
-	ret = get_algoname_netlink(mesh_iface, algoname, sizeof(algoname));
+	ret = get_algoname_netlink(print_arg->state, ifm->ifi_index, algoname,
+				   sizeof(algoname));
 	if (ret < 0)
 		goto err;
 
@@ -205,9 +207,11 @@ err:
 	return NL_OK;
 }
 
-static int print_ra_interfaces(void)
+static int print_ra_interfaces(struct state *state)
 {
-	struct print_ra_interfaces_rtnl_arg print_arg = {};
+	struct print_ra_interfaces_rtnl_arg print_arg = {
+		.state = state,
+	};
 
 	struct ifinfomsg rt_hdr = {
 		.ifi_family = IFLA_UNSPEC,
@@ -282,10 +286,11 @@ err_free_sock:
 	return err;
 }
 
-static int routing_algo(struct state *state __maybe_unused, int argc, char **argv)
+static int routing_algo(struct state *state, int argc, char **argv)
 {
 	int optchar;
 	int res = EXIT_FAILURE;
+	int ret;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {
@@ -303,7 +308,15 @@ static int routing_algo(struct state *state __maybe_unused, int argc, char **arg
 	if (argc == 2)
 		return write_default_ra(SYS_SELECTED_RA_PATH, argv[1]);
 
-	print_ra_interfaces();
+	/* duplicated code here from the main() because interface doesn't always
+	 * need COMMAND_FLAG_MESH_IFACE and COMMAND_FLAG_NETLINK
+	 */
+	ret = netlink_create(state);
+	if (ret < 0)
+		return EXIT_FAILURE;
+
+	print_ra_interfaces(state);
+	netlink_destroy(state);
 
 	res = read_file(SYS_SELECTED_RA_PATH, USE_READ_BUFF);
 	if (res != EXIT_SUCCESS)

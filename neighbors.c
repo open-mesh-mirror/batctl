@@ -36,10 +36,12 @@ static int neighbors_callback(struct nl_msg *msg, void *arg)
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int last_seen_msecs, last_seen_secs;
 	struct print_opts *opts = arg;
+	char ifname_buf[IF_NAMESIZE];
 	struct bat_host *bat_host;
-	char ifname[IF_NAMESIZE];
 	struct genlmsghdr *ghdr;
+	uint32_t ifindex;
 	uint8_t *neigh;
+	char *ifname;
 
 	if (!genlmsg_valid_hdr(nlh, 0)) {
 		fputs("Received invalid data from kernel.\n", stderr);
@@ -66,9 +68,16 @@ static int neighbors_callback(struct nl_msg *msg, void *arg)
 	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
 	bat_host = bat_hosts_find_by_mac((char *)neigh);
 
-	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
-			    ifname))
-		ifname[0] = '\0';
+	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
+		ifname = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
+	} else {
+		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */
+		ifindex = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
+		if (!if_indextoname(ifindex, ifname_buf))
+			ifname_buf[0] = '\0';
+
+		ifname = ifname_buf;
+	}
 
 	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
 	last_seen_secs = last_seen_msecs / 1000;

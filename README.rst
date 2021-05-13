@@ -1187,6 +1187,103 @@ Example::
   [...]
 
 
+batctl transtable_local_json
+----------------------------
+
+Query batman-adv for the entries in the (mac-to-originator) translation
+table for locally detected MAC addresses.
+
+Usage::
+
+  batctl meshif <netdev> transtable_local_json|tgj
+
+Example::
+
+  $ batctl meshif bat0 transtable_local_json
+  [
+      {
+          "tt_address": "3e:dc:94:68:80:e8",
+          "tt_crc32": 3361904636,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": true,
+              "pending": false,
+              "raw": 256,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_vid": -1
+      },
+      {
+          "tt_address": "3e:dc:94:68:80:e8",
+          "tt_crc32": 1436598566,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": true,
+              "pending": false,
+              "raw": 256,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_vid": 0
+      },
+      {
+          "tt_address": "01:00:5e:00:00:01",
+          "tt_crc32": 3361904636,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": true,
+              "pending": false,
+              "raw": 256,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_vid": -1
+      },
+      {
+          "tt_address": "33:33:ff:68:80:e8",
+          "tt_crc32": 3361904636,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": true,
+              "pending": false,
+              "raw": 256,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_vid": -1
+      },
+      {
+          "tt_address": "33:33:00:00:00:01",
+          "tt_crc32": 3361904636,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": true,
+              "pending": false,
+              "raw": 256,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_vid": -1
+      }
+  ]
+
+
 Advanced Analytics
 ==================
 

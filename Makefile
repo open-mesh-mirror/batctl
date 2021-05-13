@@ -82,6 +82,7 @@ $(eval $(call add_command,traceroute,y))
 $(eval $(call add_command,transglobal,y))
 $(eval $(call add_command,translate,y))
 $(eval $(call add_command,translocal,y))
+$(eval $(call add_command,transtable_global_json,y))
 
 MANPAGE = man/batctl.8
 

@@ -1111,6 +1111,82 @@ Example::
   ]
 
 
+batctl transtable_global_json
+-----------------------------
+
+Query batman-adv for the entries in the global (mac-to-originator) translation
+table. Only next best hops have the key-value ``"best": true``.
+
+Usage::
+
+  batctl meshif <netdev> transtable_global_json|tgj
+
+Example::
+
+  $ batctl meshif bat0 transtable_global_json
+  [
+      {
+          "best": true,
+          "orig_address": "ea:88:36:b0:fa:4b",
+          "tt_address": "1e:df:a8:43:c4:d5",
+          "tt_crc32": 3191293109,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": false,
+              "pending": false,
+              "raw": 2048,
+              "roam": false,
+              "temp": true,
+              "wifi": false
+          },
+          "tt_last_ttvn": 255,
+          "tt_ttvn": 255,
+          "tt_vid": -1
+      },
+      {
+          "best": true,
+          "orig_address": "6a:d0:7f:eb:86:83",
+          "tt_address": "01:00:5e:7f:ff:fa",
+          "tt_crc32": 2358926211,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": false,
+              "pending": false,
+              "raw": 0,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_last_ttvn": 246,
+          "tt_ttvn": 245,
+          "tt_vid": -1
+      },
+      {
+          "orig_address": "0e:68:8c:7c:0f:1b",
+          "tt_address": "01:00:5e:7f:ff:fa",
+          "tt_crc32": 1334456817,
+          "tt_flags": {
+              "del": false,
+              "isolated": false,
+              "new": false,
+              "nopurge": false,
+              "pending": false,
+              "raw": 0,
+              "roam": false,
+              "temp": false,
+              "wifi": false
+          },
+          "tt_last_ttvn": 21,
+          "tt_ttvn": 20,
+          "tt_vid": -1
+      },
+  [...]
+
+
 Advanced Analytics
 ==================
 

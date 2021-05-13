@@ -29,6 +29,7 @@
 #include "functions.h"
 #include "main.h"
 
+/* WARNING: attributes must also be added to batadv_genl_json */
 struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
 	[BATADV_ATTR_VERSION] = {
 		.type = NLA_STRING,

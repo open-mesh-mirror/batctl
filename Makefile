@@ -16,6 +16,7 @@ obj-y += bat-hosts.o
 obj-y += debug.o
 obj-y += functions.o
 obj-y += genl.o
+obj-y += genl_json.o
 obj-y += hash.o
 obj-y += icmp_helper.o
 obj-y += main.o

@@ -27,7 +27,7 @@
 .SH NAME
 batctl \- B.A.T.M.A.N. advanced control and management tool
 .SH SYNOPSIS
-.B batctl [\fIoptions\fP]\ \fIcommand\fP|\fIdebug\ table\fP\ [\fIparameters\fP]
+.B batctl [\fIoptions\fP]\ \fIcommand\fP|\fIdebug\ table\fP|\fIdebug\ JSON\fP\ [\fIparameters\fP]
 .br
 .SH DESCRIPTION
 batctl offers a convenient way to configure the batman\-adv kernel module as well as displaying debug information
@@ -291,6 +291,20 @@ List of debug tables:
 .RS 10
 \- mcast_flags|mf (compile time option)
 .RE
+.RE
+.br
+.br
+.PP
+.I \fBJSON queries:
+.IP
+The generic netlink family provided by the batman-adv kernel module can be
+queried (read-only) by batctl and automatically translated to JSON. This
+can be used to monitor the state of the system without the need of parsing
+the freeform debug tables or the native netlink messages.
+
+
+.RS 7
+List of available JSON queries:
 .RE
 .br
 .IP "[\fBmeshif <netdev>\fP] \fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"

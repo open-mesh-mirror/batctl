@@ -69,6 +69,9 @@ enum command_type {
 	SUBCOMMAND_VID,
 	SUBCOMMAND_HIF,
 	DEBUGTABLE,
+	JSON_MIF,
+	JSON_VID,
+	JSON_HIF,
 };
 
 struct state {

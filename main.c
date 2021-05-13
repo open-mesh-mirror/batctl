@@ -43,6 +43,12 @@ static void print_usage(void)
 			.label = "debug tables:                                   \tdisplay the corresponding debug table\n",
 			.types = BIT(DEBUGTABLE),
 		},
+		{
+			.label = "JSON queries:                                   \tdisplay results of netlink query as JSON\n",
+			.types = BIT(JSON_MIF) |
+				 BIT(JSON_VID) |
+				 BIT(JSON_HIF),
+		},
 	};
 	const char *default_prefixes[] = {
 		"",
@@ -67,9 +73,9 @@ static void print_usage(void)
 	char buf[64];
 	size_t i;
 
-	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
+	fprintf(stderr, "Usage: batctl [options] command|debug table|debug json [parameters]\n");
 	fprintf(stderr, "options:\n");
-	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
+	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table|debug json> -h' for the parameter help)\n");
 	fprintf(stderr, " \t-v print version\n");
 
 	for (i = 0; i < sizeof(type) / sizeof(*type); i++) {
@@ -88,12 +94,15 @@ static void print_usage(void)
 
 			switch (cmd->type) {
 			case DEBUGTABLE:
+			case JSON_MIF:
 			case SUBCOMMAND_MIF:
 				prefixes = meshif_prefixes;
 				break;
+			case JSON_VID:
 			case SUBCOMMAND_VID:
 				prefixes = vlan_prefixes;
 				break;
+			case JSON_HIF:
 			case SUBCOMMAND_HIF:
 				prefixes = hardif_prefixes;
 				break;
@@ -167,13 +176,16 @@ static const struct command *find_command(struct state *state, const char *name)
 		/* fall through */
 	case SP_MESHIF:
 		types |= BIT(SUBCOMMAND_MIF) |
-			 BIT(DEBUGTABLE);
+			 BIT(DEBUGTABLE)     |
+			 BIT(JSON_MIF);
 		break;
 	case SP_VLAN:
-		types = BIT(SUBCOMMAND_VID);
+		types = BIT(JSON_VID) |
+			BIT(SUBCOMMAND_VID);
 		break;
 	case SP_HARDIF:
-		types = BIT(SUBCOMMAND_HIF);
+		types = BIT(JSON_HIF) |
+			BIT(SUBCOMMAND_HIF);
 		break;
 	default:
 		return NULL;
@@ -380,7 +392,7 @@ int main(int argc, char **argv)
 	cmd = find_command(&state, argv[0]);
 	if (!cmd) {
 		fprintf(stderr,
-			"Error - no valid command or debug table specified: %s\n",
+			"Error - no valid command or debug table/JSON specified: %s\n",
 			argv[0]);
 		goto err;
 	}

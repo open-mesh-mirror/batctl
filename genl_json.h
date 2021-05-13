@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 
+#include "batman_adv.h"
 #include "netlink.h"
 
 struct json_opts {
@@ -18,6 +19,12 @@ struct json_opts {
 	struct nlquery_opts query_opts;
 };
 
+struct json_query_data {
+	int nlm_flags;
+	enum batadv_nl_commands cmd;
+};
+
 void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_opts);
+int handle_json_query(struct state *state, int argc, char **argv);
 
 #endif /* _BATCTL_GENLJSON_H */

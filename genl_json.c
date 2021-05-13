@@ -11,6 +11,7 @@
 
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <getopt.h>
 #include <inttypes.h>
 #include <netinet/in.h>
 #include <netlink/netlink.h>
@@ -18,7 +19,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
+#include "functions.h"
 #include "batadv_packet.h"
 #include "batman_adv.h"
 #include "netlink.h"
@@ -495,4 +498,109 @@ void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_o
 	}
 
 	putchar('}');
+}
+
+static void json_query_usage(struct state *state)
+{
+	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]\n",
+		state->cmd->name, state->cmd->abbr);
+	fprintf(stderr, "parameters:\n");
+	fprintf(stderr, " \t -h print this help\n");
+}
+
+static int netlink_print_query_json_cb(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct nlquery_opts *query_opts = arg;
+	struct json_opts *json_opts;
+	struct genlmsghdr *ghdr;
+
+	json_opts = container_of(query_opts, struct json_opts, query_opts);
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.\n", stderr);
+		exit(1);
+	}
+
+	ghdr = nlmsg_data(nlh);
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
+		fputs("Received invalid data from kernel.\n", stderr);
+		exit(1);
+	}
+
+	netlink_print_json_entries(attrs, json_opts);
+
+	return NL_OK;
+}
+
+static int netlink_print_query_json_attributes(struct nl_msg *msg, void *arg)
+{
+	struct state *state = arg;
+
+	switch (state->selector) {
+	case SP_NONE_OR_MESHIF:
+	case SP_MESHIF:
+		break;
+	case SP_VLAN:
+		nla_put_u16(msg, BATADV_ATTR_VLANID, state->vid);
+		break;
+	case SP_HARDIF:
+		nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
+		break;
+	}
+
+	return 0;
+}
+
+static int netlink_print_query_json(struct state *state,
+				    struct json_query_data *json_query)
+{
+	int ret;
+	struct json_opts json_opts = {
+		.is_first = true,
+		.query_opts = {
+			.err = 0,
+		},
+	};
+
+	if (json_query->nlm_flags & NLM_F_DUMP)
+		putchar('[');
+
+	ret = netlink_query_common(state, state->mesh_ifindex,
+				   json_query->cmd,
+				   netlink_print_query_json_cb,
+				   netlink_print_query_json_attributes,
+				   json_query->nlm_flags,
+				   &json_opts.query_opts);
+
+	if (json_query->nlm_flags & NLM_F_DUMP)
+		puts("]");
+	else
+		putchar('\n');
+
+	return ret;
+}
+
+int handle_json_query(struct state *state, int argc, char **argv)
+{
+	struct json_query_data *json_query = state->cmd->arg;
+	int optchar;
+	int err;
+
+	while ((optchar = getopt(argc, argv, "h")) != -1) {
+		switch (optchar) {
+		case 'h':
+			json_query_usage(state);
+			return EXIT_SUCCESS;
+		}
+	}
+
+	check_root_or_die("batctl");
+
+	err = netlink_print_query_json(state, json_query);
+
+	return err;
 }

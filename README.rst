@@ -1038,6 +1038,34 @@ Example::
   }
 
 
+batctl neighbors_json
+---------------------
+
+Query batman-adv for the entries in the (direct) neighbors table.
+
+Usage::
+
+  batctl meshif <netdev> neighbors_json|nj
+
+Example::
+
+  $ batctl meshif bat0 neighbors_json
+  [
+      {
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "last_seen_msecs": 708,
+          "neigh_address": "16:7b:3c:c2:bf:b8"
+      },
+      {
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "last_seen_msecs": 1872,
+          "neigh_address": "ae:1b:bf:52:25:58"
+      }
+  ]
+
+
 Advanced Analytics
 ==================
 

@@ -1066,6 +1066,51 @@ Example::
   ]
 
 
+batctl originators_json
+-----------------------
+
+Query batman-adv for the entries in the originators table. The table doesn't
+only contain the list of best next hops but also all other known entries.
+Only next best hops have the key-value ``"best": true``.
+
+Usage::
+
+  batctl meshif <netdev> originators_json|oj
+
+Example::
+
+  $ batctl meshif bat0 originators_json | json_pp
+  [
+      {
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "last_seen_msecs": 4380,
+          "neigh_address": "ae:1b:bf:52:25:58",
+          "orig_address": "16:7b:3c:c2:bf:b8",
+          "tq": 236
+      },
+      {
+          "best": true,
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "last_seen_msecs": 4380,
+          "neigh_address": "16:7b:3c:c2:bf:b8",
+          "orig_address": "16:7b:3c:c2:bf:b8",
+          "tq": 251
+      },
+  [...]
+      {
+          "best": true,
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "last_seen_msecs": 4728,
+          "neigh_address": "ae:1b:bf:52:25:58",
+          "orig_address": "12:6d:7d:6f:f9:03",
+          "tq": 77
+      }
+  ]
+
+
 Advanced Analytics
 ==================
 

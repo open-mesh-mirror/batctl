@@ -25,6 +25,10 @@ struct print_opts {
 	uint8_t nl_cmd;
 };
 
+struct nlquery_opts {
+	int err;
+};
+
 struct ether_addr;
 
 int netlink_create(struct state *state);
@@ -53,6 +57,10 @@ int netlink_stop_callback(struct nl_msg *msg, void *arg);
 int netlink_print_error(struct sockaddr_nl *nla, struct nlmsgerr *nlerr,
 			void *arg);
 void netlink_print_remaining_header(struct print_opts *opts);
+
+int netlink_query_common(struct state *state, unsigned int mesh_ifindex,
+			 uint8_t nl_cmd, nl_recvmsg_msg_cb_t callback,
+			 int flags, struct nlquery_opts *query_opts);
 
 extern char algo_name_buf[256];
 extern int last_err;

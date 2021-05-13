@@ -29,10 +29,6 @@
 #include "functions.h"
 #include "main.h"
 
-struct nlquery_opts {
-	int err;
-};
-
 struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
 	[BATADV_ATTR_VERSION] = {
 		.type = NLA_STRING,
@@ -623,10 +619,10 @@ static int nlquery_stop_cb(struct nl_msg *msg, void *arg)
 	return NL_STOP;
 }
 
-static int netlink_query_common(struct state *state,
-				unsigned int mesh_ifindex, uint8_t nl_cmd,
-				nl_recvmsg_msg_cb_t callback, int flags,
-				struct nlquery_opts *query_opts)
+int netlink_query_common(struct state *state,
+			 unsigned int mesh_ifindex, uint8_t nl_cmd,
+			 nl_recvmsg_msg_cb_t callback, int flags,
+			 struct nlquery_opts *query_opts)
 {
 	struct nl_msg *msg;
 	struct nl_cb *cb;

@@ -622,8 +622,9 @@ static int nlquery_stop_cb(struct nl_msg *msg, void *arg)
 
 int netlink_query_common(struct state *state,
 			 unsigned int mesh_ifindex, uint8_t nl_cmd,
-			 nl_recvmsg_msg_cb_t callback, int flags,
-			 struct nlquery_opts *query_opts)
+			 nl_recvmsg_msg_cb_t callback,
+			 nl_recvmsg_msg_cb_t attribute_cb,
+			 int flags, struct nlquery_opts *query_opts)
 {
 	struct nl_msg *msg;
 	struct nl_cb *cb;
@@ -649,6 +650,15 @@ int netlink_query_common(struct state *state,
 		    flags, nl_cmd, 1);
 
 	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, mesh_ifindex);
+
+	if (attribute_cb) {
+		ret = attribute_cb(msg, state);
+		if (ret < 0) {
+			nlmsg_free(msg);
+			goto err_free_cb;
+		}
+	}
+
 	nl_send_auto_complete(state->sock, msg);
 	nlmsg_free(msg);
 
@@ -739,7 +749,7 @@ int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-			           translate_mac_netlink_cb, NLM_F_DUMP,
+			           translate_mac_netlink_cb, NULL, NLM_F_DUMP,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -845,7 +855,7 @@ int get_nexthop_netlink(struct state *state, const struct ether_addr *mac,
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_ORIGINATORS,
-			           get_nexthop_netlink_cb, NLM_F_DUMP,
+			           get_nexthop_netlink_cb, NULL, NLM_F_DUMP,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -921,7 +931,7 @@ int get_primarymac_netlink(struct state *state, uint8_t *primarymac)
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_MESH_INFO,
-			           get_primarymac_netlink_cb, 0,
+			           get_primarymac_netlink_cb, NULL, 0,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -997,7 +1007,7 @@ int get_algoname_netlink(struct state *state, unsigned int mesh_ifindex,
 	int ret;
 
 	ret = netlink_query_common(state, mesh_ifindex, BATADV_CMD_GET_MESH,
-			           get_algoname_netlink_cb, 0,
+			           get_algoname_netlink_cb, NULL, 0,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;

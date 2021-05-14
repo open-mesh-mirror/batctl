@@ -58,8 +58,10 @@ int netlink_print_error(struct sockaddr_nl *nla, struct nlmsgerr *nlerr,
 			void *arg);
 void netlink_print_remaining_header(struct print_opts *opts);
 
-int netlink_query_common(struct state *state, unsigned int mesh_ifindex,
-			 uint8_t nl_cmd, nl_recvmsg_msg_cb_t callback,
+int netlink_query_common(struct state *state,
+			 unsigned int mesh_ifindex, uint8_t nl_cmd,
+			 nl_recvmsg_msg_cb_t callback,
+			 nl_recvmsg_msg_cb_t attribute_cb,
 			 int flags, struct nlquery_opts *query_opts);
 
 extern char algo_name_buf[256];

@@ -878,6 +878,45 @@ Example::
   }
 
 
+batctl hardifs_json
+--------------------
+
+Query batman-adv for entries in the list of interfaces added to a batadv
+interface.
+
+Usage::
+
+  batctl meshif <netdev> hardifs_json|hj
+
+Example::
+
+  $ batctl meshif bat0 hardifs_json | json_pp
+  [
+      {
+          "active": true,
+          "elp_interval": 500,
+          "hard_address": "4a:97:a4:b8:fc:17",
+          "hard_ifindex": 2,
+          "hard_ifname": "dummy0",
+          "hop_penalty": 0,
+          "mesh_ifindex": 9,
+          "mesh_ifname": "bat0",
+          "throughput_override": 0
+      },
+      {
+          "active": true,
+          "elp_interval": 500,
+          "hard_address": "02:ba:de:af:fe:01",
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "hop_penalty": 0,
+          "mesh_ifindex": 9,
+          "mesh_ifname": "bat0",
+          "throughput_override": 0
+      }
+  ]
+
+
 Advanced Analytics
 ==================
 

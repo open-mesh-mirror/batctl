@@ -737,6 +737,46 @@ Example::
   ]
 
 
+batctl bla_claim_json
+---------------------
+
+Query batman-adv for the entries in the known claims table of
+bridge loop avoidance. Only claims from the current node will have have the
+key-value ``"bla_own": true``.
+
+Usage::
+
+  batctl meshif <netdev> bla_claim_json|clj
+
+Example::
+
+  $ batctl meshif bat0 bla_claim_json | json_pp
+  [
+      {
+          "bla_address": "a2:30:36:05:e6:32",
+          "bla_backbone": "02:ba:de:af:fe:01",
+          "bla_crc": 60445,
+          "bla_own": true,
+          "bla_vid": -1
+      },
+      {
+          "bla_address": "24:18:1d:1c:d2:13",
+          "bla_backbone": "02:ba:de:af:fe:01",
+          "bla_crc": 60445,
+          "bla_own": true,
+          "bla_vid": -1
+      },
+      {
+          "bla_address": "68:72:51:68:67:7a",
+          "bla_backbone": "02:ba:de:af:fe:01",
+          "bla_crc": 60445,
+          "bla_own": true,
+          "bla_vid": -1
+      },
+  [...]
+  ]
+
+
 Advanced Analytics
 ==================
 

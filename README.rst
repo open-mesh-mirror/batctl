@@ -706,6 +706,37 @@ JSON netlink query helper
 =========================
 
 
+batctl bla_backbone_json
+------------------------
+
+Query batman-adv for the entries in the known backbones table of
+bridge loop avoidance.
+
+Usage::
+
+  batctl meshif <netdev> bla_backbone_json|bbj
+
+Example::
+
+  $ batctl meshif bat0 bla_backbone_json | json_pp
+  [
+      {
+          "bla_backbone": "02:ba:de:af:fe:01",
+          "bla_crc": 0,
+          "bla_own": true,
+          "bla_vid": -1,
+          "last_seen_msecs": 920
+      },
+      {
+          "bla_backbone": "02:ba:de:af:fe:01",
+          "bla_crc": 33755,
+          "bla_own": true,
+          "bla_vid": -1,
+          "last_seen_msecs": 44
+      }
+  ]
+
+
 Advanced Analytics
 ==================
 

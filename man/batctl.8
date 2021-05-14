@@ -31,7 +31,7 @@ batctl \- B.A.T.M.A.N. advanced control and management tool
 .br
 .SH DESCRIPTION
 batctl offers a convenient way to configure the batman\-adv kernel module as well as displaying debug information
-such as originator tables, translation tables and the debug log. In combination with a bat\-hosts file batctl allows
+such as originator tables and translation tables. In combination with a bat\-hosts file batctl allows
 the use of host names instead of MAC addresses.
 .PP
 B.A.T.M.A.N. advanced operates on layer 2. Thus all hosts participating in the virtual switched network are transparently
@@ -137,9 +137,8 @@ Level 'routes' enables messages related to routes being added / changed / delete
 translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
 messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
 Level 'mcast' enables messages related to multicast optimizations. Level 'tp' enables messages related to throughput meter.
-Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it.
-Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
-won't be available.
+Level 'all' enables all messages. The messages are sent to the kernels trace buffers. Use \fBtrace-cmd stream -e batadv:batadv_dbg\fP
+to receive the system wide log messages.
 .br
 .IP "[\fBmeshif <netdev>\fP] \fBgw_mode|gw\fP [\fBoff\fP|\fBclient\fP|\fBserver\fP] [\fBsel_class|bandwidth\fP]\fP"
 If no parameter is given the current gateway mode is displayed otherwise the parameter is used to set the gateway mode. The

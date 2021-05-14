@@ -16,7 +16,7 @@ settings.
 
 
 How does it work ?
-==================
+------------------
 
 batctl uses the raw packet sockets to inject custom icmp packets into the data
 flow. That's why ping and traceroute work almost like their IP based
@@ -26,7 +26,7 @@ recognize the packets.
 
 
 The bat-hosts file
-==================
+------------------
 
 This file is similar to the /etc/hosts file. You can write one MAC address and
 one host name per line. batctl will analyze the file to find the matching MAC
@@ -34,8 +34,55 @@ address to your provided host name. Host names are much easier to remember than
 MAC addresses.  ;)
 
 
+Commands
+========
+
+
+batctl interface
+----------------
+
+display or modify the interface settings
+
+Usage::
+
+  batctl interface|if [add|del iface(s)]
+
+Example::
+
+  $  batctl interface
+  eth0: active
+
+
+batctl ping
+-----------
+
+Sends a Layer 2 batman-adv ping to check round trip time and connectivity
+
+Usage::
+
+  batctl ping [parameters] mac|bat-host|host-name|IP-address
+  parameters:
+           -c ping packet count
+           -h print this help
+           -i interval in seconds
+           -t timeout in seconds
+           -T don't try to translate mac to originator address
+           -R record route
+
+Example::
+
+  $ batctl ping fe:fe:00:00:09:01
+  PING fe:fe:00:00:09:01 (fe:fe:00:00:09:01) 19(47) bytes of data
+  19 bytes from fe:fe:00:00:09:01 icmp_seq=1 ttl=43 time=8.74 ms
+  19 bytes from fe:fe:00:00:09:01 icmp_seq=2 ttl=43 time=7.48 ms
+  19 bytes from fe:fe:00:00:09:01 icmp_seq=3 ttl=43 time=8.23 ms
+  ^C--- fe:fe:00:00:09:01 ping statistics ---
+  3 packets transmitted, 3 received, 0% packet loss
+  rtt min/avg/max/mdev = 7.476/8.151/8.743/1.267 ms
+
+
 batctl statistics
-=================
+-----------------
 
 The batman-adv kernel module maintains a number of traffic counters which are exported
 to user space. With batctl these counters can be easily retrieved. The output may vary
@@ -84,84 +131,8 @@ Example::
           dat_reply_rx: 0
 
 
-batctl translate
-================
-
-Translates a destination (hostname, IPv4, IPv6, MAC, bat_host-name) to the
-originator mac address responsible for it.
-
-Usage::
-
-  batctl translate mac|bat-host|host-name|IP-address
-
-Example::
-
-  $ batctl translate www.google.de
-  02:ca:fe:af:fe:01
-  $ batctl translate 02:ca:fe:af:fe:01
-  02:ca:fe:af:fe:01
-  $ batctl translate 192.168.1.2
-  02:ca:fe:af:fe:05
-  $ batctl translate fe:fe:00:00:09:01
-  02:ca:fe:af:fe:05
-  $ batctl translate 2001::1
-  02:ca:fe:af:fe:05
-
-
-batctl ping
-===========
-
-Sends a Layer 2 batman-adv ping to check round trip time and connectivity
-
-Usage::
-
-  batctl ping [parameters] mac|bat-host|host-name|IP-address
-  parameters:
-           -c ping packet count
-           -h print this help
-           -i interval in seconds
-           -t timeout in seconds
-           -T don't try to translate mac to originator address
-           -R record route
-
-Example::
-
-  $ batctl ping fe:fe:00:00:09:01
-  PING fe:fe:00:00:09:01 (fe:fe:00:00:09:01) 19(47) bytes of data
-  19 bytes from fe:fe:00:00:09:01 icmp_seq=1 ttl=43 time=8.74 ms
-  19 bytes from fe:fe:00:00:09:01 icmp_seq=2 ttl=43 time=7.48 ms
-  19 bytes from fe:fe:00:00:09:01 icmp_seq=3 ttl=43 time=8.23 ms
-  ^C--- fe:fe:00:00:09:01 ping statistics ---
-  3 packets transmitted, 3 received, 0% packet loss
-  rtt min/avg/max/mdev = 7.476/8.151/8.743/1.267 ms
-
-
-batctl traceroute
-=================
-
-Traceroute sends 3 packets to each hop, awaits the answers and prints out the
-response times.
-
-Usage::
-
-  batctl traceroute [parameters] mac|bat-host|host-name|IP-address
-
-Example::
-
-  $ batctl traceroute fe:fe:00:00:09:01
-  traceroute to fe:fe:00:00:09:01 (fe:fe:00:00:09:01), 50 hops max, 19 byte packets
-   1: fe:fe:00:00:02:01 4.932 ms  2.338 ms  1.333 ms
-   2: fe:fe:00:00:03:01 6.860 ms  1.579 ms  1.260 ms
-   3: fe:fe:00:00:04:01 2.342 ms  1.547 ms  1.655 ms
-   4: fe:fe:00:00:05:01 2.906 ms  2.211 ms  2.253 ms
-   5: fe:fe:00:00:06:01 3.577 ms  2.687 ms  3.088 ms
-   6: fe:fe:00:00:07:01 4.217 ms  5.741 ms  3.551 ms
-   7: fe:fe:00:00:08:01 5.017 ms  5.547 ms  4.294 ms
-   8: fe:fe:00:00:09:01 5.730 ms  4.970 ms  6.437 ms
-
-
 batctl tcpdump
-==============
+--------------
 
 tcpdump layer 2 and/or layer 3 traffic on the given interface
 
@@ -207,8 +178,535 @@ Example output for tcpdump::
   01:51:44.381064 BAT kansas: OGM via neigh kansas, seqno 6720, tq 255, ttl 50, v 9, flags [..I], length 28
 
 
+batctl traceroute
+-----------------
+
+Traceroute sends 3 packets to each hop, awaits the answers and prints out the
+response times.
+
+Usage::
+
+  batctl traceroute [parameters] mac|bat-host|host-name|IP-address
+
+Example::
+
+  $ batctl traceroute fe:fe:00:00:09:01
+  traceroute to fe:fe:00:00:09:01 (fe:fe:00:00:09:01), 50 hops max, 19 byte packets
+   1: fe:fe:00:00:02:01 4.932 ms  2.338 ms  1.333 ms
+   2: fe:fe:00:00:03:01 6.860 ms  1.579 ms  1.260 ms
+   3: fe:fe:00:00:04:01 2.342 ms  1.547 ms  1.655 ms
+   4: fe:fe:00:00:05:01 2.906 ms  2.211 ms  2.253 ms
+   5: fe:fe:00:00:06:01 3.577 ms  2.687 ms  3.088 ms
+   6: fe:fe:00:00:07:01 4.217 ms  5.741 ms  3.551 ms
+   7: fe:fe:00:00:08:01 5.017 ms  5.547 ms  4.294 ms
+   8: fe:fe:00:00:09:01 5.730 ms  4.970 ms  6.437 ms
+
+
+batctl translate
+----------------
+
+Translates a destination (hostname, IPv4, IPv6, MAC, bat_host-name) to the
+originator mac address responsible for it.
+
+Usage::
+
+  batctl translate mac|bat-host|host-name|IP-address
+
+Example::
+
+  $ batctl translate www.google.de
+  02:ca:fe:af:fe:01
+  $ batctl translate 02:ca:fe:af:fe:01
+  02:ca:fe:af:fe:01
+  $ batctl translate 192.168.1.2
+  02:ca:fe:af:fe:05
+  $ batctl translate fe:fe:00:00:09:01
+  02:ca:fe:af:fe:05
+  $ batctl translate 2001::1
+  02:ca:fe:af:fe:05
+
+
+Debug information tables
+========================
+
+
+batctl backbonetable
+--------------------
+
+Check the bridge loop avoidance backbone table
+
+Usage::
+
+  batctl backbonetable|bbt
+
+Example::
+
+  Originator           VID   last seen (CRC   )
+  4a:97:a4:b8:fc:17 on    -1    1.376s (0x847a)
+
+
+batctl claimtable
+-----------------
+
+Check the bridge loop avoidance claim table table
+
+Usage::
+
+  batctl claimtable|cl
+
+Example::
+
+  Client               VID      Originator        [o] (CRC   )
+  e4:95:6e:4f:06:28 on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  08:ee:8b:84:82:8b on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  ac:86:74:9f:4d:80 on    -1 by 02:ba:de:af:fe:01 [*] (0x3b7e)
+  60:14:66:6f:ec:52 on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  3a:ef:e8:e0:10:02 on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  56:bd:b4:a7:0b:aa on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  42:3a:6e:68:01:7d on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+  0c:d7:46:2c:41:39 on    -1 by 02:ba:de:af:fe:01 [*] (0xbb73)
+
+
+batctl dat_cache
+----------------
+
+display the local D.A.T. cache
+
+Usage::
+
+  batctl dat_cache|dc
+
+Example::
+
+  Distributed ARP Table (bat0):
+            IPv4             MAC           last-seen
+   *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
+
+where
+
+IPv4:
+  is the IP address of a client in the mesh network
+MAC:
+  is the MAC address associated to that IP
+last-seen:
+  is the amount of time since last refresh of this entry
+
+
+batctl gateways
+---------------
+
+Check the detected (and maybe selected) gateways
+
+Usage::
+
+  batctl gateways|gwl
+
+Example::
+
+  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth
+  02:62:e7:ab:01:01 (180) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+  02:62:e7:ab:05:01 (180) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+  02:62:e7:ab:06:01 (235) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+  02:62:e7:ab:02:01 (176) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+  02:62:e7:ab:03:01 (180) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+  02:62:e7:ab:04:01 (180) ae:1b:bf:52:25:58 [    enp0s1]: 10.0/2.0 MBit
+
+
+batctl mcast_flags
+------------------
+
+display local and remote multicast flags
+
+Usage::
+
+  batctl mcast_flags|mf
+
+Example::
+
+  Multicast flags (own flags: [U46])
+  * Bridged [U]                           U
+  * No IGMP/MLD Querier [4/6]:            ./.
+  * Shadowing IGMP/MLD Querier [4/6]:     4/6
+  -------------------------------------------
+         Originator Flags
+  02:04:64:a4:39:c1 [U..]
+  02:04:64:a4:39:c2 [U..]
+  02:04:64:a4:39:c3 [...]
+
+where
+
+Originator:
+  the MAC address of the originating (primary interface) batman-adv node
+Flags:
+  multicast flags of the according node
+U:
+  wants all unsnoopable multicast traffic, meaning other nodes need to always
+  forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
+4:
+  wants all IPv4 multicast traffic, meaning other nodes need to always forward
+  any IPv4 multicast traffic to it
+6:
+  wants all IPv6 multicast traffic, meaning other nodes need to always forward
+  any IPv6 multicast traffic to it
+
+If a node does not have multicast optimizations available (e.g. old batman-adv
+version or optimizations not compiled in), therefore not announcing any
+multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
+
+
+batctl neighbors
+----------------
+
+Check the neighbors table
+
+Usage::
+
+  batctl neighbors|n
+
+Example::
+
+  IF             Neighbor              last-seen
+         enp0s1     16:7b:3c:c2:bf:b8    4.612s
+         enp0s1     ae:1b:bf:52:25:58    0.740s
+
+
+batctl originators
+------------------
+
+Check the Originators table
+
+Usage::
+
+  batctl originators|o
+
+Example::
+
+  $ batctl originators
+  [B.A.T.M.A.N. adv 2011.4.0, MainIF/MAC: eth0/fe:fe:00:00:01:01 (bat0)]
+    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+  fe:fe:00:00:08:01    0.820s   (194) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 65) fe:fe:00:00:02:01 (194)
+  fe:fe:00:00:03:01    0.980s   (245) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 81) fe:fe:00:00:02:01 (245)
+  fe:fe:00:00:05:01    0.140s   (221) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 76) fe:fe:00:00:02:01 (221)
+  fe:fe:00:00:04:01    0.010s   (235) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:02:01 (235) fe:fe:00:00:03:01 ( 81)
+  fe:fe:00:00:09:01    0.830s   (187) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 63) fe:fe:00:00:02:01 (187)
+  fe:fe:00:00:06:01    0.830s   (213) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 71) fe:fe:00:00:02:01 (213)
+  fe:fe:00:00:02:01    0.240s   (255) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 81) fe:fe:00:00:02:01 (255)
+  fe:fe:00:00:07:01    0.670s   (200) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 68) fe:fe:00:00:02:01 (200)
+
+Since 2014.1.0, each batman interface has an individual originator table as well which is only used for routing.
+These table explain to which neighbor a packet is forwarded when the packet is received on the specified interface.
+
+Example::
+
+  $ batctl originators -i eth0
+  [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth0/fe:f0:00:00:02:01 (bat0 BATMAN_IV)]
+    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+  fe:f1:00:00:03:01    0.170s   (255) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (255)
+  fe:f1:00:00:01:01    0.510s   (253) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (253)
+  fe:f0:00:00:05:01    0.660s   (222) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (198) fe:f1:00:00:03:01 (222)
+  fe:f0:00:00:03:01    0.560s   (252) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (252) fe:f0:00:00:03:01 (240)
+  fe:f0:00:00:04:01    0.250s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (211)
+  fe:f0:00:00:01:01    0.850s   (255) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (255) fe:f0:00:00:01:01 (238)
+  $ batctl originators -i eth1
+  [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth1/fe:f1:00:00:02:01 (bat0 BATMAN_IV)]
+    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+  fe:f1:00:00:03:01    0.880s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240)
+  fe:f1:00:00:01:01    0.250s   (239) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (239)
+  fe:f0:00:00:05:01    0.340s   (211) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (210) fe:f1:00:00:03:01 (211)
+  fe:f0:00:00:03:01    0.260s   (253) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (253)
+  fe:f0:00:00:04:01    0.010s   (225) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (224) fe:f0:00:00:03:01 (225)
+  fe:f0:00:00:01:01    0.510s   (255) fe:f0:00:00:01:01 [      eth0]: fe:f1:00:00:01:01 (240) fe:f0:00:00:01:01 (255)
+
+
+
+batctl translocal
+-----------------
+
+display the local translation table
+
+Usage::
+
+  batctl translocal|tl
+
+Example::
+
+  $ batctl translocal
+  Locally retrieved addresses (from bat0) announced via TT (TTVN: 1):
+   * fe:fe:00:00:01:01 [RPNXW]
+
+In particular, RPNXW are flags which have the following meanings:
+
+R/Roaming:
+  this client moved to another node but it is still kept for consistency reasons
+  until the next OGM is sent.
+P/noPurge:
+  this client represents the local soft interface and will never be deleted.
+N/New:
+  this client has recently been added but is not advertised in the mesh until
+  the next OGM is sent (for consistency reasons).
+X/delete:
+  this client has to be removed for some reason, but it is still kept for
+  consistency reasons until the next OGM is sent.
+W/Wireless:
+  this client is connected to the node through a wireless device.
+
+If any of the flags is not enabled, a '.' will substitute its symbol.
+
+
+batctl transglobal
+------------------
+
+display the global translation table
+
+Usage::
+
+  batctl transglobal|tg
+
+Example::
+
+  Globally announced TT entries received via the mesh bat0
+     Client	     (TTVN)     Originator        (Curr TTVN) Flags
+   * fe:fe:00:00:01:01  ( 12) via fe:fe:00:00:01:02       ( 50) [RXW]
+
+where
+
+TTVN:
+ is the translation-table-version-number which introduced this client
+Curr TTVN:
+  is the translation-table-version-number currently advertised by the
+  originator serving this client (different clients advertised by the same
+  originator have the same Curr TTVN)
+Flags that mean:
+  R/Roaming:
+    this client moved to another node but it is still kept for consistency
+    reasons until the next OGM is sent.
+  X/delete:
+    this client has to be removed for some reason, but it is still kept for
+    consistency reasons until the next OGM is sent.
+  W/Wireless:
+    this client is connected to the node through a wireless device.
+
+If any of the flags is not enabled, a '.' will substitute its symbol.
+
+
+Settings
+========
+
+
+batctl aggregation
+------------------
+
+display or modify the packet aggregation setting
+
+Usage::
+
+  batctl aggregation|ag [0|1]
+
+
+ap_isolation
+------------
+
+display or modify the client isolation setting
+
+Usage::
+
+  batctl ap_isolation|ap [0|1]
+
+
+bonding
+-------
+
+display or modify the bonding setting
+
+Usage::
+
+  batctl bonding|b [0|1]
+
+
+bridge_loop_avoidance
+---------------------
+
+display or modify the bridge_loop_avoidance setting
+
+Usage::
+
+  batctl bridge_loop_avoidance|bl [0|1]
+
+
+distributed_arp_table
+---------------------
+
+display or modify the distributed_arp_table setting
+
+Usage::
+
+  batctl distributed_arp_table|dat [0|1]
+
+
+batctl elp interval
+-------------------
+
+display or modify the elp interval in ms for hard interface
+
+Usage::
+
+  batctl hardif $hardif elp_interval|et [interval]
+
+Example::
+
+  $ batctl hardif eth0 elp_interval 200
+  $ batctl hardif eth0 elp_interval
+  200
+
+
+fragmentation
+-------------
+
+display or modify the fragmentation setting
+
+Usage::
+
+  batctl fragmentation|f [0|1]
+
+
+gw_mode
+-------
+
+display or modify the gw_mode setting
+
+Usage::
+
+  batctl gw_mode|gw [0|1]
+
+
+batctl hop_penalty
+------------------
+
+display or modify the hop_penalty (0-255)
+
+Usage::
+
+  batctl hop_penalty|hp [penalty]
+
+Example::
+
+  $ batctl hop_penalty
+  30
+  $ batctl hardif eth0 hop_penalty
+  0
+  $ batctl hardif eth0 hop_penalty 50
+  $ batctl hardif eth0 hop_penalty
+  50
+
+
+batctl isolation_mark
+---------------------
+
+display or modify the isolation mark.
+This value is used by Extended Isolation feature.
+
+Usage::
+
+  batctl isolation_mark|mark $value[/0x$mask]
+
+* Example 1: ``batctl mark 0x00000001/0xffffffff``
+* Example 2: ``batctl mark 0x00040000/0xffff0000``
+* Example 3: ``batctl mark 16``
+* Example 4: ``batctl mark 0x0f``
+
+
+batctl loglevel
+---------------
+
+display or modify the log level
+
+Usage::
+
+  batctl loglevel|ll [level]
+
+Example::
+
+  $  batctl loglevel
+  [x] all debug output disabled (none)
+  [ ] messages related to routing / flooding / broadcasting (batman)
+  [ ] messages related to route added / changed / deleted (routes)
+  [ ] messages related to translation table operations (tt)
+  [ ] messages related to bridge loop avoidance (bla)
+  [ ] messages related to arp snooping and distributed arp table (dat)
+  [ ] messages related to network coding (nc)
+  [ ] messages related to multicast (mcast)
+  [ ] messages related to throughput meter (tp)
+
+
+batctl multicast_fanout
+-----------------------
+
+display or modify the multicast fanout setting
+
+Usage::
+
+  batctl multicast_fanout|mo [fanout]
+
+
+batctl multicast_forceflood
+---------------------------
+
+display or modify the multicast forceflood setting
+
+Usage::
+
+  batctl multicast_forceflood|mff [0|1]
+
+
+batctl network_coding
+---------------------
+
+display or modify the network coding setting
+
+Usage::
+
+  batctl network_coding|nc [0|1]
+
+Note that network coding requires a working promiscuous mode on all interfaces.
+
+
+batctl orig_interval
+--------------------
+
+display or modify the originator interval in ms
+
+Usage::
+
+  batctl orig_interval|it [interval]
+
+Example::
+
+  $ batctl interval
+  1000
+
+
+batctl throughput override
+--------------------------
+
+display or modify the throughput override in kbit/s for hard interface
+
+Usage::
+
+  batctl hardif $hardif throughput_override|to [kbit]
+
+Example::
+
+  $ batctl hardif eth0 throughput_override 15000
+  $ batctl hardif eth0 throughput_override 15mbit
+  $ batctl hardif eth0 throughput_override
+  15.0 MBit
+
+
+Advanced Analytics
+==================
+
 batctl bisect_iv
-================
+----------------
 
 Analyzes the B.A.T.M.A.N. IV logfiles to build a small internal database of all sent sequence
 numbers and routing table changes. This database can be used to search for routing loops
@@ -308,382 +806,12 @@ Examples::
   [...]
 
 
-batctl originators
-==================
-
-Check the Originators table
-
-Usage::
-
-  batctl originators|o
-
-Example::
-
-  $ batctl originators
-  [B.A.T.M.A.N. adv 2011.4.0, MainIF/MAC: eth0/fe:fe:00:00:01:01 (bat0)]
-    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
-  fe:fe:00:00:08:01    0.820s   (194) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 65) fe:fe:00:00:02:01 (194)
-  fe:fe:00:00:03:01    0.980s   (245) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 81) fe:fe:00:00:02:01 (245)
-  fe:fe:00:00:05:01    0.140s   (221) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 76) fe:fe:00:00:02:01 (221)
-  fe:fe:00:00:04:01    0.010s   (235) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:02:01 (235) fe:fe:00:00:03:01 ( 81)
-  fe:fe:00:00:09:01    0.830s   (187) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 63) fe:fe:00:00:02:01 (187)
-  fe:fe:00:00:06:01    0.830s   (213) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 71) fe:fe:00:00:02:01 (213)
-  fe:fe:00:00:02:01    0.240s   (255) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 81) fe:fe:00:00:02:01 (255)
-  fe:fe:00:00:07:01    0.670s   (200) fe:fe:00:00:02:01 [      eth0]: fe:fe:00:00:03:01 ( 68) fe:fe:00:00:02:01 (200)
-
-Since 2014.1.0, each batman interface has an individual originator table as well which is only used for routing.
-These table explain to which neighbor a packet is forwarded when the packet is received on the specified interface.
-
-Example::
-
-  $ batctl originators -i eth0
-  [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth0/fe:f0:00:00:02:01 (bat0 BATMAN_IV)]
-    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
-  fe:f1:00:00:03:01    0.170s   (255) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (255)
-  fe:f1:00:00:01:01    0.510s   (253) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (253)
-  fe:f0:00:00:05:01    0.660s   (222) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (198) fe:f1:00:00:03:01 (222)
-  fe:f0:00:00:03:01    0.560s   (252) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (252) fe:f0:00:00:03:01 (240)
-  fe:f0:00:00:04:01    0.250s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (211)
-  fe:f0:00:00:01:01    0.850s   (255) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (255) fe:f0:00:00:01:01 (238)
-  $ batctl originators -i eth1
-  [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: eth1/fe:f1:00:00:02:01 (bat0 BATMAN_IV)]
-    Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
-  fe:f1:00:00:03:01    0.880s   (240) fe:f1:00:00:03:01 [      eth1]: fe:f1:00:00:03:01 (240)
-  fe:f1:00:00:01:01    0.250s   (239) fe:f1:00:00:01:01 [      eth1]: fe:f1:00:00:01:01 (239)
-  fe:f0:00:00:05:01    0.340s   (211) fe:f1:00:00:03:01 [      eth1]: fe:f0:00:00:03:01 (210) fe:f1:00:00:03:01 (211)
-  fe:f0:00:00:03:01    0.260s   (253) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (240) fe:f0:00:00:03:01 (253)
-  fe:f0:00:00:04:01    0.010s   (225) fe:f0:00:00:03:01 [      eth0]: fe:f1:00:00:03:01 (224) fe:f0:00:00:03:01 (225)
-  fe:f0:00:00:01:01    0.510s   (255) fe:f0:00:00:01:01 [      eth0]: fe:f1:00:00:01:01 (240) fe:f0:00:00:01:01 (255)
-
-
-batctl interface
-================
-
-display or modify the interface settings
-
-Usage::
-
-  batctl interface|if [add|del iface(s)]
-
-Example::
-
-  $  batctl interface
-  eth0: active
-
-
-batctl interval
-===============
-
-display or modify the originator interval in ms
-
-Usage::
-
-  batctl orig_interval|it [interval]
-
-Example::
-
-  $ batctl interval
-  1000
-
-
-batctl elp interval
-===================
-
-display or modify the elp interval in ms for hard interface
-
-Usage::
-
-  batctl hardif $hardif elp_interval|et [interval]
-
-Example::
-
-  $ batctl hardif eth0 elp_interval 200
-  $ batctl hardif eth0 elp_interval
-  200
-
-
-batctl throughput override
-==========================
-
-display or modify the throughput override in kbit/s for hard interface
-
-Usage::
-
-  batctl hardif $hardif throughput_override|to [kbit]
-
-Example::
-
-  $ batctl hardif eth0 throughput_override 15000
-  $ batctl hardif eth0 throughput_override 15mbit
-  $ batctl hardif eth0 throughput_override
-  15.0 MBit
-
-
-batctl loglevel
-===============
-
-display or modify the log level
-
-Usage::
-
-  batctl loglevel|ll [level]
-
-Example::
-
-  $  batctl loglevel
-  [x] all debug output disabled (none)
-  [ ] messages related to routing / flooding / broadcasting (batman)
-  [ ] messages related to route added / changed / deleted (routes)
-  [ ] messages related to translation table operations (tt)
-  [ ] messages related to bridge loop avoidance (bla)
-  [ ] messages related to arp snooping and distributed arp table (dat)
-  [ ] messages related to network coding (nc)
-  [ ] messages related to multicast (mcast)
-  [ ] messages related to throughput meter (tp)
-
-
-batctl nc_nodes
-===============
-
-display the neighbor nodes considered for network coded packets
-
-Usage::
-
-  batctl nc_nodes|nn
-
-Example::
-
-  Node:      fe:fe:00:0a:01:01
-   Ingoing:  fe:fe:00:0a:01:01 fe:fe:00:0a:02:01
-   Outgoing: fe:fe:00:0a:01:01 fe:fe:00:0a:02:01
-
-Where
-
-Node:
-  is the neighbor
-Ingoing:
-  is the neighbors this neighbor can hear packets from
-Outgoing:
-  is the neighbors that can hear packets from this neighbor
-
-
-batctl network_coding
-=====================
-
-display or modify the network coding setting
-
-Usage::
-
-  batctl network_coding|nc [0|1]
-
-Note that network coding requires a working promiscuous mode on all interfaces.
-
-
-batctl multicast_forceflood
-===========================
-
-display or modify the multicast forceflood setting
-
-Usage::
-
-  batctl multicast_forceflood|mff [0|1]
-
-
-batctl multicast_fanout
-=======================
-
-display or modify the multicast fanout setting
-
-Usage::
-
-  batctl multicast_fanout|mo [fanout]
-
-
-batctl mcast_flags
-==================
-
-display local and remote multicast flags
-
-Usage::
-
-  batctl mcast_flags|mf
-
-Example::
-
-  Multicast flags (own flags: [U46])
-  * Bridged [U]                           U
-  * No IGMP/MLD Querier [4/6]:            ./.
-  * Shadowing IGMP/MLD Querier [4/6]:     4/6
-  -------------------------------------------
-         Originator Flags
-  02:04:64:a4:39:c1 [U..]
-  02:04:64:a4:39:c2 [U..]
-  02:04:64:a4:39:c3 [...]
-
-where
-
-Originator:
-  the MAC address of the originating (primary interface) batman-adv node
-Flags:
-  multicast flags of the according node
-U:
-  wants all unsnoopable multicast traffic, meaning other nodes need to always
-  forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
-4:
-  wants all IPv4 multicast traffic, meaning other nodes need to always forward
-  any IPv4 multicast traffic to it
-6:
-  wants all IPv6 multicast traffic, meaning other nodes need to always forward
-  any IPv6 multicast traffic to it
-
-If a node does not have multicast optimizations available (e.g. old batman-adv
-version or optimizations not compiled in), therefore not announcing any
-multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
-
-
-batctl aggregation
-==================
-
-display or modify the packet aggregation setting
-
-Usage::
-
-  batctl aggregation|ag [0|1]
-
-
-batctl hop_penalty
-==================
-
-display or modify the hop_penalty (0-255)
-
-Usage::
-
-  batctl hop_penalty|hp [penalty]
-
-Example::
-
-  $ batctl hop_penalty
-  30
-  $ batctl hardif eth0 hop_penalty
-  0
-  $ batctl hardif eth0 hop_penalty 50
-  $ batctl hardif eth0 hop_penalty
-  50
-
-
-batctl isolation_mark
-=====================
-
-display or modify the isolation mark.
-This value is used by Extended Isolation feature.
-
-Usage::
-
-  batctl isolation_mark|mark $value[/0x$mask]
-
-* Example 1: ``batctl mark 0x00000001/0xffffffff``
-* Example 2: ``batctl mark 0x00040000/0xffff0000``
-* Example 3: ``batctl mark 16``
-* Example 4: ``batctl mark 0x0f``
-
-
-batctl translocal
-=================
-
-display the local translation table
-
-Usage::
-
-  batctl translocal|tl
-
-Example::
-
-  $ batctl translocal
-  Locally retrieved addresses (from bat0) announced via TT (TTVN: 1):
-   * fe:fe:00:00:01:01 [RPNXW]
-
-In particular, RPNXW are flags which have the following meanings:
-
-R/Roaming:
-  this client moved to another node but it is still kept for consistency reasons
-  until the next OGM is sent.
-P/noPurge:
-  this client represents the local soft interface and will never be deleted.
-N/New:
-  this client has recently been added but is not advertised in the mesh until
-  the next OGM is sent (for consistency reasons).
-X/delete:
-  this client has to be removed for some reason, but it is still kept for
-  consistency reasons until the next OGM is sent.
-W/Wireless:
-  this client is connected to the node through a wireless device.
-
-If any of the flags is not enabled, a '.' will substitute its symbol.
-
-
-batctl transglobal
-==================
-
-display the global translation table
-
-Usage::
-
-  batctl transglobal|tg
-
-Example::
-
-  Globally announced TT entries received via the mesh bat0
-     Client	     (TTVN)     Originator        (Curr TTVN) Flags
-   * fe:fe:00:00:01:01  ( 12) via fe:fe:00:00:01:02       ( 50) [RXW]
-
-where
-
-TTVN:
- is the translation-table-version-number which introduced this client
-Curr TTVN:
-  is the translation-table-version-number currently advertised by the
-  originator serving this client (different clients advertised by the same
-  originator have the same Curr TTVN)
-Flags that mean:
-  R/Roaming:
-    this client moved to another node but it is still kept for consistency
-    reasons until the next OGM is sent.
-  X/delete:
-    this client has to be removed for some reason, but it is still kept for
-    consistency reasons until the next OGM is sent.
-  W/Wireless:
-    this client is connected to the node through a wireless device.
-
-If any of the flags is not enabled, a '.' will substitute its symbol.
-
-
-batctl dat_cache
-=================
-
-display the local D.A.T. cache
-
-Usage::
-
-  batctl dat_cache|dc
-
-Example::
-
-  Distributed ARP Table (bat0):
-            IPv4             MAC           last-seen
-   *     172.100.0.1 b6:9b:d0:ea:b1:13      0:00
-
-where
-
-IPv4:
-  is the IP address of a client in the mesh network
-MAC:
-  is the MAC address associated to that IP
-last-seen:
-  is the amount of time since last refresh of this entry
+Appendix
+========
 
 
 batctl and network name spaces
-==============================
+------------------------------
 
 The batman-adv kernel module is netns aware. Mesh instances can be
 created in name spaces, and interfaces in that name space added to the

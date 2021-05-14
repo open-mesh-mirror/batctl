@@ -1284,6 +1284,34 @@ Example::
   ]
 
 
+batctl vlan_json
+----------------
+
+Read the vlan state for an vlan on top a batman-adv interface.
+
+Usage::
+
+  batctl meshif <netdev> vid <vid> vlan_json|vj
+  batctl vlan <vdev> vlan_json|vj
+
+Example::
+
+  $ batctl meshif bat0 vid 0 vlan_json
+  {
+      "ap_isolation_enabled": false,
+      "mesh_ifindex": 9,
+      "mesh_ifname": "bat0",
+      "vlanid": 0
+  }
+  
+  $ batctl vlan bat0.1 vlan_json
+  {
+      "ap_isolation_enabled": false,
+      "mesh_ifindex": 9,
+      "mesh_ifname": "bat0",
+      "vlanid": 1
+  }
+
 Advanced Analytics
 ==================
 

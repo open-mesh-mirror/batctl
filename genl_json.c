@@ -383,7 +383,7 @@ static const struct nla_policy_json batadv_genl_json[NUM_BATADV_ATTR] = {
 	},
 	[BATADV_ATTR_VLANID] = {
 		.name = "vlanid",
-		.cb = nljson_print_vlanid,
+		.cb = nljson_print_uint16,
 	},
 	[BATADV_ATTR_AGGREGATED_OGMS_ENABLED] = {
 		.name = "aggregated_ogms_enabled",

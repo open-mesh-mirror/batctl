@@ -806,6 +806,52 @@ Example::
   ]
 
 
+batctl gateways_json
+--------------------
+
+Query batman-adv for the entries in the gateways list. Only selected gateways
+(for the gateway mode "client) will have have the key-value ``"best": true``.
+
+Usage::
+
+  batctl meshif <netdev> gateways_json|gwj
+
+Example::
+
+  $ batctl meshif bat0 gateways_json | json_pp
+  [
+      {
+          "bandwidth_down": 100,
+          "bandwidth_up": 20,
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "orig_address": "02:62:e7:ab:01:01",
+          "router": "ae:1b:bf:52:25:58",
+          "tq": 180
+      },
+      {
+          "bandwidth_down": 100,
+          "bandwidth_up": 20,
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "orig_address": "02:62:e7:ab:05:01",
+          "router": "ae:1b:bf:52:25:58",
+          "tq": 180
+      },
+      {
+          "bandwidth_down": 100,
+          "bandwidth_up": 20,
+          "best": true,
+          "hard_ifindex": 3,
+          "hard_ifname": "enp0s1",
+          "orig_address": "02:62:e7:ab:06:01",
+          "router": "ae:1b:bf:52:25:58",
+          "tq": 236
+      },
+    [...]
+  ]
+
+
 Advanced Analytics
 ==================
 

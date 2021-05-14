@@ -917,6 +917,56 @@ Example::
   ]
 
 
+batctl mcast_flags_json
+-----------------------
+
+Query batman-adv for entries multicast optimization table.
+
+Usage::
+
+  batctl meshif <netdev> mcast_flags_json|mfj
+
+Example::
+
+  $ batctl meshif bat0 mcast_flags_json | json_pp
+  [
+      {
+          "mcast_flags": {
+              "all_unsnoopables": true,
+              "raw": 1,
+              "want_all_ipv4": false,
+              "want_all_ipv6": false,
+              "want_no_rtr_ipv4": false,
+              "want_no_rtr_ipv6": false
+          },
+          "orig_address": "9e:58:32:59:54:c3"
+      },
+      {
+          "mcast_flags": {
+              "all_unsnoopables": true,
+              "raw": 1,
+              "want_all_ipv4": false,
+              "want_all_ipv6": false,
+              "want_no_rtr_ipv4": false,
+              "want_no_rtr_ipv6": false
+          },
+          "orig_address": "32:12:17:0a:21:63"
+      },
+      {
+          "mcast_flags": {
+              "all_unsnoopables": true,
+              "raw": 1,
+              "want_all_ipv4": false,
+              "want_all_ipv6": false,
+              "want_no_rtr_ipv4": false,
+              "want_no_rtr_ipv6": false
+          },
+          "orig_address": "1a:34:8c:c4:fe:13"
+      },
+  [...]
+  ]
+
+
 Advanced Analytics
 ==================
 

@@ -852,6 +852,32 @@ Example::
   ]
 
 
+batctl hardif_json
+------------------
+
+Read the interface state for an interface which is part of a batman-adv
+interface.
+
+Usage::
+
+  batctl hardif <netdev> hardif_json|hj
+
+Example::
+
+  $ batctl hardif enp0s1 hardif_json | json_pp
+  {
+      "active": true,
+      "elp_interval": 500,
+      "hard_address": "02:ba:de:af:fe:01",
+      "hard_ifindex": 3,
+      "hard_ifname": "enp0s1",
+      "hop_penalty": 0,
+      "mesh_ifindex": 9,
+      "mesh_ifname": "bat0",
+      "throughput_override": 0
+  }
+
+
 Advanced Analytics
 ==================
 

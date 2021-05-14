@@ -777,6 +777,35 @@ Example::
   ]
 
 
+batctl dat_cache_json
+---------------------
+
+Query batman-adv for the entries in cache of the distributed arp table.
+
+Usage::
+
+  batctl meshif <netdev> dat_cache_json|dcj
+
+Example::
+
+  $ batctl meshif bat0 dat_cache_json | json_pp
+  [
+      {
+          "dat_cache_hwaddress": "10:8e:e0:62:dc:e8",
+          "dat_cache_ip4address": "10.204.32.109",
+          "dat_cache_vid": -1,
+          "last_seen_msecs": 165752
+      },
+      {
+          "dat_cache_hwaddress": "02:ba:7a:df:06:01",
+          "dat_cache_ip4address": "10.204.32.7",
+          "dat_cache_vid": -1,
+          "last_seen_msecs": 364
+      },
+    [...]
+  ]
+
+
 Advanced Analytics
 ==================
 

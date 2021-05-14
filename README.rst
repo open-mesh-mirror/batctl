@@ -967,6 +967,77 @@ Example::
   ]
 
 
+batctl mesh_json
+----------------
+
+Get the current configuration of the batman-adv mesh interface and its global
+state.
+
+The ``hard_ifindex``/``hard_ifname`` only refers to the primary interface.
+More interfaces might be attached to theis interface. They can for
+example be queried using::
+
+  ip -json link show master bat0
+
+It also doesn't show all batman-adv interfaces on the system. Such
+information must be queried using::
+
+  ip -json link show type batadv
+
+
+Usage::
+
+  batctl meshif <netdev> mesh_json|mj
+
+Example::
+
+  $ batctl meshif bat0 mesh_json | json_pp
+  {
+      "aggregated_ogms_enabled": true,
+      "algo_name": "BATMAN_IV",
+      "ap_isolation_enabled": false,
+      "bla_crc": 44249,
+      "bonding_enabled": false,
+      "bridge_loop_avoidance_enabled": true,
+      "distributed_arp_table_enabled": true,
+      "fragmentation_enabled": true,
+      "gw_bandwidth_down": 100,
+      "gw_bandwidth_up": 20,
+      "gw_mode": "client",
+      "gw_sel_class": 20,
+      "hard_address": "02:ba:de:af:fe:01",
+      "hard_ifindex": 3,
+      "hard_ifname": "enp0s1",
+      "hop_penalty": 30,
+      "isolation_mark": 0,
+      "isolation_mask": 0,
+      "mcast_flags": {
+          "all_unsnoopables": false,
+          "raw": 24,
+          "want_all_ipv4": false,
+          "want_all_ipv6": false,
+          "want_no_rtr_ipv4": true,
+          "want_no_rtr_ipv6": true
+      },
+      "mcast_flags_priv": {
+          "bridged": false,
+          "querier_ipv4_exists": false,
+          "querier_ipv4_shadowing": false,
+          "querier_ipv6_exists": false,
+          "querier_ipv6_shadowing": false,
+          "raw": 0
+      },
+      "mesh_address": "3e:dc:94:68:80:e8",
+      "mesh_ifindex": 9,
+      "mesh_ifname": "bat0",
+      "multicast_fanout": 16,
+      "multicast_forceflood_enabled": false,
+      "orig_interval": 5000,
+      "tt_ttvn": 2,
+      "version": "2021.0-15-gc84e5217"
+  }
+
+
 Advanced Analytics
 ==================
 

@@ -205,8 +205,6 @@ static void nljson_print_loglevel(struct nlattr *attrs[], int idx)
 	uint32_t val = nla_get_u32(attrs[idx]);
 
 	putchar('{');
-
-	putchar('{');
 	printf("\"batman\": %s,",
 	       val & BIT(0) ? "true" : "false");
 	printf("\"routes\": %s,",

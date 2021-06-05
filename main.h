@@ -112,7 +112,7 @@ struct command {
 		.usage = (_usage), \
 	}; \
 	static const struct command *__command_ ## _name ## _ ## _type \
-	__attribute__((__used__)) __attribute__ ((__section__ ("__command"))) = &command_ ## _name ## _ ## _type
+	__attribute__((__used__,__section__ ("__command"))) = &command_ ## _name ## _ ## _type
 
 #define COMMAND(_type, _handler, _abbr, _flags, _arg, _usage) \
 	COMMAND_NAMED(_type, _handler, _abbr, _handler, _flags, _arg, _usage)

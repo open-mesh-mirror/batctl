@@ -332,15 +332,17 @@ Retrieve traffic counters from batman-adv kernel module. The output may vary dep
 into the kernel module.
 .br
 Each module subsystem has its own counters which are indicated by their prefixes:
-.RS 15
-mgmt - mesh protocol counters
-.RE
-.RS 17
-tt - translation table counters
-.RE
-.RS 7
+.TS
+tab (@);
+r lx.
+mgmt@T{
+mesh protocol counters
+T}
+tt@T{
+translation table counters
+T}
+.TE
 All counters without a prefix concern payload (pure user data) traffic.
-.RE
 .TP
 [\fBmeshif <netdev>\fP] \fBping\fP|\fBp\fP [\fB\-c count\fP][\fB\-i interval\fP][\fB\-t time\fP][\fB\-R\fP][\fB\-T\fP] \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP
 Layer 2 ping of a MAC address or bat\-host name.  batctl will try to find the bat\-host name if the given parameter was
@@ -368,33 +370,37 @@ are available: To only print packets that match the compatibility number of batc
 option. If "\-n" is given batctl will not replace the MAC addresses with bat\-host names in the output. To filter
 the shown packet types you can either use "\-p" (dump only specified packet types) or "\-x" (dump all packet types
 except specified). The following packet types are available:
-.RS 17
-1 - batman ogm packets
-.RE
-.RS 17
-2 - batman icmp packets
-.RE
-.RS 17
-4 - batman unicast packets
-.RE
-.RS 17
-8 - batman broadcast packets
-.RE
-.RS 16
-16 - batman unicast tvlv packets
-.RE
-.RS 16
-32 - batman fragmented packets
-.RE
-.RS 16
-64 - batman tt / roaming packets
-.RE
-.RS 15
-128 - non batman packets
-.RE
-.RS 7
+
+.TS
+tab (@);
+r lx.
+1@T{
+batman ogm packets
+T}
+2@T{
+batman icmp packets
+T}
+4@T{
+batman unicast packets
+T}
+8@T{
+batman broadcast packets
+T}
+16@T{
+batman unicast tvlv packets
+T}
+32@T{
+batman fragmented packets
+T}
+64@T{
+batman tt / roaming packets
+T}
+128@T{
+non batman packets
+T}
+.TE
 Example: batctl td <interface> \-p 129 \-> only display batman ogm packets and non batman packets
-.RE
+
 .TP
 \fBbisect_iv\fP [\fB\-l MAC\fP][\fB\-t MAC\fP][\fB\-r MAC\fP][\fB\-s min\fP [\fB\- max\fP]][\fB\-o MAC\fP][\fB\-n\fP] \fBlogfile1\fP [\fBlogfile2\fP ... \fBlogfileN\fP]
 Analyses the B.A.T.M.A.N. IV logfiles to build a small internal database of all sent sequence numbers and routing table

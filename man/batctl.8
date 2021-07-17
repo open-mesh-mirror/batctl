@@ -41,19 +41,16 @@ functionality to the normal \fBping\fP(1), \fBtraceroute\fP(1), \fBtcpdump\fP(1)
 behaviour or using the B.A.T.M.A.N. advanced protocol. For similar reasons, \fBthroughputmeter\fP, a command to test network
 performances, is also included.
 
-.PP
-.PP
 .SH OPTIONS
-.TP
-.I \fBoptions:
 \-m     specify mesh interface (default 'bat0')
 .br
 \-h     print general batctl help
 .br
 \-v     print batctl version and batman-adv version (if the module is loaded)
 .br
-.TP
-.I \fBcommands:
+
+.SH COMMANDS
+
 .IP "[\fBmeshif <netdev>\fP] \fBinterface\fP|\fBif\fP [\fB-M\fP] [\fBadd\fP|\fBdel iface(s)\fP]"
 If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
 In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to

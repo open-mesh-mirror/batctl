@@ -282,6 +282,10 @@ read_packet:
 		}
 
 sleep:
+		/* skip last sleep in case no more packets will be sent out */
+		if (loop_count == 0)
+			continue;
+
 		if (loop_interval > 0)
 			sleep(loop_interval);
 		else if ((tv.tv_sec != 0) || (tv.tv_usec != 0))

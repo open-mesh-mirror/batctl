@@ -1,13 +1,13 @@
 .. SPDX-License-Identifier: GPL-2.0
 
-2022.1 (2021-05-06)
+2022.1 (2022-05-06)
 ===================
 
 * bugs squashed:
 
   - drop additional delay after the ping packet
 
-2022.0 (2021-02-03)
+2022.0 (2022-02-03)
 ===================
 
 * (no changes)

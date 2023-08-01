@@ -157,6 +157,8 @@ static void nljson_print_mcastflags(struct nlattr *attrs[], int idx)
 	       val & BATADV_MCAST_WANT_NO_RTR4 ? "true" : "false");
 	printf("\"want_no_rtr_ipv6\": %s,",
 	       val & BATADV_MCAST_WANT_NO_RTR6 ? "true" : "false");
+	printf("\"have_mc_ptype_capa\": %s,",
+	       val & BATADV_MCAST_HAVE_MC_PTYPE_CAPA ? "true" : "false");
 	printf("\"raw\": %"PRIu32, val);
 	putchar('}');
 }

@@ -323,15 +323,15 @@ Usage::
 
 Example::
 
-  Multicast flags (own flags: [U46])
+  Multicast flags (own flags: [U46R4R6.])
   * Bridged [U]                           U
   * No IGMP/MLD Querier [4/6]:            ./.
   * Shadowing IGMP/MLD Querier [4/6]:     4/6
   -------------------------------------------
          Originator Flags
-  02:04:64:a4:39:c1 [U..]
-  02:04:64:a4:39:c2 [U..]
-  02:04:64:a4:39:c3 [...]
+  02:04:64:a4:39:c1 [U... . .]
+  02:04:64:a4:39:c2 [...R4R6.]
+  02:04:64:a4:39:c3 [.... . P]
 
 where
 
@@ -348,6 +348,17 @@ U:
 6:
   wants all IPv6 multicast traffic, meaning other nodes need to always forward
   any IPv6 multicast traffic to it
+R4:
+  wants all routable IPv4 multicast traffic, meaning other nodes need to always
+  forward multicast traffic destined to 224.0.0.0/4 excluding 224.0.0.0/24 to
+  it
+R6:
+  wants all routable IPv6 multicast traffic, meaning other nodes need to always
+  forward multicast traffic destined to ffXY::/16 with Y > 2 (scope greater
+  than link-local) to it
+P:
+  the node either cannot handle batman-adv multicast packets with a multicast
+  tracker TVLV or one of its hard interfaces has an MTU smaller than 1280 bytes
 
 If a node does not have multicast optimizations available (e.g. old batman-adv
 version or optimizations not compiled in), therefore not announcing any
@@ -930,39 +941,42 @@ Example::
 
   $ batctl meshif bat0 mcast_flags_json | json_pp
   [
-      {
-          "mcast_flags": {
-              "all_unsnoopables": true,
-              "raw": 1,
-              "want_all_ipv4": false,
-              "want_all_ipv6": false,
-              "want_no_rtr_ipv4": false,
-              "want_no_rtr_ipv6": false
-          },
-          "orig_address": "9e:58:32:59:54:c3"
-      },
-      {
-          "mcast_flags": {
-              "all_unsnoopables": true,
-              "raw": 1,
-              "want_all_ipv4": false,
-              "want_all_ipv6": false,
-              "want_no_rtr_ipv4": false,
-              "want_no_rtr_ipv6": false
-          },
-          "orig_address": "32:12:17:0a:21:63"
-      },
-      {
-          "mcast_flags": {
-              "all_unsnoopables": true,
-              "raw": 1,
-              "want_all_ipv4": false,
-              "want_all_ipv6": false,
-              "want_no_rtr_ipv4": false,
-              "want_no_rtr_ipv6": false
-          },
-          "orig_address": "1a:34:8c:c4:fe:13"
-      },
+     {
+        "mcast_flags" : {
+           "all_unsnoopables" : true,
+           "have_mc_ptype_capa" : true,
+           "raw" : 57,
+           "want_all_ipv4" : false,
+           "want_all_ipv6" : false,
+           "want_no_rtr_ipv4" : true,
+           "want_no_rtr_ipv6" : true
+        },
+        "orig_address" : "02:04:64:a4:39:c1"
+     },
+     {
+        "mcast_flags" : {
+           "all_unsnoopables" : false,
+           "have_mc_ptype_capa" : true,
+           "raw" : 40,
+           "want_all_ipv4" : false,
+           "want_all_ipv6" : false,
+           "want_no_rtr_ipv4" : true,
+           "want_no_rtr_ipv6" : false
+        },
+        "orig_address" : "02:04:64:a4:39:c2"
+     },
+     {
+        "mcast_flags" : {
+           "all_unsnoopables" : false,
+           "have_mc_ptype_capa" : false,
+           "raw" : 24,
+           "want_all_ipv4" : false,
+           "want_all_ipv6" : false,
+           "want_no_rtr_ipv4" : true,
+           "want_no_rtr_ipv6" : true
+        },
+        "orig_address" : "02:04:64:a4:39:c3"
+     },
   [...]
   ]
 

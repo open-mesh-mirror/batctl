@@ -231,12 +231,13 @@ static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
 
 	flags = tvlv->flags;
 
-	printf("\tTVLV MCASTv2: [%c%c%c%s%s]\n",
+	printf("\tTVLV MCASTv2: [%c%c%c%s%s%c]\n",
 	       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
 	       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
 	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.',
 	       !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
-	       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
+	       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
+	       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
 }
 
 typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);

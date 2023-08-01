@@ -80,12 +80,13 @@ static int mcast_flags_callback(struct nl_msg *msg, void *arg)
 	if (attrs[BATADV_ATTR_MCAST_FLAGS]) {
 		flags = nla_get_u32(attrs[BATADV_ATTR_MCAST_FLAGS]);
 
-		printf("[%c%c%c%s%s]\n",
+		printf("[%c%c%c%s%s%c]\n",
 		       flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
 		       flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
 		       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.',
 		       !(flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
-		       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ");
+		       !(flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
+		       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
 	} else {
 		printf("-\n");
 	}
@@ -125,7 +126,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
         }
 
 	ret = asprintf(&header,
-		"Multicast flags (own flags: [%c%c%c%s%s])\n"
+		"Multicast flags (own flags: [%c%c%c%s%s%c])\n"
 		 "* Bridged [U]\t\t\t\t%c\n"
 		 "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n"
 		 "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n"
@@ -136,6 +137,7 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
 		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
 	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
 	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
+	         !(mcast_flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.',
 		 bridged ? 'U' : '.',
 		 querier4, querier6, shadowing4, shadowing6,
 		 "Originator", "Flags");

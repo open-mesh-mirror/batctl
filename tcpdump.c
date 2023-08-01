@@ -57,7 +57,8 @@ static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
 				       DUMP_TYPE_BATELP | DUMP_TYPE_BATICMP |
 				       DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST |
 				       DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG |
-				       DUMP_TYPE_NONBAT | DUMP_TYPE_BATCODED;
+				       DUMP_TYPE_NONBAT | DUMP_TYPE_BATCODED |
+				       DUMP_TYPE_BATMCAST;
 static unsigned short dump_level;
 
 static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
@@ -82,6 +83,7 @@ static void tcpdump_usage(void)
 	fprintf(stderr, " \t\t%3d - batman unicast tvlv packets\n", DUMP_TYPE_BATUTVLV);
 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
 	fprintf(stderr, " \t\t%3d - batman coded packets\n", DUMP_TYPE_BATCODED);
+	fprintf(stderr, " \t\t%3d - batman multicast packets\n", DUMP_TYPE_BATMCAST);
 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
 }
 
@@ -101,7 +103,8 @@ static int print_time(void)
 	return 1;
 }
 
-static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
+static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len,
+				    int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_gateway_data *tvlv = buff;
 	uint32_t down, up;
@@ -119,8 +122,9 @@ static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len)
 	       down / 10, down % 10, up / 10, up % 10);
 }
 
-static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
-				     ssize_t buff_len)
+static void batctl_tvlv_parse_dat_v1(void *buff __maybe_unused,
+				     ssize_t buff_len,
+				     int read_opt __maybe_unused)
 {
 	if (buff_len != 0) {
 		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
@@ -131,8 +135,9 @@ static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
 	printf("\tTVLV DATv1: enabled\n");
 }
 
-static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
-				    ssize_t buff_len)
+static void batctl_tvlv_parse_nc_v1(void *buff __maybe_unused,
+				    ssize_t buff_len,
+				    int read_opt __maybe_unused)
 {
 	if (buff_len != 0) {
 		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
@@ -143,7 +148,8 @@ static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
 	printf("\tTVLV NCv1: enabled\n");
 }
 
-static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
+static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
+				    int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_tt_data *tvlv = buff;
 	struct batadv_tvlv_tt_vlan_data *vlan;
@@ -183,7 +189,8 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
 	}
 }
 
-static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
+static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
+				      int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_roam_adv *tvlv = buff;
 
@@ -199,7 +206,8 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len)
 }
 
 static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
-				       ssize_t buff_len)
+				       ssize_t buff_len,
+				       int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_mcast_data *tvlv = buff;
 	uint8_t flags;
@@ -218,7 +226,8 @@ static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
 	       flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
 }
 
-static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
+static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len,
+				       int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_mcast_data *tvlv = buff;
 	uint8_t flags;
@@ -240,7 +249,37 @@ static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len)
 	       !(flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.');
 }
 
-typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
+static void
+batctl_tvlv_parse_mcast_tracker_v1(void *buff, ssize_t buff_len, int read_opt)
+{
+	struct batadv_tvlv_mcast_tracker *tvlv = buff;
+	size_t tvlv_len = sizeof(*tvlv);
+	struct ether_addr *dst;
+	uint16_t num_dests;
+
+	if (buff_len < (ssize_t)tvlv_len) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV MCAST TRACKER v1", tvlv_len, buff_len);
+		return;
+	}
+
+	num_dests = ntohs(tvlv->num_dests);
+	tvlv_len += num_dests * ETH_ALEN;
+	dst = (struct ether_addr *)(tvlv + 1);
+
+	if (buff_len < (ssize_t)tvlv_len) {
+		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+			"TVLV MCAST TRACKER v1 (with destinations)", tvlv_len, buff_len);
+		return;
+	}
+
+	printf("\tTVLV MCAST TRACKER v1, destinations (%hu):\n", num_dests);
+
+	for (int i = 0; i < num_dests; i++)
+		printf("\t\t%s\n", get_name_by_macaddr(dst++, read_opt));
+}
+
+typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len, int read_opt);
 
 static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
 {
@@ -295,12 +334,20 @@ static batctl_tvlv_parser_t tvlv_parser_get(uint8_t type, uint8_t version)
 			return NULL;
 		}
 
+	case BATADV_TVLV_MCAST_TRACKER:
+		switch (version) {
+		case 1:
+			return batctl_tvlv_parse_mcast_tracker_v1;
+		default:
+			return NULL;
+		}
+
 	default:
 		return NULL;
 	}
 }
 
-static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len)
+static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len, int read_opt)
 {
 	struct batadv_tvlv_hdr *tvlv_hdr;
 	batctl_tvlv_parser_t parser;
@@ -318,7 +365,7 @@ static void dump_tvlv(unsigned char *ptr, ssize_t tvlv_len)
 
 		parser = tvlv_parser_get(tvlv_hdr->type, tvlv_hdr->version);
 		if (parser)
-			parser(ptr, len);
+			parser(ptr, len, read_opt);
 
 		/* go to the next container */
 		ptr += len;
@@ -358,7 +405,7 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 	       buff_len - sizeof(struct ether_header), tvlv_len,
 	       tvlv_packet->ttl);
 
-	dump_tvlv((uint8_t *)(tvlv_packet + 1), tvlv_len);
+	dump_tvlv((uint8_t *)(tvlv_packet + 1), tvlv_len, read_opt);
 }
 
 static int dump_bla2_claim(struct ether_header *eth_hdr,
@@ -779,7 +826,7 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 	check_len -= sizeof(struct batadv_ogm_packet);
 	LEN_CHECK(check_len, (size_t)tvlv_len, "BAT OGM TVLV (containers)");
 
-	dump_tvlv((uint8_t *)(batman_ogm_packet + 1), tvlv_len);
+	dump_tvlv((uint8_t *)(batman_ogm_packet + 1), tvlv_len, read_opt);
 }
 
 static void dump_batman_ogm2(unsigned char *packet_buff, ssize_t buff_len,
@@ -823,7 +870,7 @@ static void dump_batman_ogm2(unsigned char *packet_buff, ssize_t buff_len,
 	check_len -= BATADV_OGM2_HLEN;
 	LEN_CHECK(check_len, (size_t)tvlv_len, "BAT OGM2 TVLV (containers)");
 
-	dump_tvlv((uint8_t *)(batman_ogm2 + 1), tvlv_len);
+	dump_tvlv((uint8_t *)(batman_ogm2 + 1), tvlv_len, read_opt);
 }
 
 static void dump_batman_elp(unsigned char *packet_buff, ssize_t buff_len,
@@ -988,6 +1035,57 @@ static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
+static void dump_batman_mcast(unsigned char *packet_buff, ssize_t buff_len,
+			      int read_opt, int time_printed)
+{
+	struct batadv_mcast_packet *mcast_packet;
+	struct ether_header *ether_header;
+	uint8_t *tvlv_hdr;
+	ssize_t check_len;
+	size_t tvlv_len;
+
+	check_len = (size_t)buff_len - sizeof(struct ether_header);
+
+	LEN_CHECK(check_len, sizeof(*mcast_packet), "BAT MCAST");
+	check_len -= sizeof(*mcast_packet);
+
+	ether_header = (struct ether_header *)packet_buff;
+	mcast_packet = (struct batadv_mcast_packet *)(ether_header + 1);
+	tvlv_len = ntohs(mcast_packet->tvlv_len);
+
+	LEN_CHECK(check_len, tvlv_len, "BAT MCAST TVLV (containers)");
+	check_len -= tvlv_len;
+
+	tvlv_hdr = (uint8_t *)(mcast_packet + 1);
+
+	if (!time_printed)
+		time_printed = print_time();
+
+	printf("BAT %s > ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
+
+	printf("%s: MCAST, ttl %hhu, ",
+	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost, read_opt),
+	       mcast_packet->ttl);
+
+	/* batman-adv mcast packet's data payload is optional */
+	if (check_len >= ETH_HLEN) {
+		ether_header = (struct ether_header *)(tvlv_hdr + tvlv_len);
+
+		printf("%s > ",
+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
+		printf("%s, ",
+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost, read_opt));
+
+		parse_eth_hdr((unsigned char *)ether_header, check_len,
+			      read_opt, time_printed);
+	} else {
+		printf("\n");
+	}
+
+	dump_tvlv(tvlv_hdr, tvlv_len, read_opt);
+}
+
 static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
 	struct batadv_coded_packet *coded_packet;
@@ -1105,6 +1203,10 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
 				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
+			break;
+		case BATADV_MCAST:
+			if (dump_level & DUMP_TYPE_BATMCAST)
+				dump_batman_mcast(packet_buff, buff_len, read_opt, time_printed);
 			break;
 		case BATADV_CODED:
 			if (dump_level & DUMP_TYPE_BATCODED)

@@ -341,6 +341,24 @@ disable multicast forceflood. This setting defines whether multicast optimizatio
 flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
 multicast packet with no optimizations.
 .TP
+[\fBmeshif\fP \fInetdev\fP] \fBmulticast_mld_rtr_only\fP|\fBmro\fP [\fI0\fP|\fI1\fP]
+If no parameter is given the current multicast MLD router only setting is displayed. Otherwise the parameter is used to
+set the IGMP/MLD report forwarding behaviour. If enabled then MLD reports are forwarded to detected multicast routers only.
+If disabled then they are flooded instead.
+
+.br
+.br
+Warning: Enabling this is experimental and potentially unsafe!
+
+.br
+.br
+If the IGMP/MLD querier is configured directly on the bridge on top of
+bat0. But there is no multicast router on or behind this node. Then this
+bridge will be unable to detect multicast listeners on/behind other
+nodes which have the MLD-RTR-ONLY setting enabled. (A workaround for this
+can then in turn be to set multicast_router=2 on the bat0 bridge port
+on the node with the IGMP/MLD querier.)
+.TP
 [\fBmeshif\fP \fInetdev\fP] \fBnetwork_coding\fP|\fBnc\fP [\fI0\fP|\fI1\fP]
 If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
 disable network coding.

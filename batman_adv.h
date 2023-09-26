@@ -481,6 +481,15 @@ enum batadv_nl_attrs {
 	 */
 	BATADV_ATTR_MULTICAST_FANOUT,
 
+	/**
+	 * @BATADV_ATTR_MULTICAST_MLD_RTR_ONLY_ENABLED: defines how IGMP/MLD
+	 * reports are forwarded in the mesh. If set to non-zero then IGMP/MLD
+	 * reports are only forwarded to detected multicast routers. If set to
+	 * zero then they are flooded instead.
+	 * Warning: The former is experimental and potentially unsafe!
+	 */
+	BATADV_ATTR_MULTICAST_MLD_RTR_ONLY_ENABLED,
+
 	/* add attributes above here, update the policy in netlink.c */
 
 	/**

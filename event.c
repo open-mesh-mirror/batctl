@@ -283,6 +283,10 @@ static void event_parse_set_mesh(struct nlattr **attrs)
 		printf("* multicast_forceflood %s\n",
 		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));
 
+	if (attrs[BATADV_ATTR_MULTICAST_MLD_RTR_ONLY_ENABLED])
+		printf("* multicast_forceflood %s\n",
+		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_MLD_RTR_ONLY_ENABLED]));
+
 	if (attrs[BATADV_ATTR_NETWORK_CODING_ENABLED])
 		printf("* network_coding %s\n",
 		       u8_to_boolstr(attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]));

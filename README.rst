@@ -658,6 +658,16 @@ Usage::
   batctl multicast_forceflood|mff [0|1]
 
 
+batctl multicast_mld_rtr_only
+-----------------------------
+
+display or modify the multicast MLD router only setting
+
+Usage::
+
+  batctl multicast_mld_rtr_only|mro [0|1]
+
+
 batctl network_coding
 ---------------------
 

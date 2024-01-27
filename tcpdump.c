@@ -652,6 +652,8 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			       (size_t)buff_len - sizeof(struct icmp6_hdr));
 			break;
 		case ND_NEIGHBOR_SOLICIT:
+			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),
+				  sizeof(*nd_neigh_sol), "ICMPv6 Neighbor Solicitation");
 			nd_neigh_sol = (struct nd_neighbor_solicit *)icmphdr;
 			inet_ntop(AF_INET6, &(nd_neigh_sol->nd_ns_target),
 				  nd_nas_target, 40);

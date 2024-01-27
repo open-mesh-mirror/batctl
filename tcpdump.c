@@ -694,7 +694,9 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 	struct icmphdr *icmphdr;
 
 	iphdr = (struct iphdr *)packet_buff;
+	LEN_CHECK((size_t)buff_len, sizeof(*iphdr), ip_string);
 	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), ip_string);
+	LEN_CHECK((size_t)(iphdr->ihl * 4), sizeof(*iphdr), ip_string);
 
 	if (!time_printed)
 		print_time();

@@ -730,12 +730,20 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 				(size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		case ICMP_DEST_UNREACH:
-			LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct icmphdr),
-				sizeof(struct iphdr) + 8, "ICMP DEST_UNREACH");
-
 			switch (icmphdr->code) {
 			case ICMP_PORT_UNREACH:
+				LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct icmphdr),
+					  sizeof(struct iphdr), "ICMP DEST_UNREACH");
+
+				/* validate inner IP header information */
 				tmp_iphdr = (struct iphdr *)(((char *)icmphdr) + sizeof(struct icmphdr));
+				LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct icmphdr),
+					  (size_t)(tmp_iphdr->ihl * 4), "ICMP DEST_UNREACH");
+				LEN_CHECK((size_t)(tmp_iphdr->ihl * 4), sizeof(*iphdr), "ICMP DEST_UNREACH");
+
+				LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4) - sizeof(struct icmphdr) - (tmp_iphdr->ihl * 4),
+					  sizeof(*tmp_udphdr), "ICMP DEST_UNREACH");
+
 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
 
 				printf("%s: ICMP ", ipdst);

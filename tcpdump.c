@@ -911,7 +911,6 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");
 
 	icmp_packet = (struct batadv_icmp_packet *)(packet_buff + sizeof(struct ether_header));
-	tp = (struct batadv_icmp_tp_packet *)icmp_packet;
 
 	if (!time_printed)
 		print_time();
@@ -942,6 +941,10 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 			(size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_TP:
+		LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(*tp), "BAT TP");
+
+		tp = (struct batadv_icmp_tp_packet *)icmp_packet;
+
 		printf("%s: ICMP TP type %s (%hhu), id %hhu, seq %u, ttl %2d, v %d, length %zu\n",
 		       name, tp->subtype == BATADV_TP_MSG ? "MSG" :
 			     tp->subtype == BATADV_TP_ACK ? "ACK" : "N/A",

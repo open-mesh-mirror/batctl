@@ -1167,6 +1167,9 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 			dump_vlan(packet_buff, buff_len, read_opt, time_printed);
 		break;
 	case ETH_P_BATMAN:
+		/* check for batman-adv packet_type + version */
+		LEN_CHECK(buff_len, sizeof(*eth_hdr) + 2, "BAT HEADER")
+
 		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
 
 		if ((read_opt & COMPAT_FILTER) &&

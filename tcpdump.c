@@ -1556,3 +1556,41 @@ out:
 
 COMMAND(SUBCOMMAND, tcpdump, "td", 0, NULL,
 	"<interface>       \ttcpdump layer 2 traffic on the given interface");
+
+__AFL_FUZZ_INIT();
+
+static int fuzzme(struct state *state __maybe_unused, int argc, char **argv)
+{
+	dump_level = dump_level_all;
+
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+	__AFL_INIT();
+#endif
+
+	unsigned char *buf = __AFL_FUZZ_TESTCASE_BUF;
+	while (__AFL_LOOP(10000)) {
+		int len = __AFL_FUZZ_TESTCASE_LEN;
+
+		/* safety check from tcpdump */
+		if ((size_t)len < sizeof(struct ether_header))
+			continue;
+
+		/* move into new buffer to allow ASAN to detect invalid memory access */
+		unsigned char *p = malloc(len);
+		if (!p)
+			continue;
+
+		memcpy(p, buf, len);
+
+		/* function under test */
+		parse_eth_hdr(p, len, 0, 0);
+
+		/* drop buffer from asan */
+		free(p);
+	}
+
+	return 0;
+}
+
+COMMAND(SUBCOMMAND, fuzzme, "fz", 0, NULL,
+	"                  \tfuzz me");

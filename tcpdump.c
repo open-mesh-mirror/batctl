@@ -659,6 +659,8 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			       nd_nas_target, buff_len);
 			break;
 		case ND_NEIGHBOR_ADVERT:
+			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),
+				  sizeof(*nd_advert), "ICMPv6 Neighbor Advertisement");
 			nd_advert = (struct nd_neighbor_advert *)icmphdr;
 			inet_ntop(AF_INET6, &(nd_advert->nd_na_target),
 				  nd_nas_target, 40);

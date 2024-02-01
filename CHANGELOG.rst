@@ -1,5 +1,13 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2024.0 (2024-02-01)
+===================
+
+* Add stateless multicast packet format support
+* bugs squashed:
+
+  - Fix various length checks in tcpdump-like subcommand
+
 2023.3 (2023-11-15)
 ===================
 

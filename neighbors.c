@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "bat-hosts.h"
 #include "debug.h"

@@ -17,7 +17,6 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
-#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "bat-hosts.h"
 #include "debug.h"

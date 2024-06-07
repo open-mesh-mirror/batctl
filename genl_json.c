@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 #include "functions.h"
-#include "batadv_packet.h"
+#include "batadv_packet_compat.h"
 #include "batman_adv.h"
 #include "netlink.h"
 

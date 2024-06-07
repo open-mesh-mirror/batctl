@@ -23,7 +23,6 @@
 #include <arpa/inet.h>
 
 #include "bat-hosts.h"
-#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "netlink.h"
 #include "functions.h"

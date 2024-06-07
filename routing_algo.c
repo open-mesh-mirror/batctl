@@ -22,7 +22,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "batadv_packet.h"
 #include "batman_adv.h"
 #include "debug.h"
 #include "functions.h"

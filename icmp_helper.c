@@ -26,7 +26,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include "batadv_packet.h"
+#include "batadv_packet_compat.h"
 #include "debug.h"
 #include "functions.h"
 #include "list.h"

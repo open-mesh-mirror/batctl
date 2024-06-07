@@ -39,8 +39,8 @@ extern char module_ver_path[];
 #define VLAN_VID_MASK   0xfff
 #endif
 
-#define BATADV_PRINT_VID(vid) (vid & BATADV_VLAN_HAS_TAG ? \
-			       (int)(vid & VLAN_VID_MASK) : -1)
+#define BATADV_PRINT_VID(vid) ((vid) & (1UL << 15) ? \
+			       (int)((vid) & 0xfff) : -1)
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 

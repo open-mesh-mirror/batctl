@@ -20,7 +20,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 
-#include "batadv_packet.h"
+#include "batadv_packet_compat.h"
 #include "main.h"
 #include "functions.h"
 #include "bat-hosts.h"

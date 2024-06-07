@@ -19,10 +19,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "batadv_packet.h"
 #include "list.h"
 
 struct timeval;
+struct batadv_icmp_header;
 
 struct icmp_interface {
 	char name[IFNAMSIZ];

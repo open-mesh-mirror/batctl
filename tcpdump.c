@@ -33,7 +33,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
-#include "batadv_packet.h"
+#include "batadv_packet_compat.h"
 #include "tcpdump.h"
 #include "bat-hosts.h"
 #include "functions.h"

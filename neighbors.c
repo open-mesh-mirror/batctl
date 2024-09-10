@@ -6,6 +6,7 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
+#include <errno.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
 #include <netlink/netlink.h>
@@ -119,9 +120,28 @@ static int netlink_print_neighbors(struct state *state, char *orig_iface,
 				   int read_opts, float orig_timeout,
 				   float watch_interval)
 {
+	char *header = NULL;
+	char *info_header;
+
+	/* only parse routing algorithm name */
+	last_err = -EINVAL;
+	info_header = netlink_get_info(state, BATADV_CMD_GET_ORIGINATORS, NULL);
+	free(info_header);
+
+	if (strlen(algo_name_buf) == 0)
+		return last_err;
+
+	if (!strcmp("BATMAN_IV", algo_name_buf))
+		header = "IF             Neighbor              last-seen\n";
+	if (!strcmp("BATMAN_V", algo_name_buf))
+		header = "         Neighbor   last-seen      speed           IF\n";
+
+	if (!header)
+		return -EINVAL;
+
 	return netlink_print_common(state, orig_iface, read_opts,
 				    orig_timeout, watch_interval,
-				    "IF             Neighbor              last-seen\n",
+				    header,
 				    BATADV_CMD_GET_NEIGHBORS,
 				    neighbors_callback);
 }

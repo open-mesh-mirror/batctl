@@ -1,5 +1,12 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2024.3 (2024-10-15)
+===================
+
+* bugs squashed:
+
+  - fix header for neighbor table with B.A.T.M.A.N. V algorithm
+
 2024.2 (2024-06-20)
 ===================
 

@@ -27,11 +27,15 @@ void check_root_or_die(const char *cmd);
 /* code borrowed from ethtool */
 static int statistics_custom_get(int fd, struct ifreq *ifr)
 {
-	struct ethtool_drvinfo drvinfo;
 	struct ethtool_gstrings *strings = NULL;
 	struct ethtool_stats *stats = NULL;
-	unsigned int n_stats, sz_str, sz_stats, i;
-	int err, ret = EXIT_FAILURE;
+	struct ethtool_drvinfo drvinfo;
+	int ret = EXIT_FAILURE;
+	unsigned int sz_stats;
+	unsigned int n_stats;
+	unsigned int sz_str;
+	unsigned int i;
+	int err;
 
 	drvinfo.cmd = ETHTOOL_GDRVINFO;
 	ifr->ifr_data = (void *)&drvinfo;
@@ -91,8 +95,9 @@ out:
 static int statistics(struct state *state, int argc __maybe_unused,
 		      char **argv __maybe_unused)
 {
+	int ret = EXIT_FAILURE;
 	struct ifreq ifr;
-	int fd = -1, ret = EXIT_FAILURE;
+	int fd = -1;
 
 	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, state->mesh_iface, sizeof(ifr.ifr_name));

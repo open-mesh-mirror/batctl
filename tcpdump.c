@@ -153,10 +153,11 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
 {
 	struct batadv_tvlv_tt_data *tvlv = buff;
 	struct batadv_tvlv_tt_vlan_data *vlan;
-	int i;
-	unsigned short num_vlan, num_entry;
+	unsigned short num_entry;
+	unsigned short num_vlan;
 	const char *type;
 	size_t vlan_len;
+	int i;
 
 	LEN_CHECK(buff_len, sizeof(*tvlv), "TVLV TTv1")
 
@@ -378,8 +379,10 @@ static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
 {
 	struct batadv_unicast_tvlv_packet *tvlv_packet;
 	struct ether_header *ether_header;
-	struct ether_addr *src, *dst;
-	ssize_t check_len, tvlv_len;
+	struct ether_addr *src;
+	struct ether_addr *dst;
+	ssize_t check_len;
+	ssize_t tvlv_len;
 
 	check_len = (size_t)buff_len - sizeof(struct ether_header);
 
@@ -414,7 +417,8 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
 	uint8_t bla_claim_magic[3] = {0xff, 0x43, 0x05};
 	struct batadv_bla_claim_dst *bla_dst;
 	int arp_is_bla2_claim = 0;
-	uint8_t *hw_src, *hw_dst;
+	uint8_t *hw_src;
+	uint8_t *hw_dst;
 
 	if (arphdr->ea_hdr.ar_hrd != htons(ARPHRD_ETHER))
 		goto out;
@@ -570,14 +574,14 @@ static void dump_udp(const char ip_string[], unsigned char *packet_buff,
 static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 		      int time_printed)
 {
-	struct ip6_hdr *iphdr;
-	struct icmp6_hdr *icmphdr;
-
-	char ipsrc[INET6_ADDRSTRLEN], ipdst[INET6_ADDRSTRLEN];
 	struct nd_neighbor_solicit *nd_neigh_sol;
 	struct nd_neighbor_advert *nd_advert;
 	char nd_nas_target[INET6_ADDRSTRLEN];
 	const char ip_string[] = "IP6";
+	char ipsrc[INET6_ADDRSTRLEN];
+	char ipdst[INET6_ADDRSTRLEN];
+	struct icmp6_hdr *icmphdr;
+	struct ip6_hdr *iphdr;
 
 	iphdr = (struct ip6_hdr *)packet_buff;
 	LEN_CHECK((size_t)buff_len, (size_t)(sizeof(struct ip6_hdr)), ip_string);
@@ -691,11 +695,13 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 		    int time_printed)
 {
-	char ipsrc[INET_ADDRSTRLEN], ipdst[INET_ADDRSTRLEN];
-	struct iphdr *iphdr, *tmp_iphdr;
 	const char ip_string[] = "IP";
+	char ipsrc[INET_ADDRSTRLEN];
+	char ipdst[INET_ADDRSTRLEN];
 	struct udphdr *tmp_udphdr;
 	struct icmphdr *icmphdr;
+	struct iphdr *tmp_iphdr;
+	struct iphdr *iphdr;
 
 	iphdr = (struct iphdr *)packet_buff;
 	LEN_CHECK((size_t)buff_len, sizeof(*iphdr), ip_string);
@@ -813,7 +819,8 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
 {
 	struct ether_header *ether_header;
 	struct batadv_ogm_packet *batman_ogm_packet;
-	ssize_t tvlv_len, check_len;
+	ssize_t check_len;
+	ssize_t tvlv_len;
 
 	check_len = (size_t)buff_len - sizeof(struct ether_header);
 	LEN_CHECK(check_len, sizeof(struct batadv_ogm_packet), "BAT IV OGM");
@@ -849,8 +856,9 @@ static void dump_batman_ogm2(unsigned char *packet_buff, ssize_t buff_len,
 	struct batadv_ogm2_packet *batman_ogm2;
 	struct ether_header *ether_header;
 	struct ether_addr *ether_addr;
-	ssize_t tvlv_len, check_len;
 	uint32_t throughput;
+	ssize_t check_len;
+	ssize_t tvlv_len;
 	char thr_str[20];
 
 	check_len = (size_t)buff_len - sizeof(struct ether_header);
@@ -976,8 +984,8 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 
 static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct batadv_unicast_packet *unicast_packet;
+	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_packet), "BAT UCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_packet),
@@ -1027,8 +1035,8 @@ static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len,
 
 static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct batadv_bcast_packet *bcast_packet;
+	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_bcast_packet), "BAT BCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_bcast_packet),
@@ -1131,8 +1139,8 @@ static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int 
 
 static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
+	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_4addr_packet), "BAT 4ADDR");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_4addr_packet),
@@ -1258,6 +1266,7 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
 {
 	struct radiotap_header *radiotap_hdr;
+
 	switch (hw_type) {
 	case ARPHRD_IEEE80211_PRISM:
 		if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
@@ -1281,9 +1290,10 @@ static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, i
 
 static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
 {
-	struct ether_header *eth_hdr;
 	struct ieee80211_hdr *wifi_hdr;
-	unsigned char *shost, *dhost;
+	struct ether_header *eth_hdr;
+	unsigned char *shost;
+	unsigned char *dhost;
 	uint16_t fc;
 	int hdr_len;
 
@@ -1434,15 +1444,22 @@ static void sig_handler(int sig)
 
 static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 {
-	struct timeval tv;
-	struct dump_if *dump_if, *dump_if_tmp;
-	struct list_head dump_if_list;
-	fd_set wait_sockets, tmp_wait_sockets;
-	ssize_t read_len;
-	int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
-	int read_opt = USE_BAT_HOSTS;
 	unsigned char packet_buff[2000];
+	struct list_head dump_if_list;
+	int read_opt = USE_BAT_HOSTS;
 	int monitor_header_len = -1;
+	struct dump_if *dump_if_tmp;
+	struct dump_if *dump_if;
+	fd_set tmp_wait_sockets;
+	int ret = EXIT_FAILURE;
+	fd_set wait_sockets;
+	int found_args = 1;
+	struct timeval tv;
+	int max_sock = 0;
+	ssize_t read_len;
+	int optchar;
+	int res;
+	int tmp;
 
 	dump_level = dump_level_all;
 

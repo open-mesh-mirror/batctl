@@ -343,16 +343,16 @@ static int info_callback(struct nl_msg *msg, void *arg)
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	const uint8_t *primary_mac;
+	uint16_t bla_group_id = 0;
+	const char *extra_header;
+	char *extra_info = NULL;
 	struct genlmsghdr *ghdr;
 	const uint8_t *mesh_mac;
 	const char *primary_if;
+	const char *algo_name;
 	const char *mesh_name;
 	const char *version;
-	char *extra_info = NULL;
 	uint8_t ttvn = 0;
-	uint16_t bla_group_id = 0;
-	const char *algo_name;
-	const char *extra_header;
 	int ret;
 
 	if (!genlmsg_valid_hdr(nlh, 0)) {
@@ -460,14 +460,14 @@ static int info_callback(struct nl_msg *msg, void *arg)
 
 char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
 {
-	struct nl_msg *msg;
-	struct nl_cb *cb;
 	struct print_opts opts = {
 		.read_opt = 0,
 		.nl_cmd = nl_cmd,
 		.remaining_header = NULL,
 		.static_header = header,
 	};
+	struct nl_msg *msg;
+	struct nl_cb *cb;
 	int ret;
 
 	msg = nlmsg_alloc();
@@ -689,10 +689,10 @@ struct translate_mac_netlink_opts {
 
 static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct translate_mac_netlink_opts *opts;
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlquery_opts *query_opts = arg;
-	struct translate_mac_netlink_opts *opts;
 	struct genlmsghdr *ghdr;
 	uint8_t *addr;
 	uint8_t *orig;
@@ -782,10 +782,10 @@ static int get_nexthop_netlink_cb(struct nl_msg *msg, void *arg)
 	struct nlquery_opts *query_opts = arg;
 	struct get_nexthop_netlink_opts *opts;
 	struct genlmsghdr *ghdr;
-	const uint8_t *orig;
 	const uint8_t *neigh;
-	uint32_t index;
+	const uint8_t *orig;
 	const char *ifname;
+	uint32_t index;
 
 	opts = container_of(query_opts, struct get_nexthop_netlink_opts,
 			    query_opts);
@@ -877,12 +877,12 @@ struct get_primarymac_netlink_opts {
 
 static int get_primarymac_netlink_cb(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct get_primarymac_netlink_opts *opts;
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlquery_opts *query_opts = arg;
-	struct get_primarymac_netlink_opts *opts;
-	struct genlmsghdr *ghdr;
 	const uint8_t *primary_mac;
+	struct genlmsghdr *ghdr;
 
 	opts = container_of(query_opts, struct get_primarymac_netlink_opts,
 			    query_opts);
@@ -950,13 +950,13 @@ struct get_algoname_netlink_opts {
 
 static int get_algoname_netlink_cb(struct nl_msg *msg, void *arg)
 {
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
+	struct get_algoname_netlink_opts *opts;
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct nlquery_opts *query_opts = arg;
 	static const int mandatory[] = {
 		BATADV_ATTR_ALGO_NAME,
 	};
-	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
-	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	struct nlquery_opts *query_opts = arg;
-	struct get_algoname_netlink_opts *opts;
 	struct genlmsghdr *ghdr;
 	const char *algoname;
 

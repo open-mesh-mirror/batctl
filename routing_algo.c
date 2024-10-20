@@ -80,11 +80,11 @@ static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
 
 static int print_routing_algos(struct state *state)
 {
-	struct nl_msg *msg;
-	struct nl_cb *cb;
 	struct print_opts opts = {
 		.callback = routing_algos_callback,
 	};
+	struct nl_msg *msg;
+	struct nl_cb *cb;
 
 	msg = nlmsg_alloc();
 	if (!msg)
@@ -151,8 +151,8 @@ static int print_ra_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 {
 	struct print_ra_interfaces_rtnl_arg *print_arg = arg;
 	struct nlattr *attrs[IFLA_MAX + 1];
-	char algoname[256];
 	struct ifinfomsg *ifm;
+	char algoname[256];
 	char *mesh_iface;
 	int ret;
 
@@ -264,8 +264,8 @@ err_free_sock:
 
 static int routing_algo(struct state *state, int argc, char **argv)
 {
-	int optchar;
 	int res = EXIT_FAILURE;
+	int optchar;
 	int ret;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {

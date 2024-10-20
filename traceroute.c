@@ -42,16 +42,25 @@ static void traceroute_usage(void)
 
 static int traceroute(struct state *state, int argc, char **argv)
 {
-	struct batadv_icmp_packet icmp_packet_out, icmp_packet_in;
-	struct bat_host *bat_host;
+	struct batadv_icmp_packet icmp_packet_out;
+	struct batadv_icmp_packet icmp_packet_in;
 	struct ether_addr *dst_mac = NULL;
-	struct timeval tv;
-	ssize_t read_len;
-	char *dst_string, *mac_string, *return_mac, dst_reached = 0;
-	int ret = EXIT_FAILURE, res, i;
-	int found_args = 1, optchar, seq_counter = 0, read_opt = USE_BAT_HOSTS;
 	double time_delta[NUM_PACKETS];
 	int disable_translate_mac = 0;
+	int read_opt = USE_BAT_HOSTS;
+	struct bat_host *bat_host;
+	int ret = EXIT_FAILURE;
+	char dst_reached = 0;
+	int seq_counter = 0;
+	int found_args = 1;
+	struct timeval tv;
+	ssize_t read_len;
+	char *dst_string;
+	char *mac_string;
+	char *return_mac;
+	int optchar;
+	int res;
+	int i;
 
 	while ((optchar = getopt(argc, argv, "hnT")) != -1) {
 		switch (optchar) {

@@ -98,8 +98,11 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
 				     int read_opts, float orig_timeout,
 				     float watch_interval)
 {
-	char querier4, querier6, shadowing4, shadowing6;
 	char *info_header;
+	char shadowing4;
+	char shadowing6;
+	char querier4;
+	char querier6;
 	char *header;
 	bool bridged;
 	int ret;

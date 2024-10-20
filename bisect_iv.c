@@ -44,8 +44,9 @@ static int compare_name(void *data1, void *data2)
 
 static int choose_name(void *data, int32_t size)
 {
+	uint32_t m_size = NAME_LEN - 1;
 	unsigned char *key = data;
-	uint32_t hash = 0, m_size = NAME_LEN - 1;
+	uint32_t hash = 0;
 	size_t i;
 
 	for (i = 0; i < m_size; i++) {
@@ -110,8 +111,8 @@ static struct orig_event *orig_event_new(struct bat_node *bat_node, struct bat_n
 
 static struct orig_event *orig_event_get_by_name(struct bat_node *bat_node, char *orig)
 {
-	struct bat_node *orig_node;
 	struct orig_event *orig_event;
+	struct bat_node *orig_node;
 
 	if (!bat_node)
 		return NULL;
@@ -145,11 +146,15 @@ static struct orig_event *orig_event_get_by_ptr(struct bat_node *bat_node, struc
 
 static void node_free(void *data)
 {
-	struct orig_event *orig_event, *orig_event_tmp;
-	struct seqno_event *seqno_event, *seqno_event_tmp;
-	struct rt_table *rt_table, *rt_table_tmp;
-	struct rt_hist *rt_hist, *rt_hist_tmp;
 	struct bat_node *bat_node = (struct bat_node *)data;
+	struct seqno_event *seqno_event_tmp;
+	struct orig_event *orig_event_tmp;
+	struct seqno_event *seqno_event;
+	struct orig_event *orig_event;
+	struct rt_table *rt_table_tmp;
+	struct rt_hist *rt_hist_tmp;
+	struct rt_table *rt_table;
+	struct rt_hist *rt_hist;
 
 	list_for_each_entry_safe(orig_event, orig_event_tmp, &bat_node->orig_event_list, list) {
 		list_for_each_entry_safe(seqno_event, seqno_event_tmp, &orig_event->event_list, list) {
@@ -178,12 +183,14 @@ static void node_free(void *data)
 
 static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, char rt_flag)
 {
+	struct rt_table *prev_rt_table = NULL;
+	struct seqno_event *seqno_event;
 	struct bat_node *next_hop_node;
 	struct orig_event *orig_event;
-	struct seqno_event *seqno_event;
-	struct rt_table *rt_table, *prev_rt_table = NULL;
+	struct rt_table *rt_table;
 	struct rt_hist *rt_hist;
-	int i, j = -1;
+	int j = -1;
+	int i;
 
 	if (!curr_bat_node) {
 		fprintf(stderr, "Routing table change without preceding OGM - skipping");
@@ -373,9 +380,11 @@ err:
 
 static int seqno_event_new(char *iface_addr, char *orig, char *prev_sender, char *neigh, long long seqno, int tq, int ttl)
 {
-	struct bat_node *orig_node, *neigh_node, *prev_sender_node;
-	struct orig_event *orig_event;
+	struct bat_node *prev_sender_node;
 	struct seqno_event *seqno_event;
+	struct orig_event *orig_event;
+	struct bat_node *neigh_node;
+	struct bat_node *orig_node;
 
 	if (!iface_addr) {
 		fprintf(stderr, "Invalid interface address found - skipping");
@@ -450,11 +459,23 @@ err:
 
 static int parse_log_file(char *file_path)
 {
-	FILE *fd;
-	char line_buff[MAX_LINE], *start_ptr, *start_ptr_safe, *tok_ptr;
-	char *neigh, *iface_addr, *orig, *prev_sender, rt_flag;
-	int line_count = 0, tq, ttl, i, res, max;
+	char line_buff[MAX_LINE];
+	char *start_ptr_safe;
+	int line_count = 0;
+	char *prev_sender;
+	char *iface_addr;
+	char *start_ptr;
 	long long seqno;
+	char *tok_ptr;
+	char rt_flag;
+	char *neigh;
+	char *orig;
+	FILE *fd;
+	int ttl;
+	int res;
+	int max;
+	int tq;
+	int i;
 
 	fd = fopen(file_path, "r");
 
@@ -619,10 +640,10 @@ static struct rt_hist *get_rt_hist_by_node_seqno(struct bat_node *bat_node, stru
 static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *dst_node,
 				  struct bat_node *next_hop, long long seqno, long long seqno_rand, int read_opt)
 {
+	char curr_loop_magic[LOOP_MAGIC_LEN];
 	struct bat_node *next_hop_tmp;
 	struct orig_event *orig_event;
 	struct rt_hist *rt_hist;
-	char curr_loop_magic[LOOP_MAGIC_LEN];
 
 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli", src_node->name,
 		 dst_node->name, seqno, seqno_rand);
@@ -681,11 +702,14 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 				struct bat_node *curr_node, long long seqno_min, long long seqno_max,
 				long long seqno_rand, int read_opt)
 {
+	char curr_loop_magic[LOOP_MAGIC_LEN];
+	long long seqno_min_tmp = seqno_min;
 	struct orig_event *orig_event;
-	struct rt_hist *rt_hist, *rt_hist_tmp;
-	char curr_loop_magic[LOOP_MAGIC_LEN], loop_check = 0;
+	struct rt_hist *rt_hist_tmp;
+	struct rt_hist *rt_hist;
+	char loop_check = 0;
+	long long seqno_tmp;
 	int res;
-	long long seqno_tmp, seqno_min_tmp = seqno_min;
 
 	/* printf("%i: curr_node: %s ", bla,
 		       get_name_by_macstr(curr_node->name, read_opt));
@@ -805,13 +829,15 @@ loop:
 
 static void loop_detection(char *loop_orig, long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
-	struct bat_node *bat_node;
-	struct orig_event *orig_event;
 	struct hash_it_t *hashit = NULL;
-	struct rt_hist *rt_hist, *prev_rt_hist;
-	long long last_seqno = -1, seqno_count = 0;
-	int res;
+	struct orig_event *orig_event;
+	struct rt_hist *prev_rt_hist;
+	struct bat_node *bat_node;
+	long long last_seqno = -1;
+	long long seqno_count = 0;
 	char check_orig[NAME_LEN];
+	struct rt_hist *rt_hist;
+	int res;
 
 	printf("\nAnalyzing routing tables ");
 
@@ -972,7 +998,8 @@ static void seqno_trace_print(struct list_head *trace_list, char *trace_orig,
 			      long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
 	struct seqno_trace *seqno_trace;
-	char head[MAX_LINE], check_orig[NAME_LEN];
+	char check_orig[NAME_LEN];
+	char head[MAX_LINE];
 	int i;
 
 	/* if no option was given filter_orig is empty */
@@ -1067,7 +1094,8 @@ err:
 static struct seqno_trace_neigh *seqno_trace_find_neigh(struct bat_node *neigh, struct bat_node *prev_sender,
 							struct seqno_trace_neigh *seqno_trace_neigh)
 {
-	struct seqno_trace_neigh *seqno_trace_neigh_tmp, *seqno_trace_neigh_ret;
+	struct seqno_trace_neigh *seqno_trace_neigh_tmp;
+	struct seqno_trace_neigh *seqno_trace_neigh_ret;
 	int i;
 
 	for (i = 0; i < seqno_trace_neigh->num_neighbors; i++) {
@@ -1103,7 +1131,8 @@ static int seqno_trace_fix_leaf(struct seqno_trace_neigh *seqno_trace_mom,
 				struct seqno_trace_neigh *seqno_trace_old_mom,
 					struct seqno_trace_neigh *seqno_trace_child)
 {
-	struct seqno_trace_neigh **data_ptr, *seqno_trace_neigh;
+	struct seqno_trace_neigh *seqno_trace_neigh;
+	struct seqno_trace_neigh **data_ptr;
 	int i, j = 0;
 
 	data_ptr = malloc((seqno_trace_old_mom->num_neighbors - 1) * sizeof(struct seqno_trace_neigh *));
@@ -1181,8 +1210,10 @@ static void seqno_trace_free(struct seqno_trace *seqno_trace)
 static int seqno_trace_add(struct list_head *trace_list, struct bat_node *bat_node,
 			   struct seqno_event *seqno_event, char print_trace)
 {
-	struct seqno_trace *seqno_trace = NULL, *seqno_trace_tmp = NULL, *seqno_trace_prev = NULL;
+	struct seqno_trace *seqno_trace_prev = NULL;
 	struct seqno_trace_neigh *seqno_trace_neigh;
+	struct seqno_trace *seqno_trace_tmp = NULL;
+	struct seqno_trace *seqno_trace = NULL;
 
 	list_for_each_entry(seqno_trace_tmp, trace_list, list) {
 		if (seqno_trace_tmp->seqno == seqno_event->seqno) {
@@ -1235,13 +1266,15 @@ err:
 
 static void trace_seqnos(char *trace_orig, long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
-	struct bat_node *bat_node;
-	struct orig_event *orig_event;
+	struct seqno_trace *seqno_trace_tmp;
+	struct seqno_trace *seqno_trace;
 	struct seqno_event *seqno_event;
 	struct hash_it_t *hashit = NULL;
+	struct orig_event *orig_event;
 	struct list_head trace_list;
-	struct seqno_trace *seqno_trace, *seqno_trace_tmp;
-	char check_orig[NAME_LEN], print_trace;
+	struct bat_node *bat_node;
+	char check_orig[NAME_LEN];
+	char print_trace;
 	int res;
 
 	/* if no option was given filter_orig is empty */
@@ -1300,9 +1333,9 @@ out:
 
 static void print_rt_tables(char *rt_orig, long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
+	struct seqno_event *seqno_event;
 	struct bat_node *bat_node;
 	struct rt_table *rt_table;
-	struct seqno_event *seqno_event;
 	char check_orig[NAME_LEN];
 	int i;
 
@@ -1390,9 +1423,9 @@ out:
 
 static int get_orig_addr(char *orig_name, char *orig_addr)
 {
-	struct bat_host *bat_host;
-	struct ether_addr *orig_mac;
 	char *orig_name_tmp = orig_name;
+	struct ether_addr *orig_mac;
+	struct bat_host *bat_host;
 
 	bat_host = bat_hosts_find_by_name(orig_name_tmp);
 
@@ -1425,11 +1458,22 @@ err:
 
 static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 {
-	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
-	int read_opt = USE_BAT_HOSTS, num_parsed_files;
-	long long tmp_seqno, seqno_max = -1, seqno_min = -1;
-	char *trace_orig_ptr = NULL, *rt_orig_ptr = NULL, *loop_orig_ptr = NULL;
-	char orig[NAME_LEN], filter_orig[NAME_LEN], *dash_ptr, *filter_orig_ptr = NULL;
+	int read_opt = USE_BAT_HOSTS;
+	char *filter_orig_ptr = NULL;
+	char *trace_orig_ptr = NULL;
+	char *loop_orig_ptr = NULL;
+	char filter_orig[NAME_LEN];
+	char *rt_orig_ptr = NULL;
+	long long seqno_max = -1;
+	long long seqno_min = -1;
+	int ret = EXIT_FAILURE;
+	int num_parsed_files;
+	long long tmp_seqno;
+	char orig[NAME_LEN];
+	int found_args = 1;
+	char *dash_ptr;
+	int optchar;
+	int res;
 
 	memset(orig, 0, NAME_LEN);
 	memset(filter_orig, 0, NAME_LEN);

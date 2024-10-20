@@ -33,11 +33,12 @@ static int bla_backbone_callback(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	int last_seen_msecs, last_seen_secs;
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
 	uint16_t backbone_crc;
+	int last_seen_msecs;
+	int last_seen_secs;
 	uint8_t *backbone;
 	uint16_t vid;
 

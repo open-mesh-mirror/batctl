@@ -59,20 +59,39 @@ static void sig_handler(int sig)
 
 static int ping(struct state *state, int argc, char **argv)
 {
-	struct batadv_icmp_packet_rr icmp_packet_out, icmp_packet_in;
-	struct timeval tv;
-	struct ether_addr *dst_mac = NULL, *rr_mac = NULL;
-	struct bat_host *bat_host, *rr_host;
-	ssize_t read_len;
-	int ret = EXIT_FAILURE, res, optchar, found_args = 1;
-	int loop_count = -1, loop_interval = 0, timeout = 1, rr = 0, i;
-	unsigned int seq_counter = 0, packets_out = 0, packets_in = 0, packets_loss;
-	char *dst_string, *mac_string, *rr_string;
-	double time_delta;
-	float min = 0.0, max = 0.0, avg = 0.0, mdev = 0.0;
-	uint8_t last_rr_cur = 0, last_rr[BATADV_RR_LEN][ETH_ALEN];
-	size_t packet_len;
+	struct batadv_icmp_packet_rr icmp_packet_out;
+	struct batadv_icmp_packet_rr icmp_packet_in;
+	uint8_t last_rr[BATADV_RR_LEN][ETH_ALEN];
+	struct ether_addr *dst_mac = NULL;
+	struct ether_addr *rr_mac = NULL;
 	int disable_translate_mac = 0;
+	unsigned int seq_counter = 0;
+	unsigned int packets_out = 0;
+	unsigned int packets_in = 0;
+	unsigned int packets_loss;
+	struct bat_host *bat_host;
+	struct bat_host *rr_host;
+	uint8_t last_rr_cur = 0;
+	int ret = EXIT_FAILURE;
+	int loop_interval = 0;
+	int loop_count = -1;
+	int found_args = 1;
+	size_t packet_len;
+	struct timeval tv;
+	double time_delta;
+	float mdev = 0.0;
+	ssize_t read_len;
+	char *dst_string;
+	char *mac_string;
+	char *rr_string;
+	float min = 0.0;
+	float max = 0.0;
+	float avg = 0.0;
+	int timeout = 1;
+	int optchar;
+	int rr = 0;
+	int res;
+	int i;
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
 		switch (optchar) {

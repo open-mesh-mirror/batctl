@@ -117,9 +117,9 @@ static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	struct state *state = arg;
 	struct ifinfomsg *ifm;
 	unsigned int master;
+	const char *status;
 	char *ifname;
 	int ret;
-	const char *status;
 
 	ifm = nlmsg_data(nlmsg_hdr(msg));
 	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,
@@ -407,16 +407,17 @@ err_free_msg:
 static int interface(struct state *state, int argc, char **argv)
 {
 	struct interface_create_params create_params = {};
-	int i, optchar;
-	int ret;
-	unsigned int ifindex;
+	bool manual_mode = false;
 	unsigned int ifmaster;
+	unsigned int ifindex;
 	unsigned int pre_cnt;
 	const char *long_op;
 	unsigned int cnt;
-	int rest_argc;
 	char **rest_argv;
-	bool manual_mode = false;
+	int rest_argc;
+	int optchar;
+	int ret;
+	int i;
 
 	while ((optchar = getopt(argc, argv, "hM")) != -1) {
 		switch (optchar) {

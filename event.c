@@ -56,8 +56,8 @@ static void event_usage(void)
 
 static int event_prepare(struct state *state)
 {
-	int ret;
 	int mcid;
+	int ret;
 
 	if (!state->sock)
 		return -EOPNOTSUPP;
@@ -165,8 +165,8 @@ static void event_parse_set_mesh(struct nlattr **attrs)
 		BATADV_ATTR_ALGO_NAME,
 	};
 	char meshif_buf[IF_NAMESIZE];
-	char *meshif_name;
 	uint32_t mesh_ifindex;
+	char *meshif_name;
 
 	/* ignore entry when attributes are missing */
 	if (missing_mandatory_attrs(attrs, mesh_mandatory,
@@ -299,10 +299,10 @@ static void event_parse_set_hardif(struct nlattr **attrs)
 	};
 	char meshif_buf[IF_NAMESIZE];
 	char hardif_buf[IF_NAMESIZE];
-	char *meshif_name;
-	char *hardif_name;
 	uint32_t hardif_ifindex;
 	uint32_t mesh_ifindex;
+	char *meshif_name;
+	char *hardif_name;
 
 	/* ignore entry when attributes are missing */
 	if (missing_mandatory_attrs(attrs, hardif_mandatory,
@@ -355,8 +355,8 @@ static void event_parse_set_vlan(struct nlattr **attrs)
 		BATADV_ATTR_VLANID,
 	};
 	char meshif_buf[IF_NAMESIZE];
-	char *meshif_name;
 	uint32_t mesh_ifindex;
+	char *meshif_name;
 	uint16_t vid;
 
 	/* ignore entry when attributes are missing */

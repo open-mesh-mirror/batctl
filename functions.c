@@ -57,7 +57,8 @@ void start_timer(void)
 
 double end_timer(void)
 {
-	struct timespec end_time, diff;
+	struct timespec end_time;
+	struct timespec diff;
 
 	clock_gettime(CLOCK_MONOTONIC, &end_time);
 	diff.tv_sec = end_time.tv_sec - start_time.tv_sec;
@@ -173,9 +174,9 @@ int read_file(const char *full_path, int read_opt)
 struct ether_addr *translate_mac(struct state *state,
 				 const struct ether_addr *mac)
 {
-	struct ether_addr in_mac;
 	static struct ether_addr out_mac;
 	struct ether_addr *mac_result;
+	struct ether_addr in_mac;
 
 	/* input mac has to be copied because it could be in the shared
 	 * ether_aton buffer
@@ -201,11 +202,11 @@ int get_algoname(struct state *state, unsigned int mesh_ifindex,
 
 static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 {
-	int ret;
+	struct sockaddr_in6 *inet6;
+	struct sockaddr_in *inet4;
 	struct addrinfo hints;
 	struct addrinfo *res;
-	struct sockaddr_in *inet4;
-	struct sockaddr_in6 *inet6;
+	int ret;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = ai_family;
@@ -237,11 +238,11 @@ static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
 static void request_mac_resolve(int ai_family, const void *l3addr)
 {
 	const struct sockaddr *sockaddr;
-	struct sockaddr_in inet4;
 	struct sockaddr_in6 inet6;
+	struct sockaddr_in inet4;
 	size_t sockaddr_len;
-	int sock;
 	char t = 0;
+	int sock;
 
 	sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0)
@@ -289,13 +290,13 @@ static struct nla_policy neigh_policy[NDA_MAX + 1] = {
 
 static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
 {
+	struct resolve_mac_nl_arg *nl_arg = arg;
 	struct nlattr *tb[NDA_MAX + 1];
 	struct ndmsg *nm;
-	int ret;
-	int l3_len;
-	struct resolve_mac_nl_arg *nl_arg = arg;
-	uint8_t *mac;
 	uint8_t *l3addr;
+	uint8_t *mac;
+	int l3_len;
+	int ret;
 
 	nm = nlmsg_data(nlmsg_hdr(msg));
 	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*nm), tb, NDA_MAX,
@@ -347,20 +348,20 @@ err:
 static struct ether_addr *resolve_mac_from_cache(int ai_family,
 						 const void *l3addr)
 {
-	struct nl_sock *sock;
 	struct ether_addr *mac_result = NULL;
 	static struct ether_addr mac_tmp;
-	int ret;
-	struct rtgenmsg gmsg = {
-		.rtgen_family = ai_family,
-	};
-	struct nl_cb *cb = NULL;
 	struct resolve_mac_nl_arg arg = {
 		.ai_family = ai_family,
 		.l3addr = l3addr,
 		.mac_result = &mac_tmp,
 		.found = 0,
 	};
+	struct rtgenmsg gmsg = {
+		.rtgen_family = ai_family,
+	};
+	struct nl_cb *cb = NULL;
+	struct nl_sock *sock;
+	int ret;
 
 	sock = nl_socket_alloc();
 	if (!sock)
@@ -398,12 +399,12 @@ err:
 
 static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 {
-	uint8_t ipv4_addr[4];
+	struct ether_addr *mac_result = NULL;
 	uint8_t ipv6_addr[16];
+	uint8_t ipv4_addr[4];
+	int retries = 5;
 	void *l3addr;
 	int ret;
-	int retries = 5;
-	struct ether_addr *mac_result = NULL;
 
 	switch (ai_family) {
 	case AF_INET:
@@ -434,7 +435,10 @@ static struct ether_addr *resolve_mac_from_addr(int ai_family, const char *asc)
 struct ether_addr *resolve_mac(const char *asc)
 {
 	struct ether_addr *mac_result = NULL;
-	static const int ai_families[] = {AF_INET, AF_INET6};
+	static const int ai_families[] = {
+		AF_INET,
+		AF_INET6,
+	};
 	size_t i;
 
 	mac_result = ether_aton(asc);
@@ -887,8 +891,8 @@ static int get_random_bytes_syscall(void *buf __maybe_unused,
 
 static int get_random_bytes_urandom(void *buf, size_t buflen)
 {
-	int fd;
 	ssize_t r;
+	int fd;
 
 	fd = open("/dev/urandom", O_RDONLY);
 	if (fd < 0)
@@ -907,10 +911,10 @@ static int get_random_bytes_urandom(void *buf, size_t buflen)
 
 static int get_random_bytes_fallback(void *buf, size_t buflen)
 {
-	struct timespec now;
 	static int initialized;
-	size_t i;
+	struct timespec now;
 	uint8_t *bufc = buf;
+	size_t i;
 
 	/* this is not a good source for randomness */
 	if (!initialized) {

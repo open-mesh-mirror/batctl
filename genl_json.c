@@ -558,13 +558,13 @@ static int netlink_print_query_json_attributes(struct nl_msg *msg, void *arg)
 static int netlink_print_query_json(struct state *state,
 				    struct json_query_data *json_query)
 {
-	int ret;
 	struct json_opts json_opts = {
 		.is_first = true,
 		.query_opts = {
 			.err = 0,
 		},
 	};
+	int ret;
 
 	if (json_query->nlm_flags & NLM_F_DUMP)
 		putchar('[');

@@ -251,9 +251,9 @@ static int icmp_interface_update_parse(struct nl_msg *msg, void *arg)
 	struct icmp_interface *iface;
 	struct ifinfomsg *ifm;
 	char *ifname;
-	int ret;
-	int master;
 	uint8_t *mac;
+	int master;
+	int ret;
 
 	ifm = nlmsg_data(nlmsg_hdr(msg));
 	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,
@@ -456,9 +456,9 @@ ssize_t icmp_interface_read(struct batadv_icmp_header *icmp_packet, size_t len,
 	struct iovec vector[2];
 	fd_set read_sockets;
 	size_t packet_len;
-	int max_sock;
 	ssize_t read_len;
 	int read_sock;
+	int max_sock;
 	int res;
 
 	if (len < sizeof(*icmp_packet))
@@ -521,7 +521,8 @@ retry:
 
 void icmp_interfaces_clean(void)
 {
-	struct icmp_interface *iface, *safe;
+	struct icmp_interface *iface;
+	struct icmp_interface *safe;
 
 	list_for_each_entry_safe(iface, safe, &interface_list, list)
 		icmp_interface_destroy(iface);

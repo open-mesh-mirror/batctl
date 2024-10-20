@@ -31,11 +31,12 @@ static const int neighbors_mandatory[] = {
 
 static int neighbors_callback(struct nl_msg *msg, void *arg)
 {
-	unsigned throughput_mbits, throughput_kbits;
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int last_seen_msecs, last_seen_secs;
 	struct print_opts *opts = arg;
+	unsigned int throughput_mbits;
+	unsigned int throughput_kbits;
 	char ifname_buf[IF_NAMESIZE];
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;

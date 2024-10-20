@@ -71,8 +71,8 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
 		       nl_recvmsg_msg_cb_t attribute_cb,
 		       nl_recvmsg_msg_cb_t callback)
 {
-	int result;
 	struct nl_msg *msg;
+	int result;
 	int ret;
 
 	if (!state->sock)

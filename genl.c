@@ -79,13 +79,14 @@ static int mcast_family_handler(struct nl_msg *msg, void *arg)
 int nl_get_multicast_id(struct nl_sock *sock, const char *family,
 			const char *group)
 {
-	struct nl_msg *msg;
-	struct nl_cb *cb;
-	int ret, ctrlid;
 	struct mcast_handler_args grp = {
 		.group = group,
 		.id = -ENOENT,
 	};
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+	int ctrlid;
+	int ret;
 
 	msg = nlmsg_alloc();
 	if (!msg)

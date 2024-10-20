@@ -44,10 +44,11 @@ static void debug_table_usage(struct state *state)
 int handle_debug_table(struct state *state, int argc, char **argv)
 {
 	struct debug_table_data *debug_table = state->cmd->arg;
-	int optchar, read_opt = USE_BAT_HOSTS;
-	char *orig_iface = NULL;
+	int read_opt = USE_BAT_HOSTS;
 	float orig_timeout = 0.0f;
 	float watch_interval = 1;
+	char *orig_iface = NULL;
+	int optchar;
 	int err;
 
 	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {

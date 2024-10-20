@@ -30,8 +30,9 @@ static int compare_mac(void *data1, void *data2)
 
 static int choose_mac(void *data, int32_t size)
 {
+	uint32_t m_size = sizeof(struct ether_addr);
 	unsigned char *key = data;
-	uint32_t hash = 0, m_size = sizeof(struct ether_addr);
+	uint32_t hash = 0;
 	size_t i;
 
 	for (i = 0; i < m_size; i++) {
@@ -49,13 +50,14 @@ static int choose_mac(void *data, int32_t size)
 
 static void parse_hosts_file(struct hashtable_t **hash, const char path[], int read_opt)
 {
-	FILE *fd;
-	char *line_ptr = NULL;
-	char name[HOST_NAME_MAX_LEN], mac_str[18];
+	struct hashtable_t *swaphash;
+	char name[HOST_NAME_MAX_LEN];
 	struct ether_addr *mac_addr;
 	struct bat_host *bat_host;
-	struct hashtable_t *swaphash;
+	char *line_ptr = NULL;
+	char mac_str[18];
 	size_t len = 0;
+	FILE *fd;
 
 	name[0] = mac_str[0] = '\0';
 
@@ -142,11 +144,13 @@ out:
 
 void bat_hosts_init(int read_opt)
 {
-	unsigned int i, j, parse;
-	char confdir[CONF_DIR_LEN];
-	char *homedir;
 	size_t locations = sizeof(bat_hosts_path) / sizeof(char *);
+	char confdir[CONF_DIR_LEN];
+	unsigned int parse;
 	char *normalized;
+	unsigned int i;
+	unsigned int j;
+	char *homedir;
 
 	/***
 	 * realpath could allocate the memory for us but some embedded libc
@@ -206,8 +210,9 @@ out:
 
 struct bat_host *bat_hosts_find_by_name(char *name)
 {
+	struct bat_host *bat_host = NULL;
 	struct hash_it_t *hashit = NULL;
-	struct bat_host *bat_host = NULL, *tmp_bat_host;
+	struct bat_host *tmp_bat_host;
 
 	if (!host_hash)
 		return NULL;

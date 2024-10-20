@@ -110,7 +110,8 @@ static int log_level_write_setting(struct state *state)
 
 static int loglevel(struct state *state, int argc, char **argv)
 {
-	int optchar, res = EXIT_FAILURE;
+	int res = EXIT_FAILURE;
+	int optchar;
 	int i;
 
 	log_level_globals.log_level = 0;

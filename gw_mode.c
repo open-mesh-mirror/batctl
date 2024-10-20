@@ -169,8 +169,8 @@ static int print_gw(struct nl_msg *msg, void *arg)
 	int *result = arg;
 	const char *algo;
 	uint8_t gw_mode;
-	uint32_t val;
 	uint32_t down;
+	uint32_t val;
 	uint32_t up;
 
 	if (!genlmsg_valid_hdr(nlh, 0))
@@ -280,7 +280,8 @@ static int gw_write_setting(struct state *state)
 
 static int gw_mode(struct state *state, int argc, char **argv)
 {
-	int optchar, res = EXIT_FAILURE;
+	int res = EXIT_FAILURE;
+	int optchar;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {

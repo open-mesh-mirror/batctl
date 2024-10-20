@@ -34,14 +34,16 @@ static const int originators_mandatory[] = {
 
 static int originators_callback(struct nl_msg *msg, void *arg)
 {
-	unsigned throughput_mbits, throughput_kbits;
 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	int last_seen_msecs, last_seen_secs;
+	unsigned int throughput_mbits;
+	unsigned int throughput_kbits;
 	struct print_opts *opts = arg;
 	char ifname_buf[IF_NAMESIZE];
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
+	int last_seen_msecs;
+	int last_seen_secs;
 	uint32_t ifindex;
 	float last_seen;
 	uint8_t *neigh;

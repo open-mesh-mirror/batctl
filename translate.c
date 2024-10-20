@@ -24,7 +24,8 @@ static int translate(struct state *state, int argc, char **argv)
 	struct ether_addr *dst_mac = NULL;
 	struct bat_host *bat_host;
 	int ret = EXIT_FAILURE;
-	char *dst_string, *mac_string;
+	char *dst_string;
+	char *mac_string;
 
 	if (argc <= 1) {
 		fprintf(stderr, "Error - destination not specified\n");

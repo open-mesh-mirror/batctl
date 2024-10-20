@@ -116,9 +116,9 @@ static int tp_meter_result_callback(struct nl_msg *msg, void *arg)
 
 static int tp_meter_cookie_callback(struct nl_msg *msg, void *arg)
 {
-	struct tp_cookie *cookie = arg;
-	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlattr *attrs[NUM_BATADV_ATTR];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct tp_cookie *cookie = arg;
 	struct genlmsghdr *ghdr;
 
 	if (!genlmsg_valid_hdr(nlh, 0)) {
@@ -197,8 +197,8 @@ static int no_seq_check(struct nl_msg *msg __maybe_unused,
 
 static int tp_recv_result(struct nl_sock *sock, struct tp_result *result)
 {
-	int err = 0;
 	struct nl_cb *cb;
+	int err = 0;
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	nl_cb_set(cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
@@ -310,14 +310,8 @@ static void tp_meter_usage(void)
 
 static int throughputmeter(struct state *state, int argc, char **argv)
 {
-	struct bat_host *bat_host;
-	uint64_t throughput;
-	char *dst_string;
-	int ret = EXIT_FAILURE;
-	int found_args = 1, read_opt = USE_BAT_HOSTS;
-	uint32_t time = 0;
-	int optchar;
 	struct nl_sock *listen_sock = NULL;
+	int read_opt = USE_BAT_HOSTS;
 	struct tp_result result = {
 		.error = 0,
 		.return_value = 0,
@@ -330,6 +324,13 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		.cookie = 0,
 		.found = false,
 	};
+	struct bat_host *bat_host;
+	int ret = EXIT_FAILURE;
+	uint64_t throughput;
+	int found_args = 1;
+	uint32_t time = 0;
+	char *dst_string;
+	int optchar;
 
 	while ((optchar = getopt(argc, argv, "t:n")) != -1) {
 		switch (optchar) {

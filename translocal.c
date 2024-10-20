@@ -31,17 +31,23 @@ static const int translocal_mandatory[] = {
 
 static int translocal_callback(struct nl_msg *msg, void *arg)
 {
-	int last_seen_msecs = 0, last_seen_secs = 0;
 	struct nlattr *attrs[BATADV_ATTR_MAX+1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
-	char r, p, n, x, w, i;
-	uint8_t *addr;
-	int16_t vid;
+	int last_seen_msecs = 0;
+	int last_seen_secs = 0;
 	uint32_t crc32;
 	uint32_t flags;
+	uint8_t *addr;
+	int16_t vid;
+	char r;
+	char p;
+	char n;
+	char x;
+	char w;
+	char i;
 
 	if (!genlmsg_valid_hdr(nlh, 0)) {
 		fputs("Received invalid data from kernel.\n", stderr);

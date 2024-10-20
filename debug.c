@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +29,7 @@ static void debug_table_usage(struct state *state)
 	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table->option_timeout_interval)
-		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
+		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds\n");
 
 	if (debug_table->option_orig_iface)
 		fprintf(stderr, " \t -i [interface] - show multiif originator table for a specific interface\n");
@@ -125,8 +124,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			} else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
-			}
-			else
+			} else
 				fprintf(stderr, "Error - unrecognised option: '-%c'\n", optopt);
 
 			return EXIT_FAILURE;
@@ -144,7 +142,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	err = debug_table->netlink_fn(state , orig_iface, read_opt,
+	err = debug_table->netlink_fn(state, orig_iface, read_opt,
 				      orig_timeout, watch_interval);
 	return err;
 }

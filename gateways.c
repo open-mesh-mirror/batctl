@@ -34,7 +34,7 @@ static const int gateways_mandatory[] = {
 
 static int gateways_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;

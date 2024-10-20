@@ -21,8 +21,8 @@
 #include "main.h"
 #include "functions.h"
 
-static struct hashtable_t *node_hash = NULL;
-static struct bat_node *curr_bat_node = NULL;
+static struct hashtable_t *node_hash;
+static struct bat_node *curr_bat_node;
 
 static void bisect_iv_usage(void)
 {
@@ -44,7 +44,7 @@ static int compare_name(void *data1, void *data2)
 
 static int choose_name(void *data, int32_t size)
 {
-	unsigned char *key= data;
+	unsigned char *key = data;
 	uint32_t hash = 0, m_size = NAME_LEN - 1;
 	size_t i;
 
@@ -280,8 +280,8 @@ static int routing_table_new(char *orig, char *next_hop, char *old_next_hop, cha
 
 			if (rt_table->num_entries != prev_rt_table->num_entries) {
 				fprintf(stderr,
-				        "Found a delete entry of orig '%s' but no existing record - skipping",
-				        orig);
+					"Found a delete entry of orig '%s' but no existing record - skipping",
+					orig);
 				goto rt_hist_free;
 			}
 
@@ -512,7 +512,7 @@ static int parse_log_file(char *file_path)
 				continue;
 			}
 
-// 			fprintf(stderr, "received packet  (line %i): neigh: '%s', iface_addr: '%s', orig: '%s', prev_sender: '%s', seqno: %i, tq: %i, ttl: %i\n", line_count, neigh, iface_addr, orig, prev_sender, seqno, tq, ttl);
+//			fprintf(stderr, "received packet  (line %i): neigh: '%s', iface_addr: '%s', orig: '%s', prev_sender: '%s', seqno: %i, tq: %i, ttl: %i\n", line_count, neigh, iface_addr, orig, prev_sender, seqno, tq, ttl);
 
 			res = seqno_event_new(iface_addr, orig, prev_sender, neigh, seqno, tq, ttl);
 			if (res < 1)
@@ -521,7 +521,6 @@ static int parse_log_file(char *file_path)
 		} else if (strstr(start_ptr, "Adding route towards") ||
 			   strstr(start_ptr, "Changing route towards") ||
 			   strstr(start_ptr, "Deleting route towards")) {
-
 			rt_flag = RT_FLAG_UPDATE;
 			max = 12;
 
@@ -563,16 +562,16 @@ static int parse_log_file(char *file_path)
 				}
 			}
 
-// 			printf("route (file: %s, line %i): orig: '%s', neigh: '%s', prev_sender: '%s'\n",
-// 			       file_path, line_count, orig, neigh, prev_sender);
+//			printf("route (file: %s, line %i): orig: '%s', neigh: '%s', prev_sender: '%s'\n",
+//			       file_path, line_count, orig, neigh, prev_sender);
 
 			if (((rt_flag == RT_FLAG_ADD) && (!neigh)) ||
 			    ((rt_flag == RT_FLAG_UPDATE) && (!prev_sender)) ||
 			    ((rt_flag == RT_FLAG_DELETE) && (!orig))) {
 				fprintf(stderr, "Broken '%s route' line found - skipping [file: %s, line: %i]\n",
-				        (rt_flag == RT_FLAG_UPDATE ? "changing" :
-				        (rt_flag == RT_FLAG_ADD ? "adding" : "deleting")),
-				        file_path, line_count);
+					(rt_flag == RT_FLAG_UPDATE ? "changing" :
+					(rt_flag == RT_FLAG_ADD ? "adding" : "deleting")),
+					file_path, line_count);
 				continue;
 			}
 
@@ -582,7 +581,7 @@ static int parse_log_file(char *file_path)
 		}
 	}
 
-// 	printf("File '%s' parsed (lines: %i)\n", file_path, line_count);
+//	printf("File '%s' parsed (lines: %i)\n", file_path, line_count);
 	fclose(fd);
 	curr_bat_node = NULL;
 	return 1;
@@ -618,7 +617,7 @@ static struct rt_hist *get_rt_hist_by_node_seqno(struct bat_node *bat_node, stru
 }
 
 static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *dst_node,
-                            struct bat_node *next_hop, long long seqno, long long seqno_rand, int read_opt)
+				  struct bat_node *next_hop, long long seqno, long long seqno_rand, int read_opt)
 {
 	struct bat_node *next_hop_tmp;
 	struct orig_event *orig_event;
@@ -626,7 +625,7 @@ static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *ds
 	char curr_loop_magic[LOOP_MAGIC_LEN];
 
 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli", src_node->name,
-	         dst_node->name, seqno, seqno_rand);
+		 dst_node->name, seqno, seqno_rand);
 
 	printf("Path towards %s (seqno %lli ",
 	       get_name_by_macstr(dst_node->name, read_opt), seqno);
@@ -679,8 +678,8 @@ out:
 }
 
 static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_node,
-                                struct bat_node *curr_node, long long seqno_min, long long seqno_max,
-                                long long seqno_rand, int read_opt)
+				struct bat_node *curr_node, long long seqno_min, long long seqno_max,
+				long long seqno_rand, int read_opt)
 {
 	struct orig_event *orig_event;
 	struct rt_hist *rt_hist, *rt_hist_tmp;
@@ -700,13 +699,13 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 
 		if (rt_hist)
 			print_rt_path_at_seqno(src_node, dst_node, rt_hist->next_hop,
-			                       seqno_max, seqno_rand, read_opt);
+					       seqno_max, seqno_rand, read_opt);
 		return 0;
 	}
 
 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli",
-	         src_node->name, dst_node->name,
-	         seqno_min_tmp, seqno_rand);
+		 src_node->name, dst_node->name,
+		 seqno_min_tmp, seqno_rand);
 
 	orig_event = orig_event_get_by_ptr(curr_node, dst_node);
 	if (!orig_event)
@@ -728,11 +727,11 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 		/* we are running in a loop */
 		if (memcmp(curr_loop_magic, rt_hist->loop_magic, LOOP_MAGIC_LEN) == 0) {
 			rt_hist_tmp = get_rt_hist_by_node_seqno(src_node, dst_node,
-			                                        rt_hist->seqno_event->seqno);
+								rt_hist->seqno_event->seqno);
 
 			if (rt_hist_tmp)
 				print_rt_path_at_seqno(src_node, dst_node, rt_hist_tmp->next_hop,
-				                       rt_hist->seqno_event->seqno, seqno_rand, read_opt);
+						       rt_hist->seqno_event->seqno, seqno_rand, read_opt);
 			goto loop;
 		}
 
@@ -744,8 +743,8 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 		       get_name_by_macstr(curr_node->name, read_opt)); */
 
 		res = find_rt_table_change(src_node, dst_node, rt_hist->next_hop,
-		                           seqno_min_tmp, rt_hist->seqno_event->seqno,
-		                           seqno_rand, read_opt);
+					   seqno_min_tmp, rt_hist->seqno_event->seqno,
+					   seqno_rand, read_opt);
 
 		seqno_min_tmp = rt_hist->seqno_event->seqno + 1;
 
@@ -763,7 +762,7 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 			continue;
 
 		print_rt_path_at_seqno(src_node, dst_node, rt_hist_tmp->next_hop,
-		      rt_hist->seqno_event->seqno, seqno_rand, read_opt);
+				       rt_hist->seqno_event->seqno, seqno_rand, read_opt);
 	}
 
 	/**
@@ -776,7 +775,7 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 
 			if (rt_hist_tmp)
 				print_rt_path_at_seqno(src_node, dst_node, rt_hist_tmp->next_hop,
-				                       seqno_min, seqno_rand, read_opt);
+						       seqno_min, seqno_rand, read_opt);
 
 			/* no need to print the path twice */
 			if (seqno_min == seqno_max)
@@ -796,7 +795,7 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
 
 	if (rt_hist)
 		return find_rt_table_change(src_node, dst_node, rt_hist->next_hop,
-		                            seqno_min_tmp, seqno_max, seqno_rand, read_opt);
+					    seqno_min_tmp, seqno_max, seqno_rand, read_opt);
 
 out:
 	return -1;
@@ -856,14 +855,14 @@ static void loop_detection(char *loop_orig, long long seqno_min, long long seqno
 			/* we might have no log file from this node */
 			if (list_empty(&orig_event->event_list)) {
 				fprintf(stderr, "No seqno data of originator '%s' - skipping\n",
-				get_name_by_macstr(orig_event->orig_node->name, read_opt));
+					get_name_by_macstr(orig_event->orig_node->name, read_opt));
 				continue;
 			}
 
 			/* or routing tables */
 			if (list_empty(&orig_event->rt_hist_list)) {
 				fprintf(stderr, "No routing history of originator '%s' - skipping\n",
-				get_name_by_macstr(orig_event->orig_node->name, read_opt));
+					get_name_by_macstr(orig_event->orig_node->name, read_opt));
 				continue;
 			}
 
@@ -891,7 +890,7 @@ static void loop_detection(char *loop_orig, long long seqno_min, long long seqno
 
 				if (rt_hist->flags == RT_FLAG_DELETE) {
 					printf("Path towards %s deleted (originator timeout)\n",
-						get_name_by_macstr(rt_hist->seqno_event->orig->name, read_opt));
+					       get_name_by_macstr(rt_hist->seqno_event->orig->name, read_opt));
 					continue;
 				}
 
@@ -901,9 +900,9 @@ static void loop_detection(char *loop_orig, long long seqno_min, long long seqno
 				    (rt_hist->seqno_event->seqno != prev_rt_hist->seqno_event->seqno)) {
 					if (rt_hist->seqno_event->seqno < prev_rt_hist->seqno_event->seqno) {
 						fprintf(stderr,
-						        "Smaller seqno (%lli) than previously received seqno (%lli) of orig %s triggered routing table change - skipping recursive check\n",
-						        rt_hist->seqno_event->seqno, prev_rt_hist->seqno_event->seqno,
-						        get_name_by_macstr(rt_hist->seqno_event->orig->name, read_opt));
+							"Smaller seqno (%lli) than previously received seqno (%lli) of orig %s triggered routing table change - skipping recursive check\n",
+							rt_hist->seqno_event->seqno, prev_rt_hist->seqno_event->seqno,
+							get_name_by_macstr(rt_hist->seqno_event->orig->name, read_opt));
 						goto validate_path;
 					}
 
@@ -919,10 +918,10 @@ static void loop_detection(char *loop_orig, long long seqno_min, long long seqno
 						get_name_by_macstr(prev_rt_hist->next_hop->name, read_opt)); */
 
 					res = find_rt_table_change(bat_node, rt_hist->seqno_event->orig,
-					                           prev_rt_hist->next_hop,
-					                           prev_rt_hist->seqno_event->seqno + 1,
-					                           rt_hist->seqno_event->seqno,
-					                           seqno_count, read_opt);
+								   prev_rt_hist->next_hop,
+								   prev_rt_hist->seqno_event->seqno + 1,
+								   rt_hist->seqno_event->seqno,
+								   seqno_count, read_opt);
 
 					if (res != -2)
 						continue;
@@ -930,47 +929,47 @@ static void loop_detection(char *loop_orig, long long seqno_min, long long seqno
 
 validate_path:
 				print_rt_path_at_seqno(bat_node, rt_hist->seqno_event->orig, rt_hist->next_hop,
-				                       rt_hist->seqno_event->seqno, seqno_count, read_opt);
+						       rt_hist->seqno_event->seqno, seqno_count, read_opt);
 			}
 		}
 	}
 }
 
 static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
-			            struct seqno_event *seqno_event_parent,
-			            int num_sisters, char *head, int read_opt)
+				    struct seqno_event *seqno_event_parent,
+				    int num_sisters, char *head, int read_opt)
 {
 	char new_head[MAX_LINE];
 	int i;
 
 	printf("%s%s- %s [tq: %i, ttl: %i", head,
-	               (strlen(head) == 1 ? "" : num_sisters == 0 ? "\\" : "|"),
-	               get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
-	               seqno_trace_neigh->seqno_event->tq,
-	               seqno_trace_neigh->seqno_event->ttl);
+	       (strlen(head) == 1 ? "" : num_sisters == 0 ? "\\" : "|"),
+		       get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
+		       seqno_trace_neigh->seqno_event->tq,
+		       seqno_trace_neigh->seqno_event->ttl);
 
 	printf(", neigh: %s", get_name_by_macstr(seqno_trace_neigh->seqno_event->neigh->name, read_opt));
 	printf(", prev_sender: %s]", get_name_by_macstr(seqno_trace_neigh->seqno_event->prev_sender->name, read_opt));
 
 	if ((seqno_event_parent) &&
-		(seqno_trace_neigh->seqno_event->tq > seqno_event_parent->tq))
+	    (seqno_trace_neigh->seqno_event->tq > seqno_event_parent->tq))
 		printf("  TQ UP!\n");
 	else
 		printf("\n");
 
 	for (i = 0; i < seqno_trace_neigh->num_neighbors; i++) {
 		snprintf(new_head, sizeof(new_head), "%s%s",
-		         (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
-		         (strlen(head) == 1 ? "   " :
-		         num_sisters == 0 ? "    " : "|   "));
+			 (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
+			 (strlen(head) == 1 ? "   " :
+			 num_sisters == 0 ? "    " : "|   "));
 
 		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i], seqno_trace_neigh->seqno_event,
-		                        seqno_trace_neigh->num_neighbors - i - 1, new_head, read_opt);
+					seqno_trace_neigh->num_neighbors - i - 1, new_head, read_opt);
 	}
 }
 
 static void seqno_trace_print(struct list_head *trace_list, char *trace_orig,
-                              long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
+			      long long seqno_min, long long seqno_max, char *filter_orig, int read_opt)
 {
 	struct seqno_trace *seqno_trace;
 	char head[MAX_LINE], check_orig[NAME_LEN];
@@ -1003,16 +1002,14 @@ static void seqno_trace_print(struct list_head *trace_list, char *trace_orig,
 		       get_name_by_macstr(trace_orig, read_opt),
 		       seqno_trace->seqno);
 
-
 		for (i = 0; i < seqno_trace->seqno_trace_neigh.num_neighbors; i++) {
-
 			snprintf(head, sizeof(head), "%c",
-			         (seqno_trace->seqno_trace_neigh.num_neighbors == i + 1 ? '\\' : '|'));
+				 (seqno_trace->seqno_trace_neigh.num_neighbors == i + 1 ? '\\' : '|'));
 
 			seqno_trace_print_neigh(seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i],
-			                        NULL,
-			                        seqno_trace->seqno_trace_neigh.num_neighbors - i - 1,
-			                        head, read_opt);
+						NULL,
+						seqno_trace->seqno_trace_neigh.num_neighbors - i - 1,
+						head, read_opt);
 		}
 
 		printf("\n");
@@ -1020,7 +1017,7 @@ static void seqno_trace_print(struct list_head *trace_list, char *trace_orig,
 }
 
 static int _seqno_trace_neigh_add(struct seqno_trace_neigh *seqno_trace_mom,
-					struct seqno_trace_neigh *seqno_trace_child)
+				  struct seqno_trace_neigh *seqno_trace_child)
 {
 	struct seqno_trace_neigh **data_ptr;
 
@@ -1041,7 +1038,7 @@ static int _seqno_trace_neigh_add(struct seqno_trace_neigh *seqno_trace_mom,
 }
 
 static struct seqno_trace_neigh *seqno_trace_neigh_add(struct seqno_trace_neigh *seqno_trace_neigh,
-		                      struct bat_node *bat_node, struct seqno_event *seqno_event)
+						       struct bat_node *bat_node, struct seqno_event *seqno_event)
 {
 	struct seqno_trace_neigh *seqno_trace_neigh_new;
 	int res;
@@ -1068,7 +1065,7 @@ err:
 }
 
 static struct seqno_trace_neigh *seqno_trace_find_neigh(struct bat_node *neigh, struct bat_node *prev_sender,
-				struct seqno_trace_neigh *seqno_trace_neigh)
+							struct seqno_trace_neigh *seqno_trace_neigh)
 {
 	struct seqno_trace_neigh *seqno_trace_neigh_tmp, *seqno_trace_neigh_ret;
 	int i;
@@ -1103,7 +1100,7 @@ static void seqno_trace_neigh_free(struct seqno_trace_neigh *seqno_trace_neigh)
 }
 
 static int seqno_trace_fix_leaf(struct seqno_trace_neigh *seqno_trace_mom,
-					struct seqno_trace_neigh *seqno_trace_old_mom,
+				struct seqno_trace_neigh *seqno_trace_old_mom,
 					struct seqno_trace_neigh *seqno_trace_child)
 {
 	struct seqno_trace_neigh **data_ptr, *seqno_trace_neigh;
@@ -1182,7 +1179,7 @@ static void seqno_trace_free(struct seqno_trace *seqno_trace)
 }
 
 static int seqno_trace_add(struct list_head *trace_list, struct bat_node *bat_node,
-		           struct seqno_event *seqno_event, char print_trace)
+			   struct seqno_event *seqno_event, char print_trace)
 {
 	struct seqno_trace *seqno_trace = NULL, *seqno_trace_tmp = NULL, *seqno_trace_prev = NULL;
 	struct seqno_trace_neigh *seqno_trace_neigh;
@@ -1217,13 +1214,13 @@ static int seqno_trace_add(struct list_head *trace_list, struct bat_node *bat_no
 		seqno_trace->print = print_trace;
 
 	seqno_trace_neigh = seqno_trace_find_neigh(seqno_event->neigh,
-				                   seqno_event->prev_sender,
-				                   &seqno_trace->seqno_trace_neigh);
+						   seqno_event->prev_sender,
+						   &seqno_trace->seqno_trace_neigh);
 
 	/* no neighbor found to hook up to - adding new root node */
 	if (!seqno_trace_neigh)
 		seqno_trace_neigh = seqno_trace_neigh_add(&seqno_trace->seqno_trace_neigh,
-				                          bat_node, seqno_event);
+							  bat_node, seqno_event);
 	else
 		seqno_trace_neigh = seqno_trace_neigh_add(seqno_trace_neigh, bat_node, seqno_event);
 
@@ -1255,7 +1252,6 @@ static void trace_seqnos(char *trace_orig, long long seqno_min, long long seqno_
 		bat_node = hashit->bucket->data;
 
 		list_for_each_entry(orig_event, &bat_node->orig_event_list, list) {
-
 			/* we might have no log file from this node */
 			if (list_empty(&orig_event->event_list))
 				continue;
@@ -1359,7 +1355,7 @@ static void print_rt_tables(char *rt_orig, long long seqno_min, long long seqno_
 			printf(", prev_sender: %s)\n",
 			       get_name_by_macstr(seqno_event->prev_sender->name, read_opt));
 		} else {
-			printf("rt change triggered by originator timeout: \n");
+			printf("rt change triggered by originator timeout:\n");
 		}
 
 		for (i = 0; i < rt_table->num_entries; i++) {
@@ -1445,7 +1441,7 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'l':
 			loop_orig_ptr = optarg;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
@@ -1453,25 +1449,25 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 			break;
 		case 'o':
 			filter_orig_ptr = optarg;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'r':
 			rt_orig_ptr = optarg;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 's':
 			dash_ptr = strchr(optarg, '-');
 			if (dash_ptr)
 				*dash_ptr = 0;
 
-			tmp_seqno = strtol(optarg, NULL , 10);
+			tmp_seqno = strtol(optarg, NULL, 10);
 			if ((tmp_seqno >= 0) && (tmp_seqno <= UINT32_MAX))
 				seqno_min = tmp_seqno;
 			else
 				fprintf(stderr, "Warning - given sequence number is out of range: %lli\n", tmp_seqno);
 
 			if (dash_ptr) {
-				tmp_seqno = strtol(dash_ptr + 1, NULL , 10);
+				tmp_seqno = strtol(dash_ptr + 1, NULL, 10);
 				if ((tmp_seqno >= 0) && (tmp_seqno <= UINT32_MAX))
 					seqno_max = tmp_seqno;
 				else
@@ -1480,11 +1476,11 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 				*dash_ptr = '-';
 			}
 
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 't':
 			trace_orig_ptr = optarg;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		default:
 			bisect_iv_usage();
@@ -1540,7 +1536,7 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 
 	if (seqno_min > seqno_max) {
 		fprintf(stderr, "Error - the sequence range minimum (%lli) should be smaller than the maximum (%lli)\n",
-		       seqno_min, seqno_max);
+			seqno_min, seqno_max);
 		goto err;
 	}
 

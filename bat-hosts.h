@@ -7,7 +7,6 @@
  */
 
 
-
 #ifndef _BATCTL_BAT_HOSTS_H
 #define _BATCTL_BAT_HOSTS_H
 
@@ -16,11 +15,10 @@
 #define HOST_NAME_MAX_LEN 50
 #define CONF_DIR_LEN 256
 
-
 struct bat_host {
 	struct ether_addr mac_addr;
 	char name[HOST_NAME_MAX_LEN];
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 void bat_hosts_init(int read_opt);
 struct bat_host *bat_hosts_find_by_name(char *name);

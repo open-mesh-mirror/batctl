@@ -14,7 +14,7 @@
 
 struct debug_table_data {
 	int (*netlink_fn)(struct state *state, char *hard_iface, int read_opt,
-			 float orig_timeout, float watch_interval);
+			  float orig_timeout, float watch_interval);
 	unsigned int option_unicast_only:1;
 	unsigned int option_multicast_only:1;
 	unsigned int option_timeout_interval:1;

@@ -31,7 +31,7 @@ static const int bla_claim_mandatory[] = {
 
 static int bla_claim_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
@@ -59,7 +59,7 @@ static int bla_claim_callback(struct nl_msg *msg, void *arg)
 	}
 
 	if (missing_mandatory_attrs(attrs, bla_claim_mandatory,
-				       ARRAY_SIZE(bla_claim_mandatory))) {
+				    ARRAY_SIZE(bla_claim_mandatory))) {
 		fputs("Missing attributes from kernel\n", stderr);
 		exit(1);
 	}

@@ -301,7 +301,6 @@ static void icmp_interface_unmark(void)
 		iface->mark = 0;
 }
 
-
 static void icmp_interface_sweep(void)
 {
 	struct icmp_interface *iface, *safe;

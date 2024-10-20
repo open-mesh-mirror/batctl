@@ -9,7 +9,6 @@
 #define _BATMAN_HASH_H
 
 
-
 typedef int (*hashdata_compare_cb)(void *, void *);
 typedef int (*hashdata_choose_cb)(void *, int);
 typedef void (*hashdata_free_cb)(void *);
@@ -46,7 +45,7 @@ void hash_init(struct hashtable_t *hash);
 
 /* allocates and clears the hash */
 struct hashtable_t *hash_new(int size, hashdata_compare_cb compare,
-				 hashdata_choose_cb choose);
+			     hashdata_choose_cb choose);
 
 /* remove bucket (this might be used in hash_iterate() if you already found
  * the bucket you want to delete and don't need the overhead to find it again

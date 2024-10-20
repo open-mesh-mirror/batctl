@@ -38,7 +38,6 @@ static void interface_usage(void)
 
 static int get_iface_status_netlink_parse(struct nl_msg *msg, void *arg)
 {
-
 	struct nlattr *attrs[NUM_BATADV_ATTR];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	char *iface_status = arg;
@@ -75,7 +74,7 @@ static char *get_iface_status_netlink(struct state *state, unsigned int hardif,
 	iface_status[0] = '\0';
 
 	nl_cb_set(state->cb, NL_CB_VALID, NL_CB_CUSTOM, get_iface_status_netlink_parse,
-		iface_status);
+		  iface_status);
 
 	msg = nlmsg_alloc();
 	if (!msg)

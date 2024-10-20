@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <netinet/ether.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -49,7 +48,7 @@
 
 static struct timespec start_time;
 static char *host_name;
-char *line_ptr = NULL;
+char *line_ptr;
 
 void start_timer(void)
 {
@@ -283,7 +282,7 @@ struct resolve_mac_nl_arg {
 	int found;
 };
 
-static struct nla_policy neigh_policy[NDA_MAX+1] = {
+static struct nla_policy neigh_policy[NDA_MAX + 1] = {
 	[NDA_CACHEINFO] = { .minlen = sizeof(struct nda_cacheinfo) },
 	[NDA_PROBES]    = { .type = NLA_U32 },
 };
@@ -909,7 +908,7 @@ static int get_random_bytes_urandom(void *buf, size_t buflen)
 static int get_random_bytes_fallback(void *buf, size_t buflen)
 {
 	struct timespec now;
-	static int initialized = 0;
+	static int initialized;
 	size_t i;
 	uint8_t *bufc = buf;
 

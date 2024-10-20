@@ -70,22 +70,22 @@ static void nljson_print_bool(struct nlattr *attrs[], int idx)
 
 static void nljson_print_uint8(struct nlattr *attrs[], int idx)
 {
-	printf("%"PRIu8, nla_get_u8(attrs[idx]));
+	printf("%" PRIu8, nla_get_u8(attrs[idx]));
 }
 
 static void nljson_print_uint16(struct nlattr *attrs[], int idx)
 {
-	printf("%"PRIu16, nla_get_u16(attrs[idx]));
+	printf("%" PRIu16, nla_get_u16(attrs[idx]));
 }
 
 static void nljson_print_uint32(struct nlattr *attrs[], int idx)
 {
-	printf("%"PRIu32, nla_get_u32(attrs[idx]));
+	printf("%" PRIu32, nla_get_u32(attrs[idx]));
 }
 
 static void nljson_print_uint64(struct nlattr *attrs[], int idx)
 {
-	printf("%"PRIu64, nla_get_u64(attrs[idx]));
+	printf("%" PRIu64, nla_get_u64(attrs[idx]));
 }
 
 static void nljson_print_vlanid(struct nlattr *attrs[], int idx)
@@ -124,7 +124,7 @@ static void nljson_print_ttflags(struct nlattr *attrs[], int idx)
 	       val & BATADV_TT_CLIENT_PENDING ? "true" : "false");
 	printf("\"temp\": %s,",
 	       val & BATADV_TT_CLIENT_TEMP ? "true" : "false");
-	printf("\"raw\": %"PRIu32, val);
+	printf("\"raw\": %" PRIu32, val);
 	putchar('}');
 }
 
@@ -159,7 +159,7 @@ static void nljson_print_mcastflags(struct nlattr *attrs[], int idx)
 	       val & BATADV_MCAST_WANT_NO_RTR6 ? "true" : "false");
 	printf("\"have_mc_ptype_capa\": %s,",
 	       val & BATADV_MCAST_HAVE_MC_PTYPE_CAPA ? "true" : "false");
-	printf("\"raw\": %"PRIu32, val);
+	printf("\"raw\": %" PRIu32, val);
 	putchar('}');
 }
 
@@ -178,7 +178,7 @@ static void nljson_print_mcastflags_priv(struct nlattr *attrs[], int idx)
 	       val & BATADV_MCAST_FLAGS_QUERIER_IPV4_SHADOWING ? "true" : "false");
 	printf("\"querier_ipv6_shadowing\": %s,",
 	       val & BATADV_MCAST_FLAGS_QUERIER_IPV6_SHADOWING ? "true" : "false");
-	printf("\"raw\": %"PRIu32, val);
+	printf("\"raw\": %" PRIu32, val);
 	putchar('}');
 }
 
@@ -223,7 +223,7 @@ static void nljson_print_loglevel(struct nlattr *attrs[], int idx)
 	       val & BIT(6) ? "true" : "false");
 	printf("\"tp\": %s,",
 	       val & BIT(7) ? "true" : "false");
-	printf("\"raw\": %"PRIu32, val);
+	printf("\"raw\": %" PRIu32, val);
 	putchar('}');
 }
 
@@ -510,7 +510,7 @@ static void json_query_usage(struct state *state)
 
 static int netlink_print_query_json_cb(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlquery_opts *query_opts = arg;
 	struct json_opts *json_opts;

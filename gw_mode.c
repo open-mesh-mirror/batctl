@@ -58,6 +58,7 @@ static bool is_throughput_select_class(struct state *state)
 
 	return false;
 }
+
 static int parse_gw_limit(char *buff)
 {
 	char *slash_ptr;
@@ -68,7 +69,7 @@ static int parse_gw_limit(char *buff)
 		*slash_ptr = 0;
 
 	ret = parse_throughput(buff, "download gateway speed",
-				&gw_globals.bandwidth_down);
+			       &gw_globals.bandwidth_down);
 	if (!ret)
 		return -EINVAL;
 
@@ -193,7 +194,7 @@ static int print_gw(struct nl_msg *msg, void *arg)
 		break;
 	case BATADV_GW_MODE_CLIENT:
 		if (missing_mandatory_attrs(attrs, mandatory_client,
-		    ARRAY_SIZE(mandatory_client)))
+					    ARRAY_SIZE(mandatory_client)))
 			return NL_OK;
 
 		algo = nla_data(attrs[BATADV_ATTR_ALGO_NAME]);
@@ -207,7 +208,7 @@ static int print_gw(struct nl_msg *msg, void *arg)
 		break;
 	case BATADV_GW_MODE_SERVER:
 		if (missing_mandatory_attrs(attrs, mandatory_server,
-		    ARRAY_SIZE(mandatory_server)))
+					    ARRAY_SIZE(mandatory_server)))
 			return NL_OK;
 
 		down = nla_get_u32(attrs[BATADV_ATTR_GW_BANDWIDTH_DOWN]);

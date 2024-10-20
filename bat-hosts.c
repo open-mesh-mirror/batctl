@@ -7,7 +7,6 @@
  */
 
 
-
 #include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
@@ -21,10 +20,8 @@
 #include "hash.h"
 #include "functions.h"
 
-
-static struct hashtable_t *host_hash = NULL;
+static struct hashtable_t *host_hash;
 const char *bat_hosts_path[3] = {"/etc/bat-hosts", "~/bat-hosts", "bat-hosts"};
-
 
 static int compare_mac(void *data1, void *data2)
 {
@@ -33,7 +30,7 @@ static int compare_mac(void *data1, void *data2)
 
 static int choose_mac(void *data, int32_t size)
 {
-	unsigned char *key= data;
+	unsigned char *key = data;
 	uint32_t hash = 0, m_size = sizeof(struct ether_addr);
 	size_t i;
 
@@ -176,8 +173,8 @@ void bat_hosts_init(int read_opt)
 	for (i = 0; i < locations; i++) {
 		strcpy(confdir, "");
 
-		if (strlen(bat_hosts_path[i]) >= 2
-		    && bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
+		if (strlen(bat_hosts_path[i]) >= 2 &&
+		    bat_hosts_path[i][0] == '~' && bat_hosts_path[i][1] == '/') {
 			if (!homedir)
 				continue;
 

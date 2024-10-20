@@ -31,7 +31,7 @@ static const int bla_backbone_mandatory[] = {
 
 static int bla_backbone_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int last_seen_msecs, last_seen_secs;
 	struct print_opts *opts = arg;

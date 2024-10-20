@@ -6,8 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
-
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <errno.h>
@@ -26,14 +24,12 @@
 #include "bat-hosts.h"
 #include "icmp_helper.h"
 
-
 #define TTL_MAX 50
 #define NUM_PACKETS 3
 
-
 static void traceroute_usage(void)
 {
-	fprintf(stderr, "Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
+	fprintf(stderr, "Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address\n");
 	fprintf(stderr, "parameters:\n");
 	fprintf(stderr, " \t -h print this help\n");
 	fprintf(stderr, " \t -n don't convert addresses to bat-host names\n");
@@ -100,7 +96,9 @@ static int traceroute(struct state *state, int argc, char **argv)
 		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			fprintf(stderr, "Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
+			fprintf(stderr,
+				"Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n",
+				dst_string);
 			goto out;
 		}
 	}
@@ -121,7 +119,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 	icmp_packet_out.reserved = 0;
 
 	printf("traceroute to %s (%s), %d hops max, %zu byte packets\n",
-		dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
+	       dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1;
 	     !dst_reached && icmp_packet_out.ttl < TTL_MAX;
@@ -134,10 +132,11 @@ static int traceroute(struct state *state, int argc, char **argv)
 			time_delta[i] = 0.0;
 
 			res = icmp_interface_write(state,
-					   (struct batadv_icmp_header *)&icmp_packet_out,
-					   sizeof(icmp_packet_out));
+						   (struct batadv_icmp_header *)&icmp_packet_out,
+						   sizeof(icmp_packet_out));
 			if (res < 0) {
-				fprintf(stderr, "Error - can't send icmp packet: %s\n", strerror(-res));
+				fprintf(stderr, "Error - can't send icmp packet: %s\n",
+					strerror(-res));
 				continue;
 			}
 
@@ -154,7 +153,7 @@ read_packet:
 
 			if ((size_t)read_len < sizeof(icmp_packet_in)) {
 				printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
-					sizeof(icmp_packet_in), read_len);
+				       sizeof(icmp_packet_in), read_len);
 				continue;
 			}
 

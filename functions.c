@@ -125,8 +125,10 @@ static void file_open_problem_dbg(const char *full_path)
 	}
 
 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
-	fprintf(stderr, "The option you called seems not to be compiled into your batman-adv kernel module.\n");
-	fprintf(stderr, "Consult the README if you wish to learn more about compiling options into batman-adv.\n");
+	fprintf(stderr,
+		"The option you called seems not to be compiled into your batman-adv kernel module.\n");
+	fprintf(stderr,
+		"Consult the README if you wish to learn more about compiling options into batman-adv.\n");
 }
 
 static bool ether_addr_valid(const uint8_t *addr)

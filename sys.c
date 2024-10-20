@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -147,26 +146,26 @@ int sys_simple_print_boolean(struct nl_msg *msg, void *arg,
 
 static void settings_usage(struct state *state)
 {
-	const char *default_prefixes[] = {
+	static const char * const default_prefixes[] = {
 		"",
 		NULL,
 	};
-	const char *meshif_prefixes[] = {
+	static const char * const meshif_prefixes[] = {
 		"meshif <netdev> ",
 		NULL,
 	};
-	const char *vlan_prefixes[] = {
+	static const char * const vlan_prefixes[] = {
 		"vlan <vdev> ",
 		"meshif <netdev> vid <vid> ",
 		NULL,
 	};
-	const char *hardif_prefixes[] = {
+	static const char * const hardif_prefixes[] = {
 		"hardif <netdev> ",
 		NULL,
 	};
 	const char *linestart = "Usage:";
-	const char **prefixes;
-	const char **prefix;
+	const char * const *prefixes;
+	const char * const *prefix;
 
 	switch (state->cmd->type) {
 	case SUBCOMMAND_MIF:

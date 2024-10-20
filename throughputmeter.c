@@ -150,7 +150,6 @@ static int tp_meter_cookie_callback(struct nl_msg *msg, void *arg)
 	return NL_OK;
 }
 
-
 static int tp_meter_start(struct state *state, struct ether_addr *dst_mac,
 			  uint32_t time, struct tp_cookie *cookie)
 {
@@ -184,7 +183,7 @@ static int tp_meter_start(struct state *state, struct ether_addr *dst_mac,
 	if (cookie->error < 0)
 		err = cookie->error;
 	else if (!cookie->found)
-		err= -EINVAL;
+		err = -EINVAL;
 
 	return err;
 }
@@ -214,7 +213,7 @@ static int tp_recv_result(struct nl_sock *sock, struct tp_result *result)
 	if (result->error < 0)
 		err = result->error;
 	else if (!result->found)
-		err= -EINVAL;
+		err = -EINVAL;
 
 	return err;
 }
@@ -372,7 +371,6 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		}
 	}
 
-
 	if (bat_host && (read_opt & USE_BAT_HOSTS))
 		dst_string = bat_host->name;
 	else
@@ -437,18 +435,18 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		printf("Throughput: ");
 		if (throughput == UINT64_MAX)
 			printf("inf\n");
-		else if (throughput > (1UL<<30))
+		else if (throughput > (1UL << 30))
 			printf("%.2f GB/s (%2.f Gbps)\n",
-				(float)throughput / (1<<30),
-				(float)throughput * 8 / 1000000000);
-		else if (throughput > (1UL<<20))
+			       (float)throughput / (1 << 30),
+			       (float)throughput * 8 / 1000000000);
+		else if (throughput > (1UL << 20))
 			printf("%.2f MB/s (%.2f Mbps)\n",
-				(float)throughput / (1<<20),
-				(float)throughput * 8 / 1000000);
-		else if (throughput > (1UL<<10))
+			       (float)throughput / (1 << 20),
+			       (float)throughput * 8 / 1000000);
+		else if (throughput > (1UL << 10))
 			printf("%.2f KB/s (%.2f Kbps)\n",
-				(float)throughput / (1<<10),
-				(float)throughput * 8 / 1000);
+			       (float)throughput / (1 << 10),
+			       (float)throughput * 8 / 1000);
 		else
 			printf("%" PRIu64 " Bytes/s (%" PRIu64 " Bps)\n",
 			       throughput, throughput * 8);

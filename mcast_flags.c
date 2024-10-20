@@ -31,7 +31,7 @@ static const int mcast_flags_mandatory[] = {
 
 static int mcast_flags_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
@@ -117,33 +117,33 @@ static int netlink_print_mcast_flags(struct state *state, char *orig_iface,
 	bridged = mcast_flags_priv & BATADV_MCAST_FLAGS_BRIDGED;
 
 	if (bridged) {
-                querier4 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV4_EXISTS) ? '.' : '4';
-                querier6 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV6_EXISTS) ? '.' : '6';
-                shadowing4 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV4_SHADOWING) ? '4' : '.';
-                shadowing6 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV6_SHADOWING) ? '6' : '.';
-        } else {
-                querier4 = '?';
-                querier6 = '?';
-                shadowing4 = '?';
-                shadowing6 = '?';
-        }
+		querier4 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV4_EXISTS) ? '.' : '4';
+		querier6 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV6_EXISTS) ? '.' : '6';
+		shadowing4 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV4_SHADOWING) ? '4' : '.';
+		shadowing6 = (mcast_flags_priv & BATADV_MCAST_FLAGS_QUERIER_IPV6_SHADOWING) ? '6' : '.';
+	} else {
+		querier4 = '?';
+		querier6 = '?';
+		shadowing4 = '?';
+		shadowing6 = '?';
+	}
 
 	ret = asprintf(&header,
-		"Multicast flags (own flags: [%c%c%c%s%s%c])\n"
-		 "* Bridged [U]\t\t\t\t%c\n"
-		 "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n"
-		 "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n"
-		 "-------------------------------------------\n"
-		 "       %-10s %s\n",
-		 (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
-		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
-		 (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
-	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
-	         !(mcast_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
-	         !(mcast_flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.',
-		 bridged ? 'U' : '.',
-		 querier4, querier6, shadowing4, shadowing6,
-		 "Originator", "Flags");
+		       "Multicast flags (own flags: [%c%c%c%s%s%c])\n"
+		       "* Bridged [U]\t\t\t\t%c\n"
+		       "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n"
+		       "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n"
+		       "-------------------------------------------\n"
+		       "       %-10s %s\n",
+		       (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
+		       (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
+		       (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.',
+		       !(mcast_flags & BATADV_MCAST_WANT_NO_RTR4) ? "R4" : ". ",
+		       !(mcast_flags & BATADV_MCAST_WANT_NO_RTR6) ? "R6" : ". ",
+		       !(mcast_flags & BATADV_MCAST_HAVE_MC_PTYPE_CAPA) ? 'P' : '.',
+		       bridged ? 'U' : '.',
+		       querier4, querier6, shadowing4, shadowing6,
+		       "Originator", "Flags");
 
 	if (ret < 0)
 		return ret;

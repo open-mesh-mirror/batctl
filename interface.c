@@ -276,9 +276,8 @@ static int create_interface(const char *mesh_iface,
 
 	msg = nlmsg_alloc_simple(RTM_NEWLINK,
 				 NLM_F_REQUEST | NLM_F_CREATE | NLM_F_EXCL | NLM_F_ACK);
-	if (!msg) {
+	if (!msg)
 		return -ENOMEM;
-	}
 
 	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
 	if (ret < 0) {
@@ -340,9 +339,8 @@ static int destroy_interface(const char *mesh_iface)
 	int ret;
 
 	msg = nlmsg_alloc_simple(RTM_DELLINK, NLM_F_REQUEST | NLM_F_ACK);
-	if (!msg) {
+	if (!msg)
 		return -ENOMEM;
-	}
 
 	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
 	if (ret < 0) {
@@ -374,9 +372,8 @@ static int set_master_interface(const char *iface, unsigned int ifmaster)
 	int ret;
 
 	msg = nlmsg_alloc_simple(RTM_SETLINK, NLM_F_REQUEST | NLM_F_ACK);
-	if (!msg) {
+	if (!msg)
 		return -ENOMEM;
-	}
 
 	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
 	if (ret < 0) {
@@ -567,7 +564,8 @@ static int interface(struct state *state, int argc, char **argv)
 	if (!manual_mode && rest_argv[0][0] == 'd') {
 		cnt = count_interfaces(state->mesh_iface);
 		if (cnt == 0 && pre_cnt > 0)
-			fprintf(stderr, "Warning: %s has no interfaces and can be destroyed with: batctl meshif %s interface destroy\n",
+			fprintf(stderr,
+				"Warning: %s has no interfaces and can be destroyed with: batctl meshif %s interface destroy\n",
 				state->mesh_iface, state->mesh_iface);
 	}
 

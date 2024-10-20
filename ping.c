@@ -6,8 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
-
 #include <netinet/in.h>
 #include <errno.h>
 #include <stdio.h>
@@ -29,15 +27,13 @@
 #include "bat-hosts.h"
 #include "icmp_helper.h"
 
-
-static volatile sig_atomic_t is_aborted = 0;
-
+static volatile sig_atomic_t is_aborted;
 
 static void ping_usage(void)
 {
-	fprintf(stderr, "Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address \n");
+	fprintf(stderr, "Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address\n");
 	fprintf(stderr, "parameters:\n");
-	fprintf(stderr, " \t -c ping packet count \n");
+	fprintf(stderr, " \t -c ping packet count\n");
 	fprintf(stderr, " \t -h print this help\n");
 	fprintf(stderr, " \t -i interval in seconds\n");
 	fprintf(stderr, " \t -t timeout in seconds\n");
@@ -96,25 +92,25 @@ static int ping(struct state *state, int argc, char **argv)
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
 		switch (optchar) {
 		case 'c':
-			loop_count = strtol(optarg, NULL , 10);
+			loop_count = strtol(optarg, NULL, 10);
 			if (loop_count < 1)
 				loop_count = -1;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'h':
 			ping_usage();
 			return EXIT_SUCCESS;
 		case 'i':
-			loop_interval = strtol(optarg, NULL , 10);
+			loop_interval = strtol(optarg, NULL, 10);
 			if (loop_interval < 1)
 				loop_interval = 1;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 't':
-			timeout = strtol(optarg, NULL , 10);
+			timeout = strtol(optarg, NULL, 10);
 			if (timeout < 1)
 				timeout = 1;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'R':
 			rr = 1;
@@ -149,7 +145,9 @@ static int ping(struct state *state, int argc, char **argv)
 		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			fprintf(stderr, "Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
+			fprintf(stderr,
+				"Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n",
+				dst_string);
 			goto out;
 		}
 	}
@@ -182,7 +180,7 @@ static int ping(struct state *state, int argc, char **argv)
 	}
 
 	printf("PING %s (%s) %zu(%zu) bytes of data\n", dst_string, mac_string,
-		packet_len, packet_len + 28);
+	       packet_len, packet_len + 28);
 
 	while (!is_aborted) {
 		tv.tv_sec = timeout;
@@ -221,13 +219,14 @@ read_packet:
 		}
 
 		if (read_len < 0) {
-			fprintf(stderr, "Error - can't receive icmp packets: %s\n", strerror(-read_len));
+			fprintf(stderr, "Error - can't receive icmp packets: %s\n",
+				strerror(-read_len));
 			goto sleep;
 		}
 
 		if ((size_t)read_len < packet_len) {
 			printf("Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
-				packet_len, read_len);
+			       packet_len, read_len);
 			goto sleep;
 		}
 
@@ -239,23 +238,19 @@ read_packet:
 		case BATADV_ECHO_REPLY:
 			time_delta = end_timer();
 			printf("%zd bytes from %s icmp_seq=%hu ttl=%d time=%.2f ms",
-					read_len, dst_string,
-					ntohs(icmp_packet_in.seqno),
-					icmp_packet_in.ttl,
-					time_delta);
+			       read_len, dst_string,
+			       ntohs(icmp_packet_in.seqno),
+			       icmp_packet_in.ttl,
+			       time_delta);
 
 			if (read_len == sizeof(struct batadv_icmp_packet_rr)) {
-				if (last_rr_cur == icmp_packet_in.rr_cur
-					&& !memcmp(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN)) {
-
+				if (last_rr_cur == icmp_packet_in.rr_cur &&
+				    !memcmp(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN)) {
 					printf("\t(same route)");
-
 				} else {
 					printf("\nRR: ");
 
-					for (i = 0; i < BATADV_RR_LEN
-						&& i < icmp_packet_in.rr_cur; i++) {
-
+					for (i = 0; i < BATADV_RR_LEN && i < icmp_packet_in.rr_cur; i++) {
 						rr_mac = (struct ether_addr *)&icmp_packet_in.rr[i];
 						rr_host = bat_hosts_find_by_mac((char *)rr_mac);
 						if (rr_host)
@@ -269,13 +264,14 @@ read_packet:
 					}
 
 					last_rr_cur = icmp_packet_in.rr_cur;
-					memcpy(last_rr, icmp_packet_in.rr, BATADV_RR_LEN * ETH_ALEN);
+					memcpy(last_rr, icmp_packet_in.rr,
+					       BATADV_RR_LEN * ETH_ALEN);
 				}
 			}
 
 			printf("\n");
 
-			if ((time_delta < min) || (min == 0.0))
+			if (time_delta < min || min == 0.0)
 				min = time_delta;
 			if (time_delta > max)
 				max = time_delta;
@@ -284,13 +280,16 @@ read_packet:
 			packets_in++;
 			break;
 		case BATADV_DESTINATION_UNREACHABLE:
-			printf("From %s: Destination Host Unreachable (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Destination Host Unreachable (icmp_seq %hu)\n",
+			       dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case BATADV_TTL_EXCEEDED:
-			printf("From %s: Time to live exceeded (icmp_seq %hu)\n", dst_string, ntohs(icmp_packet_in.seqno));
+			printf("From %s: Time to live exceeded (icmp_seq %hu)\n",
+			       dst_string, ntohs(icmp_packet_in.seqno));
 			break;
 		case BATADV_PARAMETER_PROBLEM:
-			fprintf(stderr, "Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
+			fprintf(stderr,
+				"Error - the batman adv kernel module version (%d) differs from ours (%d)\n",
 				icmp_packet_in.version, BATADV_COMPAT_VERSION);
 			printf("Please make sure to use compatible versions!\n");
 			goto out;
@@ -331,9 +330,9 @@ sleep:
 
 	printf("--- %s ping statistics ---\n", dst_string);
 	printf("%u packets transmitted, %u received, %u%% packet loss\n",
-		packets_out, packets_in, packets_loss);
+	       packets_out, packets_in, packets_loss);
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n",
-		min, avg, max, mdev);
+	       min, avg, max, mdev);
 
 	if (packets_in)
 		ret = EXIT_SUCCESS;

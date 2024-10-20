@@ -34,7 +34,7 @@ static const int originators_mandatory[] = {
 
 static int originators_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	unsigned int throughput_mbits;
 	unsigned int throughput_kbits;
@@ -69,7 +69,7 @@ static int originators_callback(struct nl_msg *msg, void *arg)
 	}
 
 	if (missing_mandatory_attrs(attrs, originators_mandatory,
-				       ARRAY_SIZE(originators_mandatory))) {
+				    ARRAY_SIZE(originators_mandatory))) {
 		fputs("Missing attributes from kernel\n", stderr);
 		exit(1);
 	}

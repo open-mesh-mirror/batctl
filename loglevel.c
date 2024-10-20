@@ -137,23 +137,23 @@ static int loglevel(struct state *state, int argc, char **argv)
 			} else if (strcmp(argv[i], "all") == 0) {
 				log_level_globals.log_level = 255;
 				break;
-			} else if (strcmp(argv[i], "batman") == 0)
+			} else if (strcmp(argv[i], "batman") == 0) {
 				log_level_globals.log_level |= BIT(0);
-			else if (strcmp(argv[i], "routes") == 0)
+			} else if (strcmp(argv[i], "routes") == 0) {
 				log_level_globals.log_level |= BIT(1);
-			else if (strcmp(argv[i], "tt") == 0)
+			} else if (strcmp(argv[i], "tt") == 0) {
 				log_level_globals.log_level |= BIT(2);
-			else if (strcmp(argv[i], "bla") == 0)
+			} else if (strcmp(argv[i], "bla") == 0) {
 				log_level_globals.log_level |= BIT(3);
-			else if (strcmp(argv[i], "dat") == 0)
+			} else if (strcmp(argv[i], "dat") == 0) {
 				log_level_globals.log_level |= BIT(4);
-			else if (strcmp(argv[i], "nc") == 0)
+			} else if (strcmp(argv[i], "nc") == 0) {
 				log_level_globals.log_level |= BIT(5);
-			else if (strcmp(argv[i], "mcast") == 0)
+			} else if (strcmp(argv[i], "mcast") == 0) {
 				log_level_globals.log_level |= BIT(6);
-			else if (strcmp(argv[i], "tp") == 0)
+			} else if (strcmp(argv[i], "tp") == 0) {
 				log_level_globals.log_level |= BIT(7);
-			else {
+			} else {
 				log_level_usage();
 				return EXIT_FAILURE;
 			}

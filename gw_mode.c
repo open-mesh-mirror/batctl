@@ -133,7 +133,9 @@ static int parse_gw(struct state *state, int argc, char *argv[])
 		} else {
 			gw_globals.sel_class = strtoul(buff, &endptr, 0);
 			if (!endptr || *endptr != '\0') {
-				fprintf(stderr, "Error - unexpected argument for mode \"client\": %s\n", buff);
+				fprintf(stderr,
+					"Error - unexpected argument for mode \"client\": %s\n",
+					buff);
 				return -EINVAL;
 			}
 		}

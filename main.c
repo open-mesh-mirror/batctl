@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -50,26 +49,26 @@ static void print_usage(void)
 				 BIT(JSON_HIF),
 		},
 	};
-	const char *default_prefixes[] = {
+	static const char * const default_prefixes[] = {
 		"",
 		NULL,
 	};
-	const char *meshif_prefixes[] = {
+	static const char * const meshif_prefixes[] = {
 		"meshif <netdev> ",
 		NULL,
 	};
-	const char *vlan_prefixes[] = {
+	static const char * const vlan_prefixes[] = {
 		"vlan <vdev> ",
 		"meshif <netdev> vid <vid> ",
 		NULL,
 	};
-	const char *hardif_prefixes[] = {
+	static const char * const hardif_prefixes[] = {
 		"hardif <netdev> ",
 		NULL,
 	};
 	const struct command **p;
-	const char **prefixes;
-	const char **prefix;
+	const char * const *prefixes;
+	const char * const *prefix;
 	char buf[64];
 	size_t i;
 
@@ -355,7 +354,8 @@ int main(int argc, char **argv)
 					"Error - multiple mesh interfaces specified\n");
 				goto err;
 			}
-			fprintf(stderr, "Warning - option -m was deprecated and will be removed in the future\n");
+			fprintf(stderr,
+				"Warning - option -m was deprecated and will be removed in the future\n");
 
 			state.arg_iface = argv[2];
 			break;

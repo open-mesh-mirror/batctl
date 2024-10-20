@@ -29,10 +29,12 @@ static void debug_table_usage(struct state *state)
 	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table->option_timeout_interval)
-		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds\n");
+		fprintf(stderr,
+			" \t -t timeout interval - don't print originators not seen for x.y seconds\n");
 
 	if (debug_table->option_orig_iface)
-		fprintf(stderr, " \t -i [interface] - show multiif originator table for a specific interface\n");
+		fprintf(stderr,
+			" \t -i [interface] - show multiif originator table for a specific interface\n");
 
 	if (debug_table->option_unicast_only)
 		fprintf(stderr, " \t -u print unicast mac addresses only\n");
@@ -67,7 +69,9 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 
 			if (!sscanf(optarg, "%f", &watch_interval)) {
-				fprintf(stderr, "Error - provided argument of '-%c' is not a number\n", optchar);
+				fprintf(stderr,
+					"Error - provided argument of '-%c' is not a number\n",
+	    optchar);
 				return EXIT_FAILURE;
 			}
 			break;
@@ -80,7 +84,9 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 
 			read_opt |= NO_OLD_ORIGS;
 			if (!sscanf(optarg, "%f", &orig_timeout)) {
-				fprintf(stderr, "Error - provided argument of '-%c' is not a number\n", optchar);
+				fprintf(stderr,
+					"Error - provided argument of '-%c' is not a number\n",
+	    optchar);
 				return EXIT_FAILURE;
 			}
 			break;
@@ -119,14 +125,17 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			break;
 		case '?':
 			if (optopt == 't') {
-				fprintf(stderr, "Error - option '-t' needs a number as argument\n");
+				fprintf(stderr,
+					"Error - option '-t' needs a number as argument\n");
 			} else if (optopt == 'i') {
-				fprintf(stderr, "Error - option '-i' needs an interface as argument\n");
+				fprintf(stderr,
+					"Error - option '-i' needs an interface as argument\n");
 			} else if (optopt == 'w') {
 				read_opt |= CLR_CONT_READ;
 				break;
-			} else
+			} else {
 				fprintf(stderr, "Error - unrecognised option: '-%c'\n", optopt);
+			}
 
 			return EXIT_FAILURE;
 		default:

@@ -47,11 +47,16 @@
 #define IPV6_MIN_MTU	1280
 
 #define LEN_CHECK(buff_len, check_len, desc) \
-if ((size_t)(buff_len) < (check_len)) { \
-	fprintf(stderr, "Warning - dropping received %s packet as it is smaller than expected (%zu): %zu\n", \
-		desc, (check_len), (size_t)(buff_len)); \
-	return; \
-}
+	do { \
+		size_t __buff_len = (size_t)(buff_len); \
+		size_t __check_len = (size_t)(check_len); \
+		if (__buff_len < __check_len) { \
+			fprintf(stderr, \
+				"Warning - dropping received %s packet as it is smaller than expected (%zu): %zu\n", \
+				desc, __check_len, __buff_len); \
+			return; \
+		} \
+	} while (0)
 
 static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
 				       DUMP_TYPE_BATELP | DUMP_TYPE_BATICMP |
@@ -61,7 +66,8 @@ static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATOGM2 |
 				       DUMP_TYPE_BATMCAST;
 static unsigned short dump_level;
 
-static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
+static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len,
+			  int read_opt, int time_printed);
 
 static void tcpdump_usage(void)
 {
@@ -110,7 +116,8 @@ static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len,
 	uint32_t down, up;
 
 	if (buff_len != sizeof(*tvlv)) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV GWv1", sizeof(*tvlv), buff_len);
 		return;
 	}
@@ -127,7 +134,8 @@ static void batctl_tvlv_parse_dat_v1(void *buff __maybe_unused,
 				     int read_opt __maybe_unused)
 {
 	if (buff_len != 0) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
 			"TVLV DATv1", buff_len);
 		return;
 	}
@@ -140,7 +148,8 @@ static void batctl_tvlv_parse_nc_v1(void *buff __maybe_unused,
 				    int read_opt __maybe_unused)
 {
 	if (buff_len != 0) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (0): %zu\n",
 			"TVLV NCv1", buff_len);
 		return;
 	}
@@ -159,7 +168,7 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
 	size_t vlan_len;
 	int i;
 
-	LEN_CHECK(buff_len, sizeof(*tvlv), "TVLV TTv1")
+	LEN_CHECK(buff_len, sizeof(*tvlv), "TVLV TTv1");
 
 	if (tvlv->flags & BATADV_TT_OGM_DIFF)
 		type = "OGM DIFF";
@@ -172,7 +181,7 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
 
 	num_vlan = ntohs(tvlv->num_vlan);
 	vlan_len = sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
-	LEN_CHECK(buff_len, vlan_len, "TVLV TTv1 VLAN")
+	LEN_CHECK(buff_len, vlan_len, "TVLV TTv1 VLAN");
 
 	buff_len -= vlan_len;
 	num_entry = buff_len / sizeof(struct batadv_tvlv_tt_change);
@@ -196,7 +205,8 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
 	struct batadv_tvlv_roam_adv *tvlv = buff;
 
 	if (buff_len != sizeof(*tvlv)) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV ROAMv1", sizeof(*tvlv), buff_len);
 		return;
 	}
@@ -214,7 +224,8 @@ static void batctl_tvlv_parse_mcast_v1(void *buff __maybe_unused,
 	uint8_t flags;
 
 	if (buff_len != sizeof(*tvlv)) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV MCASTv1", sizeof(*tvlv), buff_len);
 		return;
 	}
@@ -234,7 +245,8 @@ static void batctl_tvlv_parse_mcast_v2(void *buff, ssize_t buff_len,
 	uint8_t flags;
 
 	if (buff_len != sizeof(*tvlv)) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV MCASTv2", sizeof(*tvlv), buff_len);
 		return;
 	}
@@ -259,7 +271,8 @@ batctl_tvlv_parse_mcast_tracker_v1(void *buff, ssize_t buff_len, int read_opt)
 	uint16_t num_dests;
 
 	if (buff_len < (ssize_t)tvlv_len) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV MCAST TRACKER v1", tvlv_len, buff_len);
 		return;
 	}
@@ -269,7 +282,8 @@ batctl_tvlv_parse_mcast_tracker_v1(void *buff, ssize_t buff_len, int read_opt)
 	dst = (struct ether_addr *)(tvlv + 1);
 
 	if (buff_len < (ssize_t)tvlv_len) {
-		fprintf(stderr, "Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
+		fprintf(stderr,
+			"Warning - dropping received %s packet as it is not the correct size (%zu): %zu\n",
 			"TVLV MCAST TRACKER v1 (with destinations)", tvlv_len, buff_len);
 		return;
 	}
@@ -499,7 +513,7 @@ static void dump_arp(unsigned char *packet_buff, ssize_t buff_len,
 	case ARPOP_REQUEST:
 		printf("ARP, Request who-has %s", inet_ntoa(*(struct in_addr *)&arphdr->arp_tpa));
 		printf(" tell %s (%s), length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
-			ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
+		       ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
 		break;
 	case ARPOP_REPLY:
 		arp_is_bla2_claim = dump_bla2_claim(eth_hdr, arphdr, read_opt);
@@ -507,7 +521,7 @@ static void dump_arp(unsigned char *packet_buff, ssize_t buff_len,
 			break;
 
 		printf("ARP, Reply %s is-at %s, length %zd\n", inet_ntoa(*(struct in_addr *)&arphdr->arp_spa),
-			ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
+		       ether_ntoa_long((struct ether_addr *)&arphdr->arp_sha), buff_len);
 		break;
 	default:
 		printf("ARP, unknown op code: %i\n", ntohs(arphdr->arp_op));
@@ -528,11 +542,11 @@ static void dump_tcp(const char ip_string[], unsigned char *packet_buff,
 	tcp_header_len = tcphdr->doff * 4;
 	printf("%s %s.%i > ", ip_string, src_addr, ntohs(tcphdr->source));
 	printf("%s.%i: TCP, Flags [%c%c%c%c%c%c], length %zu\n",
-		dst_addr, ntohs(tcphdr->dest),
-		(tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
-		(tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
-		(tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
-		(size_t)buff_len - ip6_header_len - tcp_header_len);
+	       dst_addr, ntohs(tcphdr->dest),
+	       (tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
+	       (tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
+	       (tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
+	       (size_t)buff_len - ip6_header_len - tcp_header_len);
 }
 
 static void dump_udp(const char ip_string[], unsigned char *packet_buff,
@@ -549,7 +563,7 @@ static void dump_udp(const char ip_string[], unsigned char *packet_buff,
 	switch (ntohs(udphdr->dest)) {
 	case 67:
 		LEN_CHECK((size_t)buff_len - ip6_header_len -
-			  sizeof(struct udphdr), (size_t) 44, "DHCP");
+			  sizeof(struct udphdr), (size_t)44, "DHCP");
 		printf("%s.67: BOOTP/DHCP, Request from %s, length %zu\n",
 		       dst_addr,
 		       ether_ntoa_long((struct ether_addr *)(((char *)udphdr) +
@@ -577,7 +591,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 	struct nd_neighbor_solicit *nd_neigh_sol;
 	struct nd_neighbor_advert *nd_advert;
 	char nd_nas_target[INET6_ADDRSTRLEN];
-	const char ip_string[] = "IP6";
+	static const char ip_string[] = "IP6";
 	char ipsrc[INET6_ADDRSTRLEN];
 	char ipdst[INET6_ADDRSTRLEN];
 	struct icmp6_hdr *icmphdr;
@@ -659,7 +673,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),
 				  sizeof(*nd_neigh_sol), "ICMPv6 Neighbor Solicitation");
 			nd_neigh_sol = (struct nd_neighbor_solicit *)icmphdr;
-			inet_ntop(AF_INET6, &(nd_neigh_sol->nd_ns_target),
+			inet_ntop(AF_INET6, &nd_neigh_sol->nd_ns_target,
 				  nd_nas_target, 40);
 			printf(" neighbor solicitation, who has %s, length %zd\n",
 			       nd_nas_target, buff_len);
@@ -668,7 +682,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),
 				  sizeof(*nd_advert), "ICMPv6 Neighbor Advertisement");
 			nd_advert = (struct nd_neighbor_advert *)icmphdr;
-			inet_ntop(AF_INET6, &(nd_advert->nd_na_target),
+			inet_ntop(AF_INET6, &nd_advert->nd_na_target,
 				  nd_nas_target, 40);
 			printf(" neighbor advertisement, tgt is %s, length %zd\n",
 			       nd_nas_target, buff_len);
@@ -695,7 +709,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 		    int time_printed)
 {
-	const char ip_string[] = "IP";
+	static const char ip_string[] = "IP";
 	char ipsrc[INET_ADDRSTRLEN];
 	char ipdst[INET_ADDRSTRLEN];
 	struct udphdr *tmp_udphdr;
@@ -731,9 +745,9 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 		switch (icmphdr->type) {
 		case ICMP_ECHOREPLY:
 			printf("%s: ICMP echo reply, id %hu, seq %hu, length %zu\n",
-				ipdst, ntohs(icmphdr->un.echo.id),
-				ntohs(icmphdr->un.echo.sequence),
-				(size_t)buff_len - (iphdr->ihl * 4));
+			       ipdst, ntohs(icmphdr->un.echo.id),
+			       ntohs(icmphdr->un.echo.sequence),
+			       (size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		case ICMP_DEST_UNREACH:
 			switch (icmphdr->code) {
@@ -754,31 +768,31 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 
 				printf("%s: ICMP ", ipdst);
 				printf("%s udp port %hu unreachable, length %zu\n",
-					ipdst, ntohs(tmp_udphdr->dest),
-					(size_t)buff_len - (iphdr->ihl * 4));
+				       ipdst, ntohs(tmp_udphdr->dest),
+				       (size_t)buff_len - (iphdr->ihl * 4));
 				break;
 			default:
 				printf("%s: ICMP unreachable %hhu, length %zu\n",
-					ipdst, icmphdr->code,
-					(size_t)buff_len - (iphdr->ihl * 4));
+				       ipdst, icmphdr->code,
+				       (size_t)buff_len - (iphdr->ihl * 4));
 				break;
 			}
 
 			break;
 		case ICMP_ECHO:
 			printf("%s: ICMP echo request, id %hu, seq %hu, length %zu\n",
-				ipdst, ntohs(icmphdr->un.echo.id),
-				ntohs(icmphdr->un.echo.sequence),
-				(size_t)buff_len - (iphdr->ihl * 4));
+			       ipdst, ntohs(icmphdr->un.echo.id),
+			       ntohs(icmphdr->un.echo.sequence),
+			       (size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		case ICMP_TIME_EXCEEDED:
 			printf("%s: ICMP time exceeded in-transit, length %zu\n",
-				ipdst, (size_t)buff_len - (iphdr->ihl * 4));
+			       ipdst, (size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		default:
 			printf("%s: ICMP type %hhu, length %zu\n",
-				ipdst, icmphdr->type,
-				(size_t)buff_len - (iphdr->ihl * 4));
+			       ipdst, icmphdr->type,
+			       (size_t)buff_len - (iphdr->ihl * 4));
 			break;
 		}
 		break;
@@ -815,7 +829,8 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 	parse_eth_hdr(packet_buff + 4, buff_len - 4, read_opt, time_printed);
 }
 
-static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len,
+			       int read_opt, int time_printed)
 {
 	struct ether_header *ether_header;
 	struct batadv_ogm_packet *batman_ogm_packet;
@@ -923,7 +938,8 @@ static void dump_batman_elp(unsigned char *packet_buff, ssize_t buff_len,
 	       ntohl(batman_elp->elp_interval), check_len);
 }
 
-static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len,
+			     int read_opt, int time_printed)
 {
 	struct batadv_icmp_packet *icmp_packet;
 	struct batadv_icmp_tp_packet *tp;
@@ -941,26 +957,26 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 	       get_name_by_macaddr((struct ether_addr *)icmp_packet->orig, read_opt));
 
 	name = get_name_by_macaddr((struct ether_addr *)icmp_packet->dst,
-				    read_opt);
+				   read_opt);
 
 	switch (icmp_packet->msg_type) {
 	case BATADV_ECHO_REPLY:
 		printf("%s: ICMP echo reply, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
-			(size_t)buff_len - sizeof(struct ether_header));
+		       name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+		       icmp_packet->ttl, icmp_packet->version,
+		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_ECHO_REQUEST:
 		printf("%s: ICMP echo request, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
-			(size_t)buff_len - sizeof(struct ether_header));
+		       name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+		       icmp_packet->ttl, icmp_packet->version,
+		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_TTL_EXCEEDED:
 		printf("%s: ICMP time exceeded in-transit, id %hhu, seq %hu, ttl %2d, v %d, length %zu\n",
-			name, icmp_packet->uid, ntohs(icmp_packet->seqno),
-			icmp_packet->ttl, icmp_packet->version,
-			(size_t)buff_len - sizeof(struct ether_header));
+		       name, icmp_packet->uid, ntohs(icmp_packet->seqno),
+		       icmp_packet->ttl, icmp_packet->version,
+		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	case BATADV_TP:
 		LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(*tp), "BAT TP");
@@ -968,28 +984,30 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int r
 		tp = (struct batadv_icmp_tp_packet *)icmp_packet;
 
 		printf("%s: ICMP TP type %s (%hhu), id %hhu, seq %u, ttl %2d, v %d, length %zu\n",
-		       name, tp->subtype == BATADV_TP_MSG ? "MSG" :
-			     tp->subtype == BATADV_TP_ACK ? "ACK" : "N/A",
+		       name,
+		       tp->subtype == BATADV_TP_MSG ? "MSG" :
+		       tp->subtype == BATADV_TP_ACK ? "ACK" : "N/A",
 		       tp->subtype, tp->uid, ntohl(tp->seqno), tp->ttl,
 		       tp->version,
 		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	default:
 		printf("%s: ICMP type %hhu, length %zu\n",
-			name, icmp_packet->msg_type,
-			(size_t)buff_len - sizeof(struct ether_header));
+		       name, icmp_packet->msg_type,
+		       (size_t)buff_len - sizeof(struct ether_header));
 		break;
 	}
 }
 
-static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len,
+			      int read_opt, int time_printed)
 {
 	struct batadv_unicast_packet *unicast_packet;
 	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_packet), "BAT UCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_packet),
-		sizeof(struct ether_header), "BAT UCAST (unpacked)");
+		  sizeof(struct ether_header), "BAT UCAST (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
 	unicast_packet = (struct batadv_unicast_packet *)(packet_buff + sizeof(struct ether_header));
@@ -1009,7 +1027,8 @@ static void dump_batman_ucast(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
-static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len,
+				   int read_opt, int time_printed)
 {
 	struct batadv_frag_packet *frag_packet;
 	struct ether_header *ether_header;
@@ -1033,14 +1052,15 @@ static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len,
 	       frag_packet->seqno, frag_packet->no, frag_packet->ttl);
 }
 
-static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len,
+			      int read_opt, int time_printed)
 {
 	struct batadv_bcast_packet *bcast_packet;
 	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_bcast_packet), "BAT BCAST");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_bcast_packet),
-	          sizeof(struct ether_header), "BAT BCAST (unpacked)");
+		  sizeof(struct ether_header), "BAT BCAST (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
 	bcast_packet = (struct batadv_bcast_packet *)(packet_buff + sizeof(struct ether_header));
@@ -1098,9 +1118,11 @@ static void dump_batman_mcast(unsigned char *packet_buff, ssize_t buff_len,
 		ether_header = (struct ether_header *)(tvlv_hdr + tvlv_len);
 
 		printf("%s > ",
-		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost,
+					   read_opt));
 		printf("%s, ",
-		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost, read_opt));
+		       get_name_by_macaddr((struct ether_addr *)ether_header->ether_dhost,
+					   read_opt));
 
 		parse_eth_hdr((unsigned char *)ether_header, check_len,
 			      read_opt, time_printed);
@@ -1111,7 +1133,8 @@ static void dump_batman_mcast(unsigned char *packet_buff, ssize_t buff_len,
 	dump_tvlv(tvlv_hdr, tvlv_len, read_opt);
 }
 
-static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len,
+			      int read_opt, int time_printed)
 {
 	struct batadv_coded_packet *coded_packet;
 	struct ether_header *ether_header;
@@ -1137,14 +1160,15 @@ static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len, int 
 	       coded_packet->ttl);
 }
 
-static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len,
+			      int read_opt, int time_printed)
 {
 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
 	struct ether_header *ether_header;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_unicast_4addr_packet), "BAT 4ADDR");
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header) - sizeof(struct batadv_unicast_4addr_packet),
-		sizeof(struct ether_header), "BAT 4ADDR (unpacked)");
+		  sizeof(struct ether_header), "BAT 4ADDR (unpacked)");
 
 	ether_header = (struct ether_header *)packet_buff;
 	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)(packet_buff + sizeof(struct ether_header));
@@ -1165,7 +1189,8 @@ static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len, int 
 		      read_opt, time_printed);
 }
 
-static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len,
+			  int read_opt, int time_printed)
 {
 	struct batadv_ogm_packet *batman_ogm_packet;
 	struct ether_header *eth_hdr;
@@ -1193,18 +1218,19 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		break;
 	case ETH_P_BATMAN:
 		/* check for batman-adv packet_type + version */
-		LEN_CHECK(buff_len, sizeof(*eth_hdr) + 2, "BAT HEADER")
+		LEN_CHECK(buff_len, sizeof(*eth_hdr) + 2, "BAT HEADER");
 
 		batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + ETH_HLEN);
 
-		if ((read_opt & COMPAT_FILTER) &&
-		    (batman_ogm_packet->version != BATADV_COMPAT_VERSION))
+		if (read_opt & COMPAT_FILTER &&
+		    batman_ogm_packet->version != BATADV_COMPAT_VERSION)
 			return;
 
 		switch (batman_ogm_packet->packet_type) {
 		case BATADV_IV_OGM:
 			if (dump_level & DUMP_TYPE_BATOGM)
-				dump_batman_iv_ogm(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_iv_ogm(packet_buff, buff_len,
+						   read_opt, time_printed);
 			break;
 		case BATADV_OGM2:
 			if (dump_level & DUMP_TYPE_BATOGM2)
@@ -1214,35 +1240,42 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 		case BATADV_ELP:
 			if (dump_level & DUMP_TYPE_BATELP)
 				dump_batman_elp(packet_buff, buff_len,
-						 read_opt, time_printed);
+						read_opt, time_printed);
 			break;
 		case BATADV_ICMP:
 			if (dump_level & DUMP_TYPE_BATICMP)
-				dump_batman_icmp(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_icmp(packet_buff, buff_len,
+						 read_opt, time_printed);
 			break;
 		case BATADV_UNICAST:
 			if (dump_level & DUMP_TYPE_BATUCAST)
-				dump_batman_ucast(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_ucast(packet_buff, buff_len,
+						  read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_FRAG:
 			if (dump_level & DUMP_TYPE_BATFRAG)
-				dump_batman_ucast_frag(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_ucast_frag(packet_buff, buff_len,
+						       read_opt, time_printed);
 			break;
 		case BATADV_BCAST:
 			if (dump_level & DUMP_TYPE_BATBCAST)
-				dump_batman_bcast(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_bcast(packet_buff, buff_len,
+						  read_opt, time_printed);
 			break;
 		case BATADV_MCAST:
 			if (dump_level & DUMP_TYPE_BATMCAST)
-				dump_batman_mcast(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_mcast(packet_buff, buff_len,
+						  read_opt, time_printed);
 			break;
 		case BATADV_CODED:
 			if (dump_level & DUMP_TYPE_BATCODED)
-				dump_batman_coded(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_coded(packet_buff, buff_len,
+						  read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_4ADDR:
 			if (dump_level & DUMP_TYPE_BATUCAST)
-				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
+				dump_batman_4addr(packet_buff, buff_len,
+						  read_opt, time_printed);
 			break;
 		case BATADV_UNICAST_TVLV:
 			if ((dump_level & DUMP_TYPE_BATUCAST) ||
@@ -1251,19 +1284,24 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
 						       read_opt, time_printed);
 			break;
 		default:
-			fprintf(stderr, "Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->packet_type);
+			fprintf(stderr,
+				"Warning - packet contains unknown batman packet type: 0x%02x\n",
+				batman_ogm_packet->packet_type);
 			break;
 		}
 
 		break;
 
 	default:
-		fprintf(stderr, "Warning - packet contains unknown ether type: 0x%04x\n", ntohs(eth_hdr->ether_type));
+		fprintf(stderr,
+			"Warning - packet contains unknown ether type: 0x%04x\n",
+			ntohs(eth_hdr->ether_type));
 		break;
 	}
 }
 
-static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
+static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len,
+				 int32_t hw_type)
 {
 	struct radiotap_header *radiotap_hdr;
 
@@ -1278,7 +1316,7 @@ static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, i
 		if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
 			return -1;
 
-		radiotap_hdr = (struct radiotap_header*)packet_buff;
+		radiotap_hdr = (struct radiotap_header *)packet_buff;
 		if (buff_len <= le16toh(radiotap_hdr->it_len))
 			return -1;
 		else
@@ -1288,7 +1326,8 @@ static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, i
 	return -1;
 }
 
-static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len,
+			   int read_opt, int time_printed)
 {
 	struct ieee80211_hdr *wifi_hdr;
 	struct ether_header *eth_hdr;
@@ -1299,7 +1338,8 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int rea
 
 	/* we assume a minimum size of 38 bytes
 	 * (802.11 data frame + LLC)
-	 * before we calculate the real size */
+	 * before we calculate the real size
+	 */
 	if (buff_len <= 38)
 		return;
 
@@ -1345,10 +1385,6 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int rea
 	memmove(eth_hdr->ether_shost, shost, ETH_ALEN);
 	memmove(eth_hdr->ether_dhost, dhost, ETH_ALEN);
 
-	 /* printf("parse_wifi_hdr(): ether_type: 0x%04x\n", ntohs(eth_hdr->ether_type));
-	printf("parse_wifi_hdr(): shost: %s\n", ether_ntoa_long((struct ether_addr *)eth_hdr->ether_shost));
-	printf("parse_wifi_hdr(): dhost: %s\n", ether_ntoa_long((struct ether_addr *)eth_hdr->ether_dhost)); */
-
 	parse_eth_hdr(packet_buff, buff_len, read_opt, time_printed);
 }
 
@@ -1376,7 +1412,7 @@ static struct dump_if *create_dump_interface(char *iface)
 		goto free_dumpif;
 	}
 
-	memset(&req, 0, sizeof (struct ifreq));
+	memset(&req, 0, sizeof(struct ifreq));
 	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
 	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
@@ -1394,11 +1430,13 @@ static struct dump_if *create_dump_interface(char *iface)
 	case ARPHRD_IEEE80211_RADIOTAP:
 		break;
 	default:
-		fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
+		fprintf(stderr,
+			"Error - interface '%s' is of unknown type: %i\n",
+			dump_if->dev, dump_if->hw_type);
 		goto close_socket;
 	}
 
-	memset(&req, 0, sizeof (struct ifreq));
+	memset(&req, 0, sizeof(struct ifreq));
 	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
 	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
@@ -1412,7 +1450,8 @@ static struct dump_if *create_dump_interface(char *iface)
 	dump_if->addr.sll_protocol = htons(ETH_P_ALL);
 	dump_if->addr.sll_ifindex  = req.ifr_ifindex;
 
-	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
+	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr,
+		   sizeof(struct sockaddr_ll));
 	if (res < 0) {
 		perror("Error - can't bind raw socket");
 		goto close_socket;
@@ -1428,7 +1467,7 @@ free_dumpif:
 	return NULL;
 }
 
-static volatile sig_atomic_t is_aborted = 0;
+static volatile sig_atomic_t is_aborted;
 
 static void sig_handler(int sig)
 {
@@ -1477,16 +1516,16 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 			found_args += 1;
 			break;
 		case 'p':
-			tmp = strtol(optarg, NULL , 10);
-			if ((tmp > 0) && (tmp <= dump_level_all))
+			tmp = strtol(optarg, NULL, 10);
+			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level = tmp;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'x':
-			tmp = strtol(optarg, NULL , 10);
-			if ((tmp > 0) && (tmp <= dump_level_all))
+			tmp = strtol(optarg, NULL, 10);
+			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level &= ~tmp;
-			found_args += ((*((char*)(optarg - 1)) == optchar ) ? 1 : 2);
+			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		default:
 			tcpdump_usage();
@@ -1525,7 +1564,6 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	}
 
 	while (!is_aborted) {
-
 		memcpy(&tmp_wait_sockets, &wait_sockets, sizeof(fd_set));
 
 		tv.tv_sec = 1;
@@ -1548,12 +1586,14 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 			read_len = read(dump_if->raw_sock, packet_buff, sizeof(packet_buff));
 
 			if (read_len < 0) {
-				fprintf(stderr, "Error - can't read from interface '%s': %s\n", dump_if->dev, strerror(errno));
+				fprintf(stderr, "Error - can't read from interface '%s': %s\n",
+					dump_if->dev, strerror(errno));
 				continue;
 			}
 
 			if ((size_t)read_len < sizeof(struct ether_header)) {
-				fprintf(stderr, "Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
+				fprintf(stderr,
+					"Warning - dropping received packet as it is smaller than expected (%zu): %zd\n",
 					sizeof(struct ether_header), read_len);
 				continue;
 			}
@@ -1564,9 +1604,12 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 				break;
 			case ARPHRD_IEEE80211_PRISM:
 			case ARPHRD_IEEE80211_RADIOTAP:
-				monitor_header_len = monitor_header_length(packet_buff, read_len, dump_if->hw_type);
+				monitor_header_len = monitor_header_length(packet_buff,
+									   read_len,
+									   dump_if->hw_type);
 				if (monitor_header_len >= 0)
-					parse_wifi_hdr(packet_buff + monitor_header_len, read_len - monitor_header_len, read_opt, 0);
+					parse_wifi_hdr(packet_buff + monitor_header_len,
+						       read_len - monitor_header_len, read_opt, 0);
 				break;
 			default:
 				/* should not happen */
@@ -1575,7 +1618,6 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 
 			fflush(stdout);
 		}
-
 	}
 
 out:

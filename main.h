@@ -27,7 +27,7 @@
 #elif BYTE_ORDER == LITTLE_ENDIAN
 #define __LITTLE_ENDIAN_BITFIELD
 #else
-#error "unknown endianess"
+#error "unknown endianness"
 #endif
 
 #define __maybe_unused __attribute__((unused))
@@ -46,7 +46,7 @@ extern char module_ver_path[];
 
 #ifndef container_of
 #define container_of(ptr, type, member) __extension__ ({ \
-	const __typeof__(((type *)0)->member) *__pmember = (ptr); \
+	const __typeof__(((type *)0)->member) * __pmember = (ptr); \
 	(type *)((char *)__pmember - offsetof(type, member)); })
 #endif
 

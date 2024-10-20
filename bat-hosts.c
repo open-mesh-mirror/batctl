@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
@@ -59,7 +58,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 	size_t len = 0;
 	FILE *fd;
 
-	name[0] = mac_str[0] = '\0';
+	name[0] = '\0';
+	mac_str[0] = '\0';
 
 	fd = fopen(path, "r");
 	if (!fd)
@@ -72,14 +72,18 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 
 		if (sscanf(line_ptr, "%17[^ \t]%49s\n", mac_str, name) != 2) {
 			if (read_opt & USE_BAT_HOSTS)
-				fprintf(stderr, "Warning - unrecognized bat-host definition: %s", line_ptr);
+				fprintf(stderr,
+					"Warning - unrecognized bat-host definition: %s",
+					line_ptr);
 			continue;
 		}
 
 		mac_addr = ether_aton(mac_str);
 		if (!mac_addr) {
 			if (read_opt & USE_BAT_HOSTS)
-				fprintf(stderr, "Warning - invalid mac address in '%s' detected: %s\n", path, mac_str);
+				fprintf(stderr,
+					"Warning - invalid mac address in '%s' detected: %s\n",
+					path, mac_str);
 			continue;
 		}
 
@@ -87,12 +91,15 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 
 		/* mac entry already exists - we found a new name for it */
 		if (bat_host) {
-			/* if the mac addresses and the names are the same we can safely ignore the entry */
+			/* if the mac addresses and the names are the same we
+			 * can safely ignore the entry
+			 */
 			if (strcmp(bat_host->name, name) == 0)
 				continue;
 
 			if (read_opt & USE_BAT_HOSTS)
-				fprintf(stderr, "Warning - mac already known (changing name from '%s' to '%s'): %s\n",
+				fprintf(stderr,
+					"Warning - mac already known (changing name from '%s' to '%s'): %s\n",
 					bat_host->name, name, mac_str);
 			strncpy(bat_host->name, name, HOST_NAME_MAX_LEN);
 			bat_host->name[HOST_NAME_MAX_LEN - 1] = '\0';
@@ -104,7 +111,8 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 		/* name entry already exists - we found a new mac address for it */
 		if (bat_host) {
 			if (read_opt & USE_BAT_HOSTS)
-				fprintf(stderr, "Warning - name already known (changing mac from '%s' to '%s'): %s\n",
+				fprintf(stderr,
+					"Warning - name already known (changing mac from '%s' to '%s'): %s\n",
 					ether_ntoa(&bat_host->mac_addr), mac_str, name);
 			hash_remove(*hash, bat_host);
 			free(bat_host);
@@ -139,7 +147,6 @@ out:
 		fclose(fd);
 	if (line_ptr)
 		free(line_ptr);
-	return;
 }
 
 void bat_hosts_init(int read_opt)
@@ -194,7 +201,9 @@ void bat_hosts_init(int read_opt)
 		/* check for duplicates: don't parse the same file twice */
 		parse = 1;
 		for (j = 0; j < i; j++) {
-			if (strncmp(normalized + (i * PATH_MAX), normalized + (j * PATH_MAX), CONF_DIR_LEN) == 0) {
+			if (strncmp(normalized + (i * PATH_MAX),
+				    normalized + (j * PATH_MAX),
+				    CONF_DIR_LEN) == 0) {
 				parse = 0;
 				break;
 			}

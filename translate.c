@@ -13,7 +13,6 @@
 #include "functions.h"
 #include "bat-hosts.h"
 
-
 static void translate_usage(void)
 {
 	fprintf(stderr, "Usage: batctl [options] translate mac|bat-host|host_name|IPv4_address\n");
@@ -46,7 +45,9 @@ static int translate(struct state *state, int argc, char **argv)
 		dst_mac = resolve_mac(dst_string);
 
 		if (!dst_mac) {
-			fprintf(stderr, "Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n", dst_string);
+			fprintf(stderr,
+				"Error - mac address of the ping destination could not be resolved and is not a bat-host name: %s\n",
+				dst_string);
 			goto out;
 		}
 	}

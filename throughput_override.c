@@ -31,7 +31,7 @@ static int parse_throughput_override(struct state *state, int argc, char *argv[]
 	}
 
 	ret = parse_throughput(argv[1], "throughput override",
-				&data->throughput_override);
+			       &data->throughput_override);
 	if (!ret)
 		return -EINVAL;
 

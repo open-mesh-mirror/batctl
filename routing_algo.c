@@ -44,7 +44,7 @@ static const int routing_algos_mandatory[] = {
 
 static int routing_algos_callback(struct nl_msg *msg, void *arg __maybe_unused)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct genlmsghdr *ghdr;
 	const char *algo_name;
@@ -172,7 +172,7 @@ static int print_ra_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	if (ret < 0)
 		goto err;
 
-	if(!print_arg->header_shown) {
+	if (!print_arg->header_shown) {
 		print_arg->header_shown = true;
 		printf("Active routing protocol configuration:\n");
 	}
@@ -216,7 +216,7 @@ static int print_ra_interfaces(struct state *state)
 	}
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, print_ra_interfaces_rtnl_parse,
-		 &print_arg);
+		  &print_arg);
 
 	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_REQUEST | NLM_F_DUMP);
 	if (!msg) {

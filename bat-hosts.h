@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #ifndef _BATCTL_BAT_HOSTS_H
 #define _BATCTL_BAT_HOSTS_H
 

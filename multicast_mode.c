@@ -38,7 +38,8 @@ static int print_multicast_mode(struct nl_msg *msg, void *arg)
 	if (!attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED])
 		return NL_OK;
 
-	printf("%s\n", !nla_get_u8(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) ? "enabled" : "disabled");
+	printf("%s\n",
+	       !nla_get_u8(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]) ? "enabled" : "disabled");
 
 	*result = 0;
 	return NL_STOP;

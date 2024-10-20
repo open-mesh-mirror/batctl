@@ -6,7 +6,6 @@
  * License-Filename: LICENSES/preferred/GPL-2.0
  */
 
-
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -71,7 +70,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
 
 	stats->cmd = ETHTOOL_GSTATS;
 	stats->n_stats = n_stats;
-	ifr->ifr_data = (void *) stats;
+	ifr->ifr_data = (void *)stats;
 	err = ioctl(fd, SIOCETHTOOL, ifr);
 	if (err < 0) {
 		perror("Error - can't get stats information");

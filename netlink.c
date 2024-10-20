@@ -339,7 +339,7 @@ static const int info_hard_mandatory[] = {
 
 static int info_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	const uint8_t *primary_mac;
@@ -587,10 +587,10 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 		if (!last_err)
 			netlink_print_remaining_header(&opts);
 
-		if (!last_err && read_opt & (CONT_READ|CLR_CONT_READ))
+		if (!last_err && read_opt & (CONT_READ | CLR_CONT_READ))
 			usleep(1000000 * watch_interval);
 
-	} while (!last_err && read_opt & (CONT_READ|CLR_CONT_READ));
+	} while (!last_err && read_opt & (CONT_READ | CLR_CONT_READ));
 
 	bat_hosts_free();
 
@@ -748,7 +748,7 @@ int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-			           translate_mac_netlink_cb, NULL, NLM_F_DUMP,
+				   translate_mac_netlink_cb, NULL, NLM_F_DUMP,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -777,7 +777,7 @@ struct get_nexthop_netlink_opts {
 
 static int get_nexthop_netlink_cb(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlquery_opts *query_opts = arg;
 	struct get_nexthop_netlink_opts *opts;
@@ -854,7 +854,7 @@ int get_nexthop_netlink(struct state *state, const struct ether_addr *mac,
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_ORIGINATORS,
-			           get_nexthop_netlink_cb, NULL, NLM_F_DUMP,
+				   get_nexthop_netlink_cb, NULL, NLM_F_DUMP,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -930,7 +930,7 @@ int get_primarymac_netlink(struct state *state, uint8_t *primarymac)
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_MESH_INFO,
-			           get_primarymac_netlink_cb, NULL, 0,
+				   get_primarymac_netlink_cb, NULL, 0,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;
@@ -1006,7 +1006,7 @@ int get_algoname_netlink(struct state *state, unsigned int mesh_ifindex,
 	int ret;
 
 	ret = netlink_query_common(state, mesh_ifindex, BATADV_CMD_GET_MESH,
-			           get_algoname_netlink_cb, NULL, 0,
+				   get_algoname_netlink_cb, NULL, 0,
 				   &opts.query_opts);
 	if (ret < 0)
 		return ret;

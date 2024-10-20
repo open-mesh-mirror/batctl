@@ -31,7 +31,7 @@ static const int translocal_mandatory[] = {
 
 static int translocal_callback(struct nl_msg *msg, void *arg)
 {
-	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
@@ -75,7 +75,8 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
 	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
 	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
 	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
-	last_seen_msecs = 0, last_seen_secs = 0;
+	last_seen_msecs = 0;
+	last_seen_secs = 0;
 
 	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
 		return NL_OK;
@@ -98,8 +99,7 @@ static int translocal_callback(struct nl_msg *msg, void *arg)
 		p = 'P';
 
 	if (attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
-		last_seen_msecs = nla_get_u32(
-			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
+		last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
 		last_seen_secs = last_seen_msecs / 1000;
 		last_seen_msecs = last_seen_msecs % 1000;
 	}

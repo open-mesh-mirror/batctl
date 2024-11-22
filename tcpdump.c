@@ -1539,8 +1539,6 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	check_root_or_die("batctl tcpdump");
-
 	bat_hosts_init(read_opt);
 
 	signal(SIGINT, sig_handler);

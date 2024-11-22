@@ -32,8 +32,6 @@ static int translate(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	check_root_or_die("batctl translate");
-
 	dst_string = argv[1];
 	bat_hosts_init(0);
 	bat_host = bat_hosts_find_by_name(dst_string);

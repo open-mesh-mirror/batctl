@@ -245,8 +245,6 @@ int handle_sys_setting(struct state *state, int argc, char **argv)
 	if (argc == 1)
 		return sys_read_setting(state);
 
-	check_root_or_die("batctl");
-
 	if (settings->parse) {
 		res = settings->parse(state, argc, argv);
 		if (res < 0)

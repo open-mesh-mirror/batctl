@@ -144,8 +144,6 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl");
-
 	if (read_opt & UNICAST_ONLY && read_opt & MULTICAST_ONLY) {
 		fprintf(stderr, "Error - '-u' and '-m' are exclusive options\n");
 		debug_table_usage(state);

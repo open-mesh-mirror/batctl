@@ -946,14 +946,6 @@ void get_random_bytes(void *buf, size_t buflen)
 	get_random_bytes_fallback(buf, buflen);
 }
 
-void check_root_or_die(const char *cmd)
-{
-	if (geteuid() != 0) {
-		fprintf(stderr, "Error - you must be root to run '%s' !\n", cmd);
-		exit(EXIT_FAILURE);
-	}
-}
-
 int parse_bool(const char *val, bool *res)
 {
 	if (strcasecmp(val, "0") == 0 ||

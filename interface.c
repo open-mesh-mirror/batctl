@@ -436,8 +436,6 @@ static int interface(struct state *state, int argc, char **argv)
 	if (rest_argc == 0)
 		return print_interfaces(state);
 
-	check_root_or_die("batctl interface");
-
 	if ((strcmp(rest_argv[0], "add") != 0) && (strcmp(rest_argv[0], "a") != 0) &&
 	    (strcmp(rest_argv[0], "del") != 0) && (strcmp(rest_argv[0], "d") != 0) &&
 	    (strcmp(rest_argv[0], "create") != 0) && (strcmp(rest_argv[0], "c") != 0) &&

@@ -299,8 +299,6 @@ static int gw_mode(struct state *state, int argc, char **argv)
 	if (argc == 1)
 		return gw_read_setting(state);
 
-	check_root_or_die("batctl gw_mode");
-
 	res = parse_gw(state, argc, argv);
 	if (res < 0)
 		return EXIT_FAILURE;

@@ -352,8 +352,6 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	check_root_or_die("batctl throughputmeter");
-
 	dst_string = argv[found_args];
 	bat_hosts_init(read_opt);
 	bat_host = bat_hosts_find_by_name(dst_string);

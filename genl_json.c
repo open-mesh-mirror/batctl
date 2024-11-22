@@ -598,8 +598,6 @@ int handle_json_query(struct state *state, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl");
-
 	err = netlink_print_query_json(state, json_query);
 
 	return err;

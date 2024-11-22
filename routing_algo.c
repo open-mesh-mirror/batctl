@@ -279,8 +279,6 @@ static int routing_algo(struct state *state, int argc, char **argv)
 		}
 	}
 
-	check_root_or_die("batctl routing_algo");
-
 	if (argc == 2)
 		return write_default_ra(SYS_SELECTED_RA_PATH, argv[1]);
 

@@ -128,8 +128,6 @@ static int loglevel(struct state *state, int argc, char **argv)
 	}
 
 	if (argc != 1) {
-		check_root_or_die("batctl loglevel");
-
 		for (i = 1; i < argc; i++) {
 			if (strcmp(argv[i], "none") == 0) {
 				log_level_globals.log_level = 0;

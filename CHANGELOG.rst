@@ -1,5 +1,11 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2024.4 (2024-12-10)
+===================
+
+* coding style cleanups and refactoring
+* drop explicit requirement to run as root
+
 2024.3 (2024-10-15)
 ===================
 

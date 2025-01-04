@@ -1,9 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Minimal Linux-like double-linked list helper functions
  *
- * Copyright (c) Sven Eckelmann <sven@narfation.org>
- *
- * License-Filename: LICENSES/preferred/MIT
+ * SPDX-FileCopyrightText: Sven Eckelmann <sven@narfation.org>
  */
 
 #ifndef __LINUX_LIKE_LIST_H__
@@ -114,7 +112,7 @@ static inline void list_add(struct list_head *node,
  * @head: pointer to the head of the list
  */
 static inline void list_add_tail(struct list_head *node,
-			         struct list_head *head)
+				 struct list_head *head)
 {
 	struct list_head *prev = head->prev;
 
@@ -308,7 +306,7 @@ static inline void list_splice_tail_init(struct list_head *list,
  * @node: pointer to the node in which defines the cutting point
  *
  * All entries from the beginning of the list @head_from to (including) the
- * @node is moved to @head_from.
+ * @node is moved to @head_to.
  *
  * @head_to is replaced when @head_from is not empty. @node must be a real
  * list node from @head_from or the behavior is undefined.
@@ -711,7 +709,7 @@ static inline void hlist_move_list(struct hlist_head *list,
 #ifdef LIST_TYPEOF_USE
 #define hlist_entry_safe(node, type, member) __extension__ ({ \
 	__typeof__(node) __node = (node); \
-	 !__node ? NULL : hlist_entry(__node, type, member); })
+	!__node ? NULL : hlist_entry(__node, type, member); })
 #else
 #define hlist_entry_safe(node, type, member) \
 	(node) ? hlist_entry(node, type, member) : NULL

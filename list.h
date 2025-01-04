@@ -34,7 +34,7 @@ extern "C" {
 #ifndef container_of
 #ifdef LIST_TYPEOF_USE
 #define container_of(ptr, type, member) __extension__ ({ \
-	const __typeof__(((type *)0)->member) * __pmember = (ptr); \
+	const __typeof__(((type *)0)->member) *__pmember = (ptr); \
 	(type *)((char *)__pmember - offsetof(type, member)); })
 #else
 #define container_of(ptr, type, member) \
@@ -98,7 +98,7 @@ static inline void INIT_LIST_HEAD(struct list_head *head)
  * @head: pointer to the head of the list
  */
 static inline void list_add(struct list_head *node,
-				struct list_head *head)
+			    struct list_head *head)
 {
 	struct list_head *next = head->next;
 
@@ -114,7 +114,7 @@ static inline void list_add(struct list_head *node,
  * @head: pointer to the head of the list
  */
 static inline void list_add_tail(struct list_head *node,
-				     struct list_head *head)
+			         struct list_head *head)
 {
 	struct list_head *prev = head->prev;
 
@@ -220,7 +220,7 @@ static inline int list_is_singular(const struct list_head *head)
  * again.
  */
 static inline void list_splice(struct list_head *list,
-				   struct list_head *head)
+			       struct list_head *head)
 {
 	struct list_head *head_first = head->next;
 	struct list_head *list_first = list->next;
@@ -247,7 +247,7 @@ static inline void list_splice(struct list_head *list,
  * again.
  */
 static inline void list_splice_tail(struct list_head *list,
-					struct list_head *head)
+				    struct list_head *head)
 {
 	struct list_head *head_last = head->prev;
 	struct list_head *list_first = list->next;
@@ -276,7 +276,7 @@ static inline void list_splice_tail(struct list_head *list,
  * list/unlinked state.
  */
 static inline void list_splice_init(struct list_head *list,
-					struct list_head *head)
+				    struct list_head *head)
 {
 	list_splice(list, head);
 	INIT_LIST_HEAD(list);
@@ -295,7 +295,7 @@ static inline void list_splice_init(struct list_head *list,
  * list/unlinked state.
  */
 static inline void list_splice_tail_init(struct list_head *list,
-					     struct list_head *head)
+					 struct list_head *head)
 {
 	list_splice_tail(list, head);
 	INIT_LIST_HEAD(list);
@@ -314,8 +314,8 @@ static inline void list_splice_tail_init(struct list_head *list,
  * list node from @head_from or the behavior is undefined.
  */
 static inline void list_cut_position(struct list_head *head_to,
-					 struct list_head *head_from,
-					 struct list_head *node)
+				     struct list_head *head_from,
+				     struct list_head *node)
 {
 	struct list_head *head_from_first = head_from->next;
 
@@ -358,7 +358,7 @@ static inline void list_move(struct list_head *node, struct list_head *head)
  * The @node is removed from its old position/node and add to the end of @head
  */
 static inline void list_move_tail(struct list_head *node,
-				      struct list_head *head)
+				  struct list_head *head)
 {
 	list_del(node);
 	list_add_tail(node, head);
@@ -568,7 +568,7 @@ static inline void INIT_HLIST_NODE(struct hlist_node *node)
  * @head: pointer to the head of the hlist
  */
 static inline void hlist_add_head(struct hlist_node *node,
-				      struct hlist_head *head)
+				  struct hlist_head *head)
 {
 	struct hlist_node *first = head->first;
 
@@ -585,7 +585,7 @@ static inline void hlist_add_head(struct hlist_node *node,
  * @node: pointer to the reference node in the hlist
  */
 static inline void hlist_add_before(struct hlist_node *new_node,
-					struct hlist_node *node)
+				    struct hlist_node *node)
 {
 	struct hlist_node **pprev = node->pprev;
 
@@ -601,7 +601,7 @@ static inline void hlist_add_before(struct hlist_node *new_node,
  * @node: pointer to the reference node in the hlist
  */
 static inline void hlist_add_behind(struct hlist_node *new_node,
-					struct hlist_node *node)
+				    struct hlist_node *node)
 {
 	struct hlist_node *next = node->next;
 
@@ -682,7 +682,7 @@ static inline int hlist_empty(const struct hlist_head *head)
  * is initialized again to an empty hlist.
  */
 static inline void hlist_move_list(struct hlist_head *list,
-				       struct hlist_head *head)
+				   struct hlist_head *head)
 {
 	head->first = list->first;
 	if (head->first)

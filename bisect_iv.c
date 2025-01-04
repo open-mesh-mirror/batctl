@@ -977,9 +977,9 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 
 	printf("%s%s- %s [tq: %i, ttl: %i", head,
 	       (strlen(head) == 1 ? "" : num_sisters == 0 ? "\\" : "|"),
-		       get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
-		       seqno_trace_neigh->seqno_event->tq,
-		       seqno_trace_neigh->seqno_event->ttl);
+	       get_name_by_macstr(seqno_trace_neigh->bat_node->name, read_opt),
+	       seqno_trace_neigh->seqno_event->tq,
+	       seqno_trace_neigh->seqno_event->ttl);
 
 	printf(", neigh: %s",
 	       get_name_by_macstr(seqno_trace_neigh->seqno_event->neigh->name, read_opt));
@@ -995,8 +995,7 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
 	for (i = 0; i < seqno_trace_neigh->num_neighbors; i++) {
 		snprintf(new_head, sizeof(new_head), "%s%s",
 			 (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
-			 (strlen(head) == 1 ? "   " :
-			 num_sisters == 0 ? "    " : "|   "));
+			 (strlen(head) == 1 ? "   " : num_sisters == 0 ? "    " : "|   "));
 
 		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i],
 					seqno_trace_neigh->seqno_event,
@@ -1144,7 +1143,7 @@ static void seqno_trace_neigh_free(struct seqno_trace_neigh *seqno_trace_neigh)
 
 static int seqno_trace_fix_leaf(struct seqno_trace_neigh *seqno_trace_mom,
 				struct seqno_trace_neigh *seqno_trace_old_mom,
-					struct seqno_trace_neigh *seqno_trace_child)
+				struct seqno_trace_neigh *seqno_trace_child)
 {
 	struct seqno_trace_neigh *seqno_trace_neigh;
 	struct seqno_trace_neigh **data_ptr;

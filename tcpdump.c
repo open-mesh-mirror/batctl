@@ -566,8 +566,8 @@ static void dump_udp(const char ip_string[], unsigned char *packet_buff,
 			  sizeof(struct udphdr), (size_t)44, "DHCP");
 		printf("%s.67: BOOTP/DHCP, Request from %s, length %zu\n",
 		       dst_addr,
-		       ether_ntoa_long((struct ether_addr *)(((char *)udphdr) +
-				       sizeof(struct udphdr) + 28)),
+		       ether_ntoa_long((struct ether_addr *)
+				       (((char *)udphdr) + sizeof(struct udphdr) + 28)),
 		       (size_t)buff_len - ip6_header_len -
 		       sizeof(struct udphdr));
 		break;

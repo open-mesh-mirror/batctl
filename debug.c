@@ -71,7 +71,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			if (!sscanf(optarg, "%f", &watch_interval)) {
 				fprintf(stderr,
 					"Error - provided argument of '-%c' is not a number\n",
-	    optchar);
+					optchar);
 				return EXIT_FAILURE;
 			}
 			break;
@@ -86,7 +86,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			if (!sscanf(optarg, "%f", &orig_timeout)) {
 				fprintf(stderr,
 					"Error - provided argument of '-%c' is not a number\n",
-	    optchar);
+					optchar);
 				return EXIT_FAILURE;
 			}
 			break;

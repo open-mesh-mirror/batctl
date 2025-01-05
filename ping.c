@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <time.h>
 #include <netinet/if_ether.h>
 
 #include "batadv_packet_compat.h"
@@ -58,18 +59,21 @@ static int ping(struct state *state, int argc, char **argv)
 	struct batadv_icmp_packet_rr icmp_packet_out;
 	struct batadv_icmp_packet_rr icmp_packet_in;
 	uint8_t last_rr[BATADV_RR_LEN][ETH_ALEN];
+	struct timespec loop_interval = {0, 0};
 	struct ether_addr *dst_mac = NULL;
 	struct ether_addr *rr_mac = NULL;
 	int disable_translate_mac = 0;
+	double fractional_part = 0.0;
 	unsigned int seq_counter = 0;
 	unsigned int packets_out = 0;
 	unsigned int packets_in = 0;
+	double ping_interval = 0.0;
+	double integral_part = 0.0;
 	unsigned int packets_loss;
 	struct bat_host *bat_host;
 	struct bat_host *rr_host;
 	uint8_t last_rr_cur = 0;
 	int ret = EXIT_FAILURE;
-	int loop_interval = 0;
 	int loop_count = -1;
 	int found_args = 1;
 	size_t packet_len;
@@ -84,6 +88,7 @@ static int ping(struct state *state, int argc, char **argv)
 	float max = 0.0;
 	float avg = 0.0;
 	int timeout = 1;
+	char *endptr;
 	int optchar;
 	int rr = 0;
 	int res;
@@ -101,9 +106,17 @@ static int ping(struct state *state, int argc, char **argv)
 			ping_usage();
 			return EXIT_SUCCESS;
 		case 'i':
-			loop_interval = strtol(optarg, NULL, 10);
-			if (loop_interval < 1)
-				loop_interval = 1;
+			errno = 0;
+			ping_interval = strtod(optarg, &endptr);
+			if (errno || *endptr != '\0') {
+				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
+				goto out;
+			}
+
+			ping_interval = fmax(ping_interval, 0.001);
+			fractional_part = modf(ping_interval, &integral_part);
+			loop_interval.tv_sec = (time_t)integral_part;
+			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
 			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 't':
@@ -302,8 +315,8 @@ sleep:
 		if (loop_count == 0)
 			continue;
 
-		if (loop_interval > 0)
-			sleep(loop_interval);
+		if (loop_interval.tv_sec > 0 || loop_interval.tv_nsec > 0)
+			nanosleep(&loop_interval, NULL);
 		else if ((tv.tv_sec != 0) || (tv.tv_usec != 0))
 			select(0, NULL, NULL, NULL, &tv);
 	}

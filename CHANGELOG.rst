@@ -1,5 +1,11 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2025.0 (2025-02-07)
+===================
+
+* subsecond precision support for ping intervals
+* coding style cleanups and refactoring
+
 2024.4 (2024-12-10)
 ===================
 

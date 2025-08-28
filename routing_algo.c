@@ -95,11 +95,11 @@ static int print_routing_algos(struct state *state)
 	nl_send_auto_complete(state->sock, msg);
 	nlmsg_free(msg);
 
-	opts.remaining_header = strdup("Available routing algorithms:\n");
-
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	if (!cb)
 		return -ENOMEM;
+
+	opts.remaining_header = strdup("Available routing algorithms:\n");
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
 		  &opts);

@@ -319,7 +319,7 @@ static void event_parse_set_hardif(struct nlattr **attrs)
 			return;
 	}
 
-	if (attrs[BATADV_ATTR_MESH_IFNAME]) {
+	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
 		hardif_name = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
 	} else {
 		/* compatibility for Linux < 5.14/batman-adv < 2021.2 */

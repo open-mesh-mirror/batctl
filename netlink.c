@@ -215,9 +215,6 @@ struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
 	[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED] = {
 		.type = NLA_U8,
 	},
-	[BATADV_ATTR_NETWORK_CODING_ENABLED] = {
-		.type = NLA_U8,
-	},
 	[BATADV_ATTR_ORIG_INTERVAL] = {
 		.type = NLA_U32,
 	},

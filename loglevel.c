@@ -36,7 +36,6 @@ static void log_level_usage(void)
 	fprintf(stderr, " \t tt      Messages related to translation table operations\n");
 	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
-	fprintf(stderr, " \t nc      Messages related to network coding\n");
 	fprintf(stderr, " \t mcast   Messages related to multicast\n");
 	fprintf(stderr, " \t tp      Messages related to throughput meter\n");
 }
@@ -145,8 +144,6 @@ static int loglevel(struct state *state, int argc, char **argv)
 				log_level_globals.log_level |= BIT(3);
 			} else if (strcmp(argv[i], "dat") == 0) {
 				log_level_globals.log_level |= BIT(4);
-			} else if (strcmp(argv[i], "nc") == 0) {
-				log_level_globals.log_level |= BIT(5);
 			} else if (strcmp(argv[i], "mcast") == 0) {
 				log_level_globals.log_level |= BIT(6);
 			} else if (strcmp(argv[i], "tp") == 0) {
@@ -177,8 +174,6 @@ static int loglevel(struct state *state, int argc, char **argv)
 	       "messages related to bridge loop avoidance", "bla");
 	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(4)) ? 'x' : ' ',
 	       "messages related to arp snooping and distributed arp table", "dat");
-	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(5)) ? 'x' : ' ',
-	       "messages related to network coding", "nc");
 	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(6)) ? 'x' : ' ',
 	       "messages related to multicast", "mcast");
 	printf("[%c] %s (%s)\n", (log_level_globals.log_level & BIT(7)) ? 'x' : ' ',

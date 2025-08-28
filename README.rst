@@ -644,7 +644,6 @@ Example::
   [ ] messages related to translation table operations (tt)
   [ ] messages related to bridge loop avoidance (bla)
   [ ] messages related to arp snooping and distributed arp table (dat)
-  [ ] messages related to network coding (nc)
   [ ] messages related to multicast (mcast)
   [ ] messages related to throughput meter (tp)
 
@@ -667,18 +666,6 @@ display or modify the multicast forceflood setting
 Usage::
 
   batctl multicast_forceflood|mff [0|1]
-
-
-batctl network_coding
----------------------
-
-display or modify the network coding setting
-
-Usage::
-
-  batctl network_coding|nc [0|1]
-
-Note that network coding requires a working promiscuous mode on all interfaces.
 
 
 batctl orig_interval

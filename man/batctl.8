@@ -325,7 +325,7 @@ If no parameter is given the current log level settings are displayed otherwise 
 level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
 Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
 translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
-messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
+messages related to ARP snooping and the Distributed Arp Table.
 Level 'mcast' enables messages related to multicast optimizations. Level 'tp' enables messages related to throughput meter.
 Level 'all' enables all messages. The messages are sent to the kernels trace buffers. Use \fBtrace-cmd stream -e batadv:batadv_dbg\fP
 to receive the system wide log messages.
@@ -340,10 +340,6 @@ If no parameter is given the current multicast forceflood setting is displayed. 
 disable multicast forceflood. This setting defines whether multicast optimizations should be replaced by simple broadcast-like
 flooding of multicast packets. If set to non-zero then all nodes in the mesh are going to use classic flooding for any
 multicast packet with no optimizations.
-.TP
-[\fBmeshif\fP \fInetdev\fP] \fBnetwork_coding\fP|\fBnc\fP [\fI0\fP|\fI1\fP]
-If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
-disable network coding.
 .TP
 [\fBmeshif\fP \fInetdev\fP] \fBorig_interval\fP|\fBit\fP [\fIinterval\fP]
 If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the

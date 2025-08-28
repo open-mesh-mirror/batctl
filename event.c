@@ -282,10 +282,6 @@ static void event_parse_set_mesh(struct nlattr **attrs)
 		printf("* multicast_forceflood %s\n",
 		       u8_to_boolstr(attrs[BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED]));
 
-	if (attrs[BATADV_ATTR_NETWORK_CODING_ENABLED])
-		printf("* network_coding %s\n",
-		       u8_to_boolstr(attrs[BATADV_ATTR_NETWORK_CODING_ENABLED]));
-
 	if (attrs[BATADV_ATTR_ORIG_INTERVAL])
 		printf("* orig_interval %u ms\n",
 		       nla_get_u32(attrs[BATADV_ATTR_ORIG_INTERVAL]));

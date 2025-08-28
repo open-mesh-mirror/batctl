@@ -445,10 +445,6 @@ static const struct nla_policy_json batadv_genl_json[NUM_BATADV_ATTR] = {
 		.name = "multicast_forceflood_enabled",
 		.cb = nljson_print_bool,
 	},
-	[BATADV_ATTR_NETWORK_CODING_ENABLED] = {
-		.name = "network_coding_enabled",
-		.cb = nljson_print_bool,
-	},
 	[BATADV_ATTR_ORIG_INTERVAL] = {
 		.name = "orig_interval",
 		.cb = nljson_print_uint32,

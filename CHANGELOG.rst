@@ -1,5 +1,13 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2025.3 (2025-09-05)
+===================
+
+* bugs squashed:
+
+  - fix potential memory leak in print_routing_algos
+  - fix event parsing of hard interface names
+
 2025.2 (2025-06-18)
 ===================
 

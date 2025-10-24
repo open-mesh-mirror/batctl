@@ -17,7 +17,7 @@
 #include <netlink/netlink.h>
 
 #ifndef SOURCE_VERSION
-#define SOURCE_VERSION "2025.4"
+#define SOURCE_VERSION "2025.5"
 #endif
 
 #define EXIT_NOSUCCESS 2

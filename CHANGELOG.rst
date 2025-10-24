@@ -1,5 +1,10 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2025.4 (2025-10-24)
+===================
+
+* removed network coding (C.A.T.W.O.M.A.N.) support
+
 2025.3 (2025-09-05)
 ===================
 

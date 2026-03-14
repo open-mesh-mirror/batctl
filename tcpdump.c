@@ -102,7 +102,8 @@ static int print_time(void)
 	tm = localtime(&tv.tv_sec);
 
 	if (tm)
-		printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+		printf("%02d:%02d:%02d.%06u ", tm->tm_hour, tm->tm_min, tm->tm_sec,
+		       (unsigned int)tv.tv_usec);
 	else
 		printf("00:00:00.000000 ");
 

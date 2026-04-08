@@ -1,5 +1,14 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2026.1 (2026-04-08)
+===================
+
+* coding style cleanups and refactoring
+* bugs squashed:
+
+  - tcpdump: Fix printing of usecs
+  - fix tbl preprocessing of manpage
+
 2026.0 (2026-02-24)
 ===================
 

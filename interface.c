@@ -154,11 +154,6 @@ static int print_interfaces(struct state *state)
 {
 	int ret;
 
-	if (!file_exists(module_ver_path)) {
-		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
-		return EXIT_FAILURE;
-	}
-
 	/* duplicated code here from the main() because interface doesn't always
 	 * need COMMAND_FLAG_MESH_IFACE and COMMAND_FLAG_NETLINK
 	 */
@@ -521,12 +516,6 @@ static int interface(struct state *state, int argc, char **argv)
 		fprintf(stderr,
 			"Error - failed to find batman-adv interface: %s\n",
 			strerror(-ret));
-		goto err;
-	}
-
-	/* make sure that batman-adv is loaded or was loaded by create_interface */
-	if (!file_exists(module_ver_path)) {
-		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
 		goto err;
 	}
 

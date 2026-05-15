@@ -110,20 +110,8 @@ char *get_name_by_macstr(char *mac_str, int read_opt)
 	return get_name_by_macaddr(mac_addr, read_opt);
 }
 
-int file_exists(const char *fpath)
-{
-	struct stat st;
-
-	return stat(fpath, &st) == 0;
-}
-
 static void file_open_problem_dbg(const char *full_path)
 {
-	if (!file_exists(module_ver_path)) {
-		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
-		return;
-	}
-
 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));
 	fprintf(stderr,
 		"The option you called seems not to be compiled into your batman-adv kernel module.\n");

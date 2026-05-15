@@ -33,8 +33,6 @@
 #define __maybe_unused __attribute__((unused))
 #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
 
-extern char module_ver_path[];
-
 #ifndef VLAN_VID_MASK
 #define VLAN_VID_MASK   0xfff
 #endif

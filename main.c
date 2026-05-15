@@ -20,7 +20,7 @@
 #include "netlink.h"
 
 char mesh_dfl_iface[] = "bat0";
-char module_ver_path[] = "/sys/module/batman_adv/version";
+static const char module_ver_path[] = "/sys/module/batman_adv/version";
 
 extern const struct command *__start___command[];
 extern const struct command *__stop___command[];
@@ -138,7 +138,7 @@ static void version(void)
 	if (ret == EXIT_SUCCESS)
 		printf("%s]\n", line_ptr);
 	else
-		printf("module not loaded]\n");
+		printf("module version unknown]\n");
 
 	free(line_ptr);
 	exit(EXIT_SUCCESS);

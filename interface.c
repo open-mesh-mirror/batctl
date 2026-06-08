@@ -182,8 +182,8 @@ static int count_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 	struct count_interfaces_rtnl_arg *count_arg = arg;
 	struct nlattr *attrs[IFLA_MAX + 1];
 	struct ifinfomsg *ifm;
-	int ret;
 	int master;
+	int ret;
 
 	ifm = nlmsg_data(nlmsg_hdr(msg));
 	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,

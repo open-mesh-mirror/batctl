@@ -114,7 +114,8 @@ static void batctl_tvlv_parse_gw_v1(void *buff, ssize_t buff_len,
 				    int read_opt __maybe_unused)
 {
 	struct batadv_tvlv_gateway_data *tvlv = buff;
-	uint32_t down, up;
+	uint32_t down;
+	uint32_t up;
 
 	if (buff_len != sizeof(*tvlv)) {
 		fprintf(stderr,
@@ -590,9 +591,9 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 		      int time_printed)
 {
 	struct nd_neighbor_solicit *nd_neigh_sol;
+	static const char ip_string[] = "IP6";
 	struct nd_neighbor_advert *nd_advert;
 	char nd_nas_target[INET6_ADDRSTRLEN];
-	static const char ip_string[] = "IP6";
 	char ipsrc[INET6_ADDRSTRLEN];
 	char ipdst[INET6_ADDRSTRLEN];
 	struct icmp6_hdr *icmphdr;
@@ -833,8 +834,8 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len,
 			       int read_opt, int time_printed)
 {
-	struct ether_header *ether_header;
 	struct batadv_ogm_packet *batman_ogm_packet;
+	struct ether_header *ether_header;
 	ssize_t check_len;
 	ssize_t tvlv_len;
 
@@ -944,7 +945,6 @@ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len,
 {
 	struct batadv_icmp_packet *icmp_packet;
 	struct batadv_icmp_tp_packet *tp;
-
 	char *name;
 
 	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_icmp_packet), "BAT ICMP");

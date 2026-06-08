@@ -33,13 +33,14 @@ static int neighbors_callback(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	int last_seen_msecs, last_seen_secs;
 	struct print_opts *opts = arg;
 	unsigned int throughput_mbits;
 	unsigned int throughput_kbits;
 	char ifname_buf[IF_NAMESIZE];
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
+	int last_seen_msecs;
+	int last_seen_secs;
 	uint32_t ifindex;
 	uint8_t *neigh;
 	char *ifname;

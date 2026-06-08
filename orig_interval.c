@@ -72,10 +72,12 @@ static int get_orig_interval(struct state *state)
 
 static int set_attrs_orig_interval(struct nl_msg *msg, void *arg)
 {
+	struct orig_interval_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct orig_interval_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_ORIG_INTERVAL, data->orig_interval);
 
 	return 0;

@@ -21,7 +21,7 @@ static struct multicast_fanout_data {
 static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
-	struct multicast_fanout_data *data = settings->data;
+	struct multicast_fanout_data *data;
 	char *endptr;
 
 	if (argc != 2) {
@@ -29,6 +29,7 @@ static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	data = settings->data;
 	data->multicast_fanout = strtoul(argv[1], &endptr, 0);
 	if (!endptr || *endptr != '\0') {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
@@ -72,10 +73,12 @@ static int get_multicast_fanout(struct state *state)
 
 static int set_attrs_multicast_fanout(struct nl_msg *msg, void *arg)
 {
+	struct multicast_fanout_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct multicast_fanout_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_MULTICAST_FANOUT, data->multicast_fanout);
 
 	return 0;

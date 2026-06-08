@@ -32,10 +32,12 @@ static int get_distributed_arp_table(struct state *state)
 
 static int set_attrs_distributed_arp_table(struct nl_msg *msg, void *arg)
 {
+	struct simple_boolean_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct simple_boolean_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u8(msg, BATADV_ATTR_DISTRIBUTED_ARP_TABLE_ENABLED, data->val);
 
 	return 0;

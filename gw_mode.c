@@ -154,9 +154,7 @@ static int parse_gw(struct state *state, int argc, char *argv[])
 
 static int print_gw(struct nl_msg *msg, void *arg)
 {
-	static const int mandatory[] = {
-		BATADV_ATTR_GW_MODE,
-	};
+	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	static const int mandatory_client[] = {
 		BATADV_ATTR_ALGO_NAME,
 		BATADV_ATTR_GW_SEL_CLASS,
@@ -165,8 +163,10 @@ static int print_gw(struct nl_msg *msg, void *arg)
 		BATADV_ATTR_GW_BANDWIDTH_DOWN,
 		BATADV_ATTR_GW_BANDWIDTH_UP,
 	};
-	struct nlattr *attrs[BATADV_ATTR_MAX + 1];
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	static const int mandatory[] = {
+		BATADV_ATTR_GW_MODE,
+	};
 	struct genlmsghdr *ghdr;
 	int *result = arg;
 	const char *algo;

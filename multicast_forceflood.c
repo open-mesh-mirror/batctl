@@ -53,10 +53,12 @@ static int get_multicast_forceflood(struct state *state)
 
 static int set_attrs_multicast_forceflood(struct nl_msg *msg, void *arg)
 {
+	struct simple_boolean_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct simple_boolean_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u8(msg, BATADV_ATTR_MULTICAST_FORCEFLOOD_ENABLED, data->val);
 
 	return 0;

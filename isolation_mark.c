@@ -22,7 +22,7 @@ static struct isolation_mark_data {
 static int parse_isolation_mark(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
-	struct isolation_mark_data *data = settings->data;
+	struct isolation_mark_data *data;
 	char *mask_ptr;
 	char buff[256];
 	uint32_t mark;
@@ -59,6 +59,7 @@ static int parse_isolation_mark(struct state *state, int argc, char *argv[])
 	if (!endptr || *endptr != '\0')
 		goto inval_format;
 
+	data = settings->data;
 	data->isolation_mask = mask;
 	/* erase bits not covered by the mask */
 	data->isolation_mark = mark & mask;
@@ -110,10 +111,12 @@ static int get_isolation_mark(struct state *state)
 
 static int set_attrs_isolation_mark(struct nl_msg *msg, void *arg)
 {
+	struct isolation_mark_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct isolation_mark_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MARK, data->isolation_mark);
 	nla_put_u32(msg, BATADV_ATTR_ISOLATION_MASK, data->isolation_mask);
 

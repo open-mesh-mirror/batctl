@@ -135,8 +135,8 @@ static bool ether_addr_valid(const uint8_t *addr)
 int read_file(const char *full_path, int read_opt)
 {
 	int res = EXIT_FAILURE;
-	size_t len = 0;
 	FILE *fp = NULL;
+	size_t len = 0;
 
 	fp = fopen(full_path, "r");
 	if (!fp) {
@@ -580,17 +580,17 @@ struct rtnl_link_iface_data {
 
 static int query_rtnl_link_single_parse(struct nl_msg *msg, void *arg)
 {
-	static struct nla_policy link_policy[IFLA_MAX + 1] = {
-		[IFLA_LINKINFO] = { .type = NLA_NESTED },
-		[IFLA_MASTER] = { .type = NLA_U32 },
-		[IFLA_LINK] = { .type = NLA_U32 },
-	};
 	static struct nla_policy link_info_policy[IFLA_INFO_MAX + 1] = {
 		[IFLA_INFO_KIND] = { .type = NLA_STRING },
 		[IFLA_INFO_DATA] = { .type = NLA_NESTED },
 	};
 	static struct nla_policy vlan_policy[IFLA_VLAN_MAX + 1] = {
 		[IFLA_VLAN_ID] = { .type = NLA_U16 },
+	};
+	static struct nla_policy link_policy[IFLA_MAX + 1] = {
+		[IFLA_LINKINFO] = { .type = NLA_NESTED },
+		[IFLA_MASTER] = { .type = NLA_U32 },
+		[IFLA_LINK] = { .type = NLA_U32 },
 	};
 
 	struct rtnl_link_iface_data *link_data = arg;

@@ -32,10 +32,12 @@ static int get_aggregated_ogms(struct state *state)
 
 static int set_attrs_aggregated_ogms(struct nl_msg *msg, void *arg)
 {
+	struct simple_boolean_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct simple_boolean_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u8(msg, BATADV_ATTR_AGGREGATED_OGMS_ENABLED, data->val);
 
 	return 0;

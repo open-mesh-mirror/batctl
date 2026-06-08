@@ -39,8 +39,8 @@ static int gateways_callback(struct nl_msg *msg, void *arg)
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
-	const char *primary_if;
 	uint32_t bandwidth_down;
+	const char *primary_if;
 	uint32_t bandwidth_up;
 	uint32_t throughput;
 	uint8_t *router;

@@ -45,9 +45,9 @@ struct mcast_handler_args {
 
 static int mcast_family_handler(struct nl_msg *msg, void *arg)
 {
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
 	struct mcast_handler_args *grp = arg;
 	struct nlattr *tb[CTRL_ATTR_MAX + 1];
-	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
 	struct nlattr *mcgrp;
 	int rem_mcgrp;
 

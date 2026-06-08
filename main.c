@@ -57,18 +57,18 @@ static void print_usage(void)
 		"meshif <netdev> ",
 		NULL,
 	};
+	static const char * const hardif_prefixes[] = {
+		"hardif <netdev> ",
+		NULL,
+	};
 	static const char * const vlan_prefixes[] = {
 		"vlan <vdev> ",
 		"meshif <netdev> vid <vid> ",
 		NULL,
 	};
-	static const char * const hardif_prefixes[] = {
-		"hardif <netdev> ",
-		NULL,
-	};
-	const struct command **p;
 	const char * const *prefixes;
 	const char * const *prefix;
+	const struct command **p;
 	char buf[64];
 	size_t i;
 

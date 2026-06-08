@@ -81,10 +81,12 @@ static int get_elp_interval(struct state *state)
 
 static int set_attrs_elp_interval(struct nl_msg *msg, void *arg)
 {
+	struct settings_data *settings;
+	struct elp_interval_data *data;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct elp_interval_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
 	nla_put_u32(msg, BATADV_ATTR_ELP_INTERVAL, data->elp_interval);
 

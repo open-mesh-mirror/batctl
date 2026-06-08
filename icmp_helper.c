@@ -83,7 +83,6 @@ void icmp_interface_destroy(struct icmp_interface *iface)
 
 static int icmp_interface_filter(int sock, int uid)
 {
-	struct sock_fprog filter;
 	struct sock_filter accept_icmp[] = {
 		/* load ethernet proto */
 		BPF_STMT(BPF_LD + BPF_H + BPF_ABS,
@@ -146,6 +145,7 @@ static int icmp_interface_filter(int sock, int uid)
 		BPF_STMT(BPF_RET + BPF_K,
 			 0),
 	};
+	struct sock_fprog filter;
 
 	memset(&filter, 0, sizeof(filter));
 	filter.len = sizeof(accept_icmp) / sizeof(*accept_icmp);
@@ -303,7 +303,8 @@ static void icmp_interface_unmark(void)
 
 static void icmp_interface_sweep(void)
 {
-	struct icmp_interface *iface, *safe;
+	struct icmp_interface *iface;
+	struct icmp_interface *safe;
 
 	list_for_each_entry_safe(iface, safe, &interface_list, list) {
 		if (iface->mark)

@@ -1147,7 +1147,8 @@ static int seqno_trace_fix_leaf(struct seqno_trace_neigh *seqno_trace_mom,
 {
 	struct seqno_trace_neigh *seqno_trace_neigh;
 	struct seqno_trace_neigh **data_ptr;
-	int i, j = 0;
+	int j = 0;
+	int i;
 
 	data_ptr = calloc(seqno_trace_old_mom->num_neighbors - 1, sizeof(*data_ptr));
 	if (!data_ptr)
@@ -1174,7 +1175,8 @@ static int seqno_trace_check_leaves(struct seqno_trace *seqno_trace,
 				    struct seqno_trace_neigh *seqno_trace_neigh_new)
 {
 	struct seqno_trace_neigh *seqno_trace_neigh_tmp;
-	int i, res;
+	int res;
+	int i;
 
 	for (i = 0; i < seqno_trace->seqno_trace_neigh.num_neighbors; i++) {
 		seqno_trace_neigh_tmp = seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i];

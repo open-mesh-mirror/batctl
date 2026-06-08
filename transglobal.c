@@ -39,7 +39,6 @@ static int transglobal_callback(struct nl_msg *msg, void *arg)
 	struct print_opts *opts = arg;
 	struct bat_host *bat_host;
 	struct genlmsghdr *ghdr;
-	char c, r, w, i, t;
 	uint8_t last_ttvn;
 	uint32_t crc32;
 	uint32_t flags;
@@ -47,6 +46,11 @@ static int transglobal_callback(struct nl_msg *msg, void *arg)
 	uint8_t *orig;
 	uint8_t ttvn;
 	int16_t vid;
+	char c;
+	char r;
+	char w;
+	char i;
+	char t;
 
 	if (!genlmsg_valid_hdr(nlh, 0)) {
 		fputs("Received invalid data from kernel.\n", stderr);

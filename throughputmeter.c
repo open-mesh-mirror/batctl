@@ -67,9 +67,9 @@ static int tpmeter_nl_print_error(struct sockaddr_nl *nla __maybe_unused,
 
 static int tp_meter_result_callback(struct nl_msg *msg, void *arg)
 {
-	struct tp_result *result = arg;
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nlattr *attrs[NUM_BATADV_ATTR];
+	struct tp_result *result = arg;
 	struct genlmsghdr *ghdr;
 	uint32_t cookie;
 
@@ -242,8 +242,8 @@ static struct nl_sock *tp_prepare_listening_sock(void)
 {
 	struct nl_sock *sock;
 	int family;
-	int ret;
 	int mcid;
+	int ret;
 
 	sock = nl_socket_alloc();
 	if (!sock)

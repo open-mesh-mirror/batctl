@@ -27,7 +27,7 @@
 int parse_simple_boolean(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
-	struct simple_boolean_data *data = settings->data;
+	struct simple_boolean_data *data;
 	int ret;
 
 	if (argc != 2) {
@@ -35,6 +35,7 @@ int parse_simple_boolean(struct state *state, int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	data = settings->data;
 	ret = parse_bool(argv[1], &data->val);
 	if (ret < 0) {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
@@ -154,13 +155,13 @@ static void settings_usage(struct state *state)
 		"meshif <netdev> ",
 		NULL,
 	};
+	static const char * const hardif_prefixes[] = {
+		"hardif <netdev> ",
+		NULL,
+	};
 	static const char * const vlan_prefixes[] = {
 		"vlan <vdev> ",
 		"meshif <netdev> vid <vid> ",
-		NULL,
-	};
-	static const char * const hardif_prefixes[] = {
-		"hardif <netdev> ",
 		NULL,
 	};
 	const char *linestart = "Usage:";
@@ -229,7 +230,8 @@ static int sys_write_setting(struct state *state)
 int handle_sys_setting(struct state *state, int argc, char **argv)
 {
 	struct settings_data *settings = state->cmd->arg;
-	int optchar, res = EXIT_FAILURE;
+	int res = EXIT_FAILURE;
+	int optchar;
 
 	while ((optchar = getopt(argc, argv, "h")) != -1) {
 		switch (optchar) {

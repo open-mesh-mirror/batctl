@@ -88,10 +88,12 @@ static int get_hop_penalty_if(struct state *state)
 
 static int set_attrs_hop_penalty(struct nl_msg *msg, void *arg)
 {
+	struct settings_data *settings;
+	struct hop_penalty_data *data;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct hop_penalty_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY, data->hop_penalty);
 
 	return 0;
@@ -105,10 +107,12 @@ static int set_hop_penalty(struct state *state)
 
 static int set_attrs_hop_penalty_if(struct nl_msg *msg, void *arg)
 {
+	struct settings_data *settings;
+	struct hop_penalty_data *data;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct hop_penalty_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
 	nla_put_u8(msg, BATADV_ATTR_HOP_PENALTY, data->hop_penalty);
 

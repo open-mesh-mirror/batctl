@@ -22,7 +22,7 @@ static struct throughput_override_data {
 static int parse_throughput_override(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
-	struct throughput_override_data *data = settings->data;
+	struct throughput_override_data *data;
 	bool ret;
 
 	if (argc != 2) {
@@ -30,6 +30,7 @@ static int parse_throughput_override(struct state *state, int argc, char *argv[]
 		return -EINVAL;
 	}
 
+	data = settings->data;
 	ret = parse_throughput(argv[1], "throughput override",
 			       &data->throughput_override);
 	if (!ret)
@@ -84,10 +85,12 @@ static int get_throughput_override(struct state *state)
 
 static int set_attrs_throughput_override(struct nl_msg *msg, void *arg)
 {
+	struct throughput_override_data *data;
+	struct settings_data *settings;
 	struct state *state = arg;
-	struct settings_data *settings = state->cmd->arg;
-	struct throughput_override_data *data = settings->data;
 
+	settings = state->cmd->arg;
+	data = settings->data;
 	nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, state->hif);
 	nla_put_u32(msg, BATADV_ATTR_THROUGHPUT_OVERRIDE, data->throughput_override);
 

@@ -133,8 +133,10 @@ static void version(void)
 
 	ret = read_file(module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
 	if (ret == EXIT_SUCCESS) {
-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
-			line_ptr[strlen(line_ptr) - 1] = '\0';
+		size_t line_len = strlen(line_ptr);
+
+		if (line_len > 0 && line_ptr[line_len - 1] == '\n')
+			line_ptr[line_len - 1] = '\0';
 
 		printf("%s]\n", line_ptr);
 	} else {

@@ -676,7 +676,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 				  sizeof(*nd_neigh_sol), "ICMPv6 Neighbor Solicitation");
 			nd_neigh_sol = (struct nd_neighbor_solicit *)icmphdr;
 			inet_ntop(AF_INET6, &nd_neigh_sol->nd_ns_target,
-				  nd_nas_target, 40);
+				  nd_nas_target, sizeof(nd_nas_target));
 			printf(" neighbor solicitation, who has %s, length %zd\n",
 			       nd_nas_target, buff_len);
 			break;
@@ -685,7 +685,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 				  sizeof(*nd_advert), "ICMPv6 Neighbor Advertisement");
 			nd_advert = (struct nd_neighbor_advert *)icmphdr;
 			inet_ntop(AF_INET6, &nd_advert->nd_na_target,
-				  nd_nas_target, 40);
+				  nd_nas_target, sizeof(nd_nas_target));
 			printf(" neighbor advertisement, tgt is %s, length %zd\n",
 			       nd_nas_target, buff_len);
 			break;

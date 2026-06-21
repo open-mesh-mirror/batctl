@@ -1050,7 +1050,7 @@ static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len,
 	printf("%s: UCAST FRAG, seqno %d, no %d, ttl %hhu\n",
 	       get_name_by_macaddr((struct ether_addr *)frag_packet->dest,
 				   read_opt),
-	       frag_packet->seqno, frag_packet->no, frag_packet->ttl);
+	       ntohs(frag_packet->seqno), frag_packet->no, frag_packet->ttl);
 }
 
 static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len,

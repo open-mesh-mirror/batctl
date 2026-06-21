@@ -207,6 +207,8 @@ static int ping(struct state *state, int argc, char **argv)
 			goto sleep;
 		}
 
+		packets_out++;
+
 read_packet:
 		start_timer();
 
@@ -215,8 +217,6 @@ read_packet:
 
 		if (is_aborted)
 			break;
-
-		packets_out++;
 
 		if (read_len == 0) {
 			printf("Reply from host %s timed out\n", dst_string);

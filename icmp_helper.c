@@ -471,6 +471,12 @@ ssize_t icmp_interface_read(struct batadv_icmp_header *icmp_packet, size_t len,
 		packet_len = len;
 
 	if (direct_reply_len > 0) {
+		/* never deliver more than was actually stored by the
+		 * dst_unreachable path, nor more than the caller's buffer holds
+		 */
+		if (packet_len > direct_reply_len)
+			packet_len = direct_reply_len;
+
 		memcpy(icmp_packet, icmp_buffer, packet_len);
 		direct_reply_len = 0;
 		return (ssize_t)packet_len;

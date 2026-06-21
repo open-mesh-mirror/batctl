@@ -22,6 +22,7 @@ static int parse_orig_interval(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
 	struct orig_interval_data *data = settings->data;
+	unsigned long orig_interval;
 	char *endptr;
 
 	if (argc != 2) {
@@ -29,11 +30,13 @@ static int parse_orig_interval(struct state *state, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	data->orig_interval = strtoul(argv[1], &endptr, 0);
-	if (!endptr || *endptr != '\0') {
+	orig_interval = strtoul(argv[1], &endptr, 0);
+	if (!endptr || *endptr != '\0' || endptr == argv[1] || orig_interval > UINT32_MAX) {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
 		return -EINVAL;
 	}
+
+	data->orig_interval = orig_interval;
 
 	return 0;
 }

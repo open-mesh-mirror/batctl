@@ -22,6 +22,7 @@ static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
 	struct multicast_fanout_data *data;
+	unsigned long multicast_fanout;
 	char *endptr;
 
 	if (argc != 2) {
@@ -30,11 +31,13 @@ static int parse_multicast_fanout(struct state *state, int argc, char *argv[])
 	}
 
 	data = settings->data;
-	data->multicast_fanout = strtoul(argv[1], &endptr, 0);
-	if (!endptr || *endptr != '\0') {
+	multicast_fanout = strtoul(argv[1], &endptr, 0);
+	if (!endptr || *endptr != '\0' || endptr == argv[1] || multicast_fanout > UINT32_MAX) {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
 		return -EINVAL;
 	}
+
+	data->multicast_fanout = multicast_fanout;
 
 	return 0;
 }

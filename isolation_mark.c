@@ -23,10 +23,10 @@ static int parse_isolation_mark(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
 	struct isolation_mark_data *data;
+	unsigned long mark;
+	unsigned long mask;
 	char *mask_ptr;
 	char buff[256];
-	uint32_t mark;
-	uint32_t mask;
 	char *endptr;
 
 	if (argc != 2) {
@@ -50,13 +50,13 @@ static int parse_isolation_mark(struct state *state, int argc, char *argv[])
 		 * bitmask and not a prefix length
 		 */
 		mask = strtoul(mask_ptr, &endptr, 16);
-		if (!endptr || *endptr != '\0')
+		if (!endptr || *endptr != '\0' || endptr == mask_ptr || mask > UINT32_MAX)
 			goto inval_format;
 	}
 
 	/* the mark can be entered in any base */
 	mark = strtoul(buff, &endptr, 0);
-	if (!endptr || *endptr != '\0')
+	if (!endptr || *endptr != '\0' || endptr == buff || mark > UINT32_MAX)
 		goto inval_format;
 
 	data = settings->data;

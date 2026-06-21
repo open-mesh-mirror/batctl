@@ -22,6 +22,7 @@ static int parse_elp_interval(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
 	struct elp_interval_data *data = settings->data;
+	unsigned long elp_interval;
 	char *endptr;
 
 	if (argc != 2) {
@@ -29,11 +30,13 @@ static int parse_elp_interval(struct state *state, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	data->elp_interval = strtoul(argv[1], &endptr, 0);
-	if (!endptr || *endptr != '\0') {
+	elp_interval = strtoul(argv[1], &endptr, 0);
+	if (!endptr || *endptr != '\0' || endptr == argv[1] || elp_interval > UINT32_MAX) {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
 		return -EINVAL;
 	}
+
+	data->elp_interval = elp_interval;
 
 	return 0;
 }

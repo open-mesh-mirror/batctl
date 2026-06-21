@@ -669,7 +669,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			break;
 		case ICMP6_TIME_EXCEEDED:
 			printf(" time exceeded in-transit, length %zu\n",
-			       (size_t)buff_len - sizeof(struct icmp6_hdr));
+			       (size_t)buff_len - sizeof(struct ip6_hdr));
 			break;
 		case ND_NEIGHBOR_SOLICIT:
 			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),

@@ -325,6 +325,7 @@ int netlink_stop_callback(struct nl_msg *msg, void *arg __maybe_unused)
 static const int info_mandatory[] = {
 	BATADV_ATTR_MESH_IFINDEX,
 	BATADV_ATTR_MESH_IFNAME,
+	BATADV_ATTR_MESH_ADDRESS,
 };
 
 static const int info_hard_mandatory[] = {

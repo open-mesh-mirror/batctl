@@ -537,18 +537,20 @@ static void dump_tcp(const char ip_string[], unsigned char *packet_buff,
 {
 	uint16_t tcp_header_len;
 	struct tcphdr *tcphdr;
+	size_t tcp_len;
 
 	LEN_CHECK((size_t)buff_len - ip6_header_len,
 		  sizeof(struct tcphdr), "TCP");
 	tcphdr = (struct tcphdr *)(packet_buff + ip6_header_len);
 	tcp_header_len = tcphdr->doff * 4;
+	tcp_len = (size_t)buff_len - ip6_header_len;
 	printf("%s %s.%i > ", ip_string, src_addr, ntohs(tcphdr->source));
 	printf("%s.%i: TCP, Flags [%c%c%c%c%c%c], length %zu\n",
 	       dst_addr, ntohs(tcphdr->dest),
 	       (tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
 	       (tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
 	       (tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
-	       (size_t)buff_len - ip6_header_len - tcp_header_len);
+	       tcp_len > tcp_header_len ? tcp_len - tcp_header_len : 0);
 }
 
 static void dump_udp(const char ip_string[], unsigned char *packet_buff,

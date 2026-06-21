@@ -823,7 +823,8 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 		time_printed = print_time();
 
 	vlanhdr->vid = ntohs(vlanhdr->vid);
-	printf("vlan %u, p %u, ", vlanhdr->vid, vlanhdr->vid >> 12);
+	printf("vlan %u, d %u, p %u, ", vlanhdr->vid & 0x0fff, (vlanhdr->vid >> 12) & 0x1,
+	       vlanhdr->vid >> 13);
 
 	/* overwrite vlan tags */
 	memmove(packet_buff + 4, packet_buff, 2 * ETH_ALEN);

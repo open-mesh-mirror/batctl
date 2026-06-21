@@ -130,9 +130,9 @@ static int originators_callback(struct nl_msg *msg, void *arg)
 			       throughput_mbits, throughput_kbits / 100);
 			bat_host = bat_hosts_find_by_mac((char *)neigh);
 			if (bat_host)
-				printf(" %c %17s ", c, bat_host->name);
+				printf("%17s ", bat_host->name);
 			else
-				printf(" %02x:%02x:%02x:%02x:%02x:%02x ",
+				printf("%02x:%02x:%02x:%02x:%02x:%02x ",
 				       neigh[0], neigh[1], neigh[2],
 				       neigh[3], neigh[4], neigh[5]);
 			printf("[%10s]\n", ifname);

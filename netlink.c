@@ -489,10 +489,14 @@ char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
 	ret = nl_recvmsgs(state->sock, cb);
-	if (ret < 0)
+	if (ret < 0) {
+		nl_cb_put(cb);
 		return opts.remaining_header;
+	}
 
 	nl_wait_for_ack(state->sock);
+
+	nl_cb_put(cb);
 
 	return opts.remaining_header;
 }

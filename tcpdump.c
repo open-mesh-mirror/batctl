@@ -1152,9 +1152,10 @@ static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len,
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost,
 				   read_opt));
 
-	printf("%s|%s: CODED, ttvn %d|%d, ttl %hhu\n",
+	printf("%s|",
 	       get_name_by_macaddr((struct ether_addr *)coded_packet->first_orig_dest,
-				   read_opt),
+				   read_opt));
+	printf("%s: CODED, ttvn %d|%d, ttl %hhu\n",
 	       get_name_by_macaddr((struct ether_addr *)coded_packet->second_dest,
 				   read_opt),
 	       coded_packet->first_ttvn, coded_packet->second_ttvn,

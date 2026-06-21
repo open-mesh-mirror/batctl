@@ -106,7 +106,12 @@ static int traceroute(struct state *state, int argc, char **argv)
 
 	mac_string = ether_ntoa_long(dst_mac);
 
-	icmp_interfaces_init();
+	res = icmp_interfaces_init();
+	if (res < 0) {
+		fprintf(stderr, "Error - unable to initialize ICMP interface: %s\n",
+			strerror(-res));
+		goto out;
+	}
 
 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);

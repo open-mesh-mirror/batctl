@@ -58,8 +58,6 @@ int get_algoname(struct state *state, unsigned int mesh_ifindex,
 int check_mesh_iface(struct state *state);
 int check_mesh_iface_ownership(struct state *state, char *hard_iface);
 
-void get_random_bytes(void *buf, size_t buflen);
-
 int parse_bool(const char *val, bool *res);
 bool parse_throughput(char *buff, const char *description,
 		      uint32_t *throughput);

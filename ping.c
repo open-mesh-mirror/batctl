@@ -170,7 +170,13 @@ static int ping(struct state *state, int argc, char **argv)
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
 
-	icmp_interfaces_init();
+	res = icmp_interfaces_init();
+	if (res < 0) {
+		fprintf(stderr, "Error - unable to initialize ICMP interface: %s\n",
+			strerror(-res));
+		goto out;
+	}
+
 	packet_len = sizeof(struct batadv_icmp_packet);
 
 	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/random.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -226,7 +227,14 @@ free_iface:
 
 int icmp_interfaces_init(void)
 {
-	get_random_bytes(&uid, 1);
+	ssize_t r;
+
+	r = getrandom(&uid, sizeof(uid), 0);
+	if (r < 0)
+		return -errno;
+
+	if (r != sizeof(uid))
+		return -EIO;
 
 	return 0;
 }

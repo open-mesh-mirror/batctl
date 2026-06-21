@@ -48,7 +48,6 @@ static int traceroute(struct state *state, int argc, char **argv)
 	int ret = EXIT_FAILURE;
 	char dst_reached = 0;
 	int seq_counter = 0;
-	int found_args = 1;
 	struct timeval tv;
 	ssize_t read_len;
 	char *dst_string;
@@ -65,11 +64,9 @@ static int traceroute(struct state *state, int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
 			break;
 		case 'T':
 			disable_translate_mac = 1;
-			found_args += 1;
 			break;
 		default:
 			traceroute_usage();
@@ -77,13 +74,13 @@ static int traceroute(struct state *state, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args) {
+	if (optind >= argc) {
 		fprintf(stderr, "Error - target mac address or bat-host name not specified\n");
 		traceroute_usage();
 		return EXIT_FAILURE;
 	}
 
-	dst_string = argv[found_args];
+	dst_string = argv[optind];
 	bat_hosts_init(read_opt);
 	bat_host = bat_hosts_find_by_name(dst_string);
 

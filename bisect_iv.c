@@ -1495,7 +1495,6 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 	int num_parsed_files;
 	long long tmp_seqno;
 	char orig[NAME_LEN];
-	int found_args = 1;
 	char *dash_ptr;
 	int optchar;
 	int res;
@@ -1510,19 +1509,15 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 			return EXIT_SUCCESS;
 		case 'l':
 			loop_orig_ptr = optarg;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
 			break;
 		case 'o':
 			filter_orig_ptr = optarg;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'r':
 			rt_orig_ptr = optarg;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 's':
 			dash_ptr = strchr(optarg, '-');
@@ -1549,11 +1544,9 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 				*dash_ptr = '-';
 			}
 
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 't':
 			trace_orig_ptr = optarg;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		default:
 			bisect_iv_usage();
@@ -1561,7 +1554,7 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args + 1) {
+	if (argc <= optind + 1) {
 		fprintf(stderr, "Error - need at least 2 log files to compare\n");
 		bisect_iv_usage();
 		goto err;
@@ -1624,13 +1617,13 @@ static int bisect_iv(struct state *state __maybe_unused, int argc, char **argv)
 			goto err;
 	}
 
-	while (argc > found_args) {
-		res = parse_log_file(argv[found_args]);
+	while (argc > optind) {
+		res = parse_log_file(argv[optind]);
 
 		if (res > 0)
 			num_parsed_files++;
 
-		found_args++;
+		optind++;
 	}
 
 	if (num_parsed_files < 2) {

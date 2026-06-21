@@ -1493,7 +1493,6 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	fd_set tmp_wait_sockets;
 	int ret = EXIT_FAILURE;
 	fd_set wait_sockets;
-	int found_args = 1;
 	struct timeval tv;
 	int max_sock = 0;
 	ssize_t read_len;
@@ -1507,26 +1506,22 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 		switch (optchar) {
 		case 'c':
 			read_opt |= COMPAT_FILTER;
-			found_args += 1;
 			break;
 		case 'h':
 			tcpdump_usage();
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
 			break;
 		case 'p':
 			tmp = strtol(optarg, NULL, 10);
 			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level = tmp;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'x':
 			tmp = strtol(optarg, NULL, 10);
 			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level &= ~tmp;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		default:
 			tcpdump_usage();
@@ -1534,7 +1529,7 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args) {
+	if (optind >= argc) {
 		fprintf(stderr, "Error - target interface not specified\n");
 		tcpdump_usage();
 		return EXIT_FAILURE;
@@ -1549,8 +1544,8 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	INIT_LIST_HEAD(&dump_if_list);
 	FD_ZERO(&wait_sockets);
 
-	while (argc > found_args) {
-		dump_if = create_dump_interface(argv[found_args]);
+	while (optind < argc) {
+		dump_if = create_dump_interface(argv[optind]);
 		if (!dump_if)
 			goto out;
 
@@ -1559,7 +1554,7 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 
 		FD_SET(dump_if->raw_sock, &wait_sockets);
 		list_add_tail(&dump_if->list, &dump_if_list);
-		found_args++;
+		optind++;
 	}
 
 	while (!is_aborted) {

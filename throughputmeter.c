@@ -326,7 +326,6 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 	struct bat_host *bat_host;
 	int ret = EXIT_FAILURE;
 	uint64_t throughput;
-	int found_args = 1;
 	uint32_t time = 0;
 	char *dst_string;
 	int optchar;
@@ -334,12 +333,10 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 	while ((optchar = getopt(argc, argv, "t:n")) != -1) {
 		switch (optchar) {
 		case 't':
-			found_args += 2;
 			time = strtoul(optarg, NULL, 10);
 			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
 			break;
 		default:
 			tp_meter_usage();
@@ -347,12 +344,12 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args) {
+	if (optind >= argc) {
 		tp_meter_usage();
 		return EXIT_FAILURE;
 	}
 
-	dst_string = argv[found_args];
+	dst_string = argv[optind];
 	bat_hosts_init(read_opt);
 	bat_host = bat_hosts_find_by_name(dst_string);
 

@@ -75,7 +75,6 @@ static int ping(struct state *state, int argc, char **argv)
 	uint8_t last_rr_cur = 0;
 	int ret = EXIT_FAILURE;
 	int loop_count = -1;
-	int found_args = 1;
 	size_t packet_len;
 	struct timeval tv;
 	double time_delta;
@@ -100,7 +99,6 @@ static int ping(struct state *state, int argc, char **argv)
 			loop_count = strtol(optarg, NULL, 10);
 			if (loop_count < 1)
 				loop_count = -1;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'h':
 			ping_usage();
@@ -117,21 +115,17 @@ static int ping(struct state *state, int argc, char **argv)
 			fractional_part = modf(ping_interval, &integral_part);
 			loop_interval.tv_sec = (time_t)integral_part;
 			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 't':
 			timeout = strtol(optarg, NULL, 10);
 			if (timeout < 1)
 				timeout = 1;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'R':
 			rr = 1;
-			found_args++;
 			break;
 		case 'T':
 			disable_translate_mac = 1;
-			found_args += 1;
 			break;
 		default:
 			ping_usage();
@@ -139,13 +133,13 @@ static int ping(struct state *state, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args) {
+	if (optind >= argc) {
 		fprintf(stderr, "Error - target mac address or bat-host name not specified\n");
 		ping_usage();
 		return EXIT_FAILURE;
 	}
 
-	dst_string = argv[found_args];
+	dst_string = argv[optind];
 	bat_hosts_init(0);
 	bat_host = bat_hosts_find_by_name(dst_string);
 

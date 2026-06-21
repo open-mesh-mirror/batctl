@@ -589,6 +589,10 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 
 	} while (!last_err && read_opt & (CONT_READ | CLR_CONT_READ));
 
+	/* free a header that was prepared but never printed (e.g. on error) */
+	free(opts.remaining_header);
+	opts.remaining_header = NULL;
+
 	bat_hosts_free();
 
 	return last_err;

@@ -203,7 +203,7 @@ void bat_hosts_init(int read_opt)
 		for (j = 0; j < i; j++) {
 			if (strncmp(normalized + (i * PATH_MAX),
 				    normalized + (j * PATH_MAX),
-				    CONF_DIR_LEN) == 0) {
+				    PATH_MAX) == 0) {
 				parse = 0;
 				break;
 			}

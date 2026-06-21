@@ -42,6 +42,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 	struct batadv_icmp_packet icmp_packet_in;
 	struct ether_addr *dst_mac = NULL;
 	double time_delta[NUM_PACKETS];
+	uint8_t received[NUM_PACKETS];
 	int disable_translate_mac = 0;
 	int read_opt = USE_BAT_HOSTS;
 	struct bat_host *bat_host;
@@ -125,6 +126,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 		for (i = 0; i < NUM_PACKETS; i++) {
 			icmp_packet_out.seqno = htons(++seq_counter);
 			time_delta[i] = 0.0;
+			received[i] = 0;
 
 			res = icmp_interface_write(state,
 						   (struct batadv_icmp_header *)&icmp_packet_out,
@@ -162,6 +164,7 @@ read_packet:
 				/* fall through */
 			case BATADV_TTL_EXCEEDED:
 				time_delta[i] = end_timer();
+				received[i] = 1;
 
 				if (!return_mac) {
 					return_mac = ether_ntoa_long((struct ether_addr *)&icmp_packet_in.orig);
@@ -195,7 +198,7 @@ read_packet:
 			       bat_host->name, return_mac);
 
 		for (i = 0; i < NUM_PACKETS; i++) {
-			if (time_delta[i])
+			if (received[i])
 				printf("  %.3f ms", time_delta[i]);
 			else
 				printf("   *");

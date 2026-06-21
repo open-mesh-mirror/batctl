@@ -431,7 +431,7 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 		if (throughput == UINT64_MAX)
 			printf("inf\n");
 		else if (throughput > (1UL << 30))
-			printf("%.2f GB/s (%2.f Gbps)\n",
+			printf("%.2f GB/s (%.2f Gbps)\n",
 			       (float)throughput / (1 << 30),
 			       (float)throughput * 8 / 1000000000);
 		else if (throughput > (1UL << 20))

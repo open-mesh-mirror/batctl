@@ -1,5 +1,13 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2026.2 (2026-06-30)
+===================
+
+* coding style cleanups and refactoring
+* bugs squashed:
+
+  - don't stop on missing batman-adv version file
+
 2026.1 (2026-04-08)
 ===================
 

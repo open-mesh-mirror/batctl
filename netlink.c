@@ -567,8 +567,10 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 								 header);
 
 		msg = nlmsg_alloc();
-		if (!msg)
-			continue;
+		if (!msg) {
+			last_err = -ENOMEM;
+			break;
+		}
 
 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family,
 			    0, NLM_F_DUMP, nl_cmd, 1);

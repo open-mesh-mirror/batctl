@@ -551,8 +551,10 @@ int netlink_simple_request(struct nl_msg *msg)
 	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_wait_handler, NULL);
 
 	ret = nl_send_auto_complete(sock, msg);
-	if (ret < 0)
+	if (ret < 0) {
+		err = -EIO;
 		goto err_free_cb;
+	}
 
 	// ack_errno_handler sets err on errors
 	err = 0;

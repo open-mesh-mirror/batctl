@@ -118,7 +118,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 	       dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1;
-	     !dst_reached && icmp_packet_out.ttl < TTL_MAX;
+	     !dst_reached && icmp_packet_out.ttl <= TTL_MAX;
 	     icmp_packet_out.ttl++) {
 		return_mac = NULL;
 		bat_host = NULL;

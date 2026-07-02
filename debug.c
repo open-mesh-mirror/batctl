@@ -26,7 +26,7 @@ static void debug_table_usage(struct state *state)
 	fprintf(stderr, " \t -h print this help\n");
 	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 	fprintf(stderr, " \t -H don't show the header\n");
-	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
+	fprintf(stderr, " \t -w[interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table->option_timeout_interval)
 		fprintf(stderr,
@@ -53,7 +53,8 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 	int optchar;
 	int err;
 
-	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw::t:Humi:")) != -1) {
+		printf("%c\n", optchar);
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(state);
@@ -63,10 +64,8 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			break;
 		case 'w':
 			read_opt |= CLR_CONT_READ;
-			if (optarg[0] == '-') {
-				optind--;
+			if (!optarg)
 				break;
-			}
 
 			if (!sscanf(optarg, "%f", &watch_interval)) {
 				fprintf(stderr,
@@ -130,9 +129,6 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			} else if (optopt == 'i') {
 				fprintf(stderr,
 					"Error - option '-i' needs an interface as argument\n");
-			} else if (optopt == 'w') {
-				read_opt |= CLR_CONT_READ;
-				break;
 			} else {
 				fprintf(stderr, "Error - unrecognised option: '-%c'\n", optopt);
 			}

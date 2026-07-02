@@ -1200,6 +1200,8 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len,
 	struct batadv_ogm_packet *batman_ogm_packet;
 	struct ether_header *eth_hdr;
 
+	LEN_CHECK(buff_len, sizeof(*eth_hdr), "ETH HEADER");
+
 	eth_hdr = (struct ether_header *)packet_buff;
 
 	switch (ntohs(eth_hdr->ether_type)) {

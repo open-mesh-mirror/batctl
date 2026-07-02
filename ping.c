@@ -106,12 +106,14 @@ static int ping(struct state *state, int argc, char **argv)
 		case 'i':
 			errno = 0;
 			ping_interval = strtod(optarg, &endptr);
-			if (errno || *endptr != '\0') {
+			if (errno || *endptr != '\0' || endptr == optarg ||
+			    !isfinite(ping_interval) || ping_interval <= 0) {
 				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
 				goto out;
 			}
 
 			ping_interval = fmax(ping_interval, 0.001);
+			ping_interval = fmin(ping_interval, 1000000000.0);
 			fractional_part = modf(ping_interval, &integral_part);
 			loop_interval.tv_sec = (time_t)integral_part;
 			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);

@@ -164,10 +164,16 @@ static int print_interfaces(struct state *state)
 	if (ret < 0)
 		return EXIT_FAILURE;
 
-	query_rtnl_link(state->mesh_ifindex, print_interfaces_rtnl_parse,
-			state);
+	ret = query_rtnl_link(state->mesh_ifindex, print_interfaces_rtnl_parse,
+			      state);
 
 	netlink_destroy(state);
+
+	if (ret < 0) {
+		fprintf(stderr, "Error - could not query interfaces: %s\n",
+			strerror(-ret));
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }

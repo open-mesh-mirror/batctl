@@ -33,16 +33,18 @@ struct nla_policy_json {
 
 static void sanitize_string(const char *str)
 {
-	while (*str) {
-		if (*str == '"' || *str == '\\') {
+	const unsigned char *c = (const unsigned char *)str;
+
+	while (*c) {
+		if (*c == '"' || *c == '\\') {
 			putchar('\\');
-			putchar(*str);
-		} else if (!isprint(*str)) {
-			printf("\\x%02x", *str);
+			putchar(*c);
+		} else if (!isprint(*c)) {
+			printf("\\x%02x", *c);
 		} else {
-			putchar(*str);
+			putchar(*c);
 		}
-		str++;
+		c++;
 	}
 }
 

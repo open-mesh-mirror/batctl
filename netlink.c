@@ -440,7 +440,8 @@ static int info_callback(struct nl_msg *msg, void *arg)
 			       mesh_name,
 			       mesh_mac[0], mesh_mac[1], mesh_mac[2],
 			       mesh_mac[3], mesh_mac[4], mesh_mac[5],
-			       algo_name, extra_info, extra_header);
+			       algo_name, extra_info ? extra_info : "",
+			       extra_header);
 		if (ret < 0)
 			opts->remaining_header = NULL;
 

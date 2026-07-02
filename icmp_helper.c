@@ -153,7 +153,7 @@ static int icmp_interface_filter(int sock, int uid)
 
 	if (setsockopt(sock, SOL_SOCKET, SO_ATTACH_FILTER, &filter,
 		       sizeof(filter)))
-		return -1;
+		return -errno;
 
 	return 0;
 }
@@ -340,6 +340,7 @@ static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
 {
 	struct ether_header header;
 	struct iovec vector[2];
+	ssize_t ret;
 
 	header.ether_type = htons(ETH_P_BATMAN);
 	memcpy(header.ether_shost, iface->mac, ETH_ALEN);
@@ -350,7 +351,11 @@ static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
 	vector[1].iov_base = icmp_packet;
 	vector[1].iov_len  = packet_len;
 
-	return (int)writev(iface->sock, vector, 2);
+	ret = writev(iface->sock, vector, 2);
+	if (ret < 0)
+		return -errno;
+
+	return (int)ret;
 }
 
 int icmp_interface_write(struct state *state,
@@ -486,9 +491,12 @@ retry:
 	max_sock = icmp_interface_preselect(&read_sockets);
 
 	res = select(max_sock, &read_sockets, NULL, NULL, tv);
-	/* timeout, or < 0 error */
-	if (res <= 0)
-		return res;
+	if (res < 0)
+		return -errno;
+
+	/* timeout */
+	if (res == 0)
+		return 0;
 
 	read_sock = icmp_interface_get_read_sock(&read_sockets, &iface);
 	if (read_sock < 0)
@@ -501,7 +509,7 @@ retry:
 
 	read_len = readv(read_sock, vector, 2);
 	if (read_len < 0)
-		return read_len;
+		return -errno;
 
 	if (read_len < ETH_HLEN)
 		goto retry;

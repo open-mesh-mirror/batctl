@@ -209,9 +209,9 @@ static int ping(struct state *state, int argc, char **argv)
 
 		packets_out++;
 
-read_packet:
 		start_timer();
 
+read_packet:
 		read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
 					       packet_len, &tv);
 

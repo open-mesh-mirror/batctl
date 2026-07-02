@@ -137,12 +137,12 @@ static int traceroute(struct state *state, int argc, char **argv)
 				continue;
 			}
 
-read_packet:
 			start_timer();
 
 			tv.tv_sec = 2;
 			tv.tv_usec = 0;
 
+read_packet:
 			read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
 						       sizeof(icmp_packet_in), &tv);
 			if (read_len <= 0)

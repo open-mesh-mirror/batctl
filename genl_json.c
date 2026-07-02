@@ -593,6 +593,9 @@ int handle_json_query(struct state *state, int argc, char **argv)
 		case 'h':
 			json_query_usage(state);
 			return EXIT_SUCCESS;
+		default:
+			json_query_usage(state);
+			return EXIT_FAILURE;
 		}
 	}
 

@@ -537,6 +537,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 	};
 	int hardifindex = 0;
 	struct nl_msg *msg;
+	int ret;
 
 	if (!state->sock) {
 		last_err = -EOPNOTSUPP;
@@ -588,7 +589,9 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 		nlmsg_free(msg);
 
 		last_err = 0;
-		nl_recvmsgs(state->sock, state->cb);
+		ret = nl_recvmsgs(state->sock, state->cb);
+		if (ret < 0)
+			last_err = -EIO;
 
 		/* the header should still be printed when no entry was received */
 		if (!last_err)

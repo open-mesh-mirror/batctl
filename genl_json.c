@@ -40,7 +40,7 @@ static void sanitize_string(const char *str)
 			putchar('\\');
 			putchar(*c);
 		} else if (!isprint(*c)) {
-			printf("\\x%02x", *c);
+			printf("\\u%04x", *c);
 		} else {
 			putchar(*c);
 		}

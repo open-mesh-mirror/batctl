@@ -110,10 +110,16 @@ int sys_simple_nlquery(struct state *state, enum batadv_nl_commands nl_cmd,
 	if (callback) {
 		ret = nl_recvmsgs(state->sock, state->cb);
 		if (ret < 0)
-			return ret;
+			return -EIO;
+
+		nl_wait_for_ack(state->sock);
+
+		return result;
 	}
 
-	nl_wait_for_ack(state->sock);
+	ret = nl_recvmsgs(state->sock, state->cb);
+	if (ret < 0 && result >= 0)
+		result = -EIO;
 
 	return result;
 }

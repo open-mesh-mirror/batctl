@@ -405,6 +405,7 @@ err_free_msg:
 static int interface(struct state *state, int argc, char **argv)
 {
 	struct interface_create_params create_params = {};
+	bool iface_error = false;
 	bool manual_mode = false;
 	unsigned int ifmaster;
 	unsigned int ifindex;
@@ -532,6 +533,7 @@ static int interface(struct state *state, int argc, char **argv)
 
 		if (!ifindex) {
 			fprintf(stderr, "Error - interface does not exist: %s\n", rest_argv[i]);
+			iface_error = true;
 			continue;
 		}
 
@@ -561,6 +563,9 @@ static int interface(struct state *state, int argc, char **argv)
 				"Warning: %s has no interfaces and can be destroyed with: batctl meshif %s interface destroy\n",
 				state->mesh_iface, state->mesh_iface);
 	}
+
+	if (iface_error)
+		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
 

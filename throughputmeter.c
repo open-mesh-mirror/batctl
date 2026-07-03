@@ -329,15 +329,26 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 	};
 	struct bat_host *bat_host;
 	int ret = EXIT_FAILURE;
+	unsigned long time_arg;
 	uint64_t throughput;
 	uint32_t time = 0;
 	char *dst_string;
+	char *endptr;
 	int optchar;
 
 	while ((optchar = getopt(argc, argv, "t:n")) != -1) {
 		switch (optchar) {
 		case 't':
-			time = strtoul(optarg, NULL, 10);
+			time_arg = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    time_arg > UINT32_MAX) {
+				fprintf(stderr,
+					"Error - the supplied test duration is invalid: %s\n",
+					optarg);
+				tp_meter_usage();
+				return EXIT_FAILURE;
+			}
+			time = time_arg;
 			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;

@@ -624,7 +624,6 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 		icmphdr = (struct icmp6_hdr *)(packet_buff +
 					       sizeof(struct ip6_hdr));
 
-		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
 		if (icmphdr->icmp6_type < ICMP6_INFOMSG_MASK &&
 		    (size_t)(buff_len) > IPV6_MIN_MTU) {
 			fprintf(stderr,
@@ -633,6 +632,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			return;
 		}
 
+		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
 		printf("ICMP6");
 		switch (icmphdr->icmp6_type) {
 		case ICMP6_DST_UNREACH:

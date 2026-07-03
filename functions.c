@@ -564,7 +564,7 @@ int netlink_simple_request(struct nl_msg *msg)
 	err = 0;
 	ret = nl_recvmsgs(sock, cb);
 	if (ret < 0)
-		err = ret;
+		err = -EIO;
 
 err_free_cb:
 	nl_cb_put(cb);

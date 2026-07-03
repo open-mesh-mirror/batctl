@@ -677,7 +677,8 @@ int netlink_query_common(struct state *state,
 
 	ret = nl_recvmsgs(state->sock, cb);
 	if (ret < 0) {
-		query_opts->err = ret;
+		if (query_opts->err == 0)
+			query_opts->err = -EIO;
 		goto err_free_cb;
 	}
 

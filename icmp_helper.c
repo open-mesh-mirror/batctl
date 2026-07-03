@@ -175,7 +175,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 	strncpy(iface->name, ifname, IFNAMSIZ);
 	iface->name[sizeof(iface->name) - 1] = '\0';
 
-	iface->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	/* create the socket with protocol 0 so the kernel does not start
+	 * capturing yet - otherwise frames would queue unfiltered between
+	 * socket() and SO_ATTACH_FILTER. Delivery only starts at bind() below,
+	 * by which time the filter is already installed.
+	 */
+	iface->sock = socket(PF_PACKET, SOCK_RAW, 0);
 	if (iface->sock < 0) {
 		perror("Error - can't create raw socket");
 		ret = -errno;
@@ -193,6 +198,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 		goto close_sock;
 	}
 
+	ret = icmp_interface_filter(iface->sock, uid);
+	if (ret < 0) {
+		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
+		goto close_sock;
+	}
+
 	memset(&sll, 0, sizeof(sll));
 	sll.sll_family = AF_PACKET;
 	sll.sll_protocol = htons(ETH_P_ALL);
@@ -203,12 +214,6 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 	if (ret < 0) {
 		perror("Error - can't bind raw socket");
 		ret = -errno;
-		goto close_sock;
-	}
-
-	ret = icmp_interface_filter(iface->sock, uid);
-	if (ret < 0) {
-		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
 		goto close_sock;
 	}
 

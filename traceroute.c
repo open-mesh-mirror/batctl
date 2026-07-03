@@ -207,7 +207,10 @@ read_packet:
 		printf("\n");
 	}
 
-	ret = EXIT_SUCCESS;
+	if (dst_reached)
+		ret = EXIT_SUCCESS;
+	else
+		ret = EXIT_NOSUCCESS;
 
 out:
 	icmp_interfaces_clean();

@@ -202,7 +202,7 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
 }
 
 static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
-				      int read_opt __maybe_unused)
+				      int read_opt)
 {
 	struct batadv_tvlv_roam_adv *tvlv = buff;
 
@@ -214,7 +214,7 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
 	}
 
 	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
-	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),
+	       get_name_by_macaddr((struct ether_addr *)tvlv->client, read_opt),
 	       BATADV_PRINT_VID(ntohs(tvlv->vid)));
 }
 

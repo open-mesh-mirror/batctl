@@ -443,7 +443,7 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 			       (float)throughput / (1 << 10),
 			       (float)throughput * 8 / 1000);
 		else
-			printf("%" PRIu64 " Bytes/s (%" PRIu64 " Bps)\n",
+			printf("%" PRIu64 " Bytes/s (%" PRIu64 " bps)\n",
 			       throughput, throughput * 8);
 
 		ret = 0;

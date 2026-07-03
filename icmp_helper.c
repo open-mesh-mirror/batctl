@@ -329,9 +329,7 @@ static int icmp_interface_update(struct state *state)
 	/* remove old interfaces */
 	icmp_interface_sweep();
 
-	get_primarymac_netlink(state, primary_mac);
-
-	return 0;
+	return get_primarymac_netlink(state, primary_mac);
 }
 
 static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
@@ -383,7 +381,9 @@ int icmp_interface_write(struct state *state,
 	if (icmp_packet->msg_type != BATADV_ECHO_REQUEST)
 		return -EINVAL;
 
-	icmp_interface_update(state);
+	ret = icmp_interface_update(state);
+	if (ret < 0)
+		return ret;
 
 	if (list_empty(&interface_list))
 		return -EFAULT;

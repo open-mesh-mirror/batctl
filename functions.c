@@ -560,7 +560,9 @@ int netlink_simple_request(struct nl_msg *msg)
 
 	// ack_errno_handler sets err on errors
 	err = 0;
-	nl_recvmsgs(sock, cb);
+	ret = nl_recvmsgs(sock, cb);
+	if (ret < 0)
+		err = ret;
 
 err_free_cb:
 	nl_cb_put(cb);

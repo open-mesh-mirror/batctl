@@ -1369,10 +1369,10 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len,
 		return;
 
 	shost = wifi_hdr->addr2;
-	if (fc & IEEE80211_FCTL_FROMDS)
-		shost = wifi_hdr->addr3;
-	else if (fc & IEEE80211_FCTL_TODS)
+	if ((fc & IEEE80211_FCTL_FROMDS) && (fc & IEEE80211_FCTL_TODS))
 		shost = wifi_hdr->addr4;
+	else if (fc & IEEE80211_FCTL_FROMDS)
+		shost = wifi_hdr->addr3;
 
 	dhost = wifi_hdr->addr1;
 	if (fc & IEEE80211_FCTL_TODS)

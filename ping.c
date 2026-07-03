@@ -128,9 +128,16 @@ static int ping(struct state *state, int argc, char **argv)
 			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
 			break;
 		case 't':
-			timeout = strtol(optarg, NULL, 10);
-			if (timeout < 1)
-				timeout = 1;
+			tmp = strtol(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp < 1 || tmp > INT_MAX) {
+				fprintf(stderr,
+					"Error - the supplied timeout is invalid: %s\n",
+					optarg);
+				ping_usage();
+				return EXIT_FAILURE;
+			}
+			timeout = tmp;
 			break;
 		case 'R':
 			rr = 1;

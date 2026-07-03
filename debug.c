@@ -51,6 +51,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 	float watch_interval = 1;
 	char *orig_iface = NULL;
 	int optchar;
+	char tmp;
 	int err;
 
 	while ((optchar = getopt(argc, argv, "hnw::t:Humi:")) != -1) {
@@ -67,7 +68,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			if (!optarg)
 				break;
 
-			if (sscanf(optarg, "%f", &watch_interval) != 1) {
+			if (sscanf(optarg, "%f%c", &watch_interval, &tmp) != 1) {
 				fprintf(stderr,
 					"Error - provided argument of '-%c' is not a number\n",
 					optchar);
@@ -82,7 +83,7 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 
 			read_opt |= NO_OLD_ORIGS;
-			if (sscanf(optarg, "%f", &orig_timeout) != 1) {
+			if (sscanf(optarg, "%f%c", &orig_timeout, &tmp) != 1) {
 				fprintf(stderr,
 					"Error - provided argument of '-%c' is not a number\n",
 					optchar);

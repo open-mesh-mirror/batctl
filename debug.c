@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 
 #include "debug.h"
 #include "functions.h"
@@ -68,9 +69,10 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			if (!optarg)
 				break;
 
-			if (sscanf(optarg, "%f%c", &watch_interval, &tmp) != 1) {
+			if (sscanf(optarg, "%f%c", &watch_interval, &tmp) != 1 ||
+			    !isfinite(watch_interval) || watch_interval < 0) {
 				fprintf(stderr,
-					"Error - provided argument of '-%c' is not a number\n",
+					"Error - provided argument of '-%c' is not a positive number\n",
 					optchar);
 				return EXIT_FAILURE;
 			}
@@ -83,9 +85,10 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 
 			read_opt |= NO_OLD_ORIGS;
-			if (sscanf(optarg, "%f%c", &orig_timeout, &tmp) != 1) {
+			if (sscanf(optarg, "%f%c", &orig_timeout, &tmp) != 1 ||
+			    !isfinite(orig_timeout) || orig_timeout < 0) {
 				fprintf(stderr,
-					"Error - provided argument of '-%c' is not a number\n",
+					"Error - provided argument of '-%c' is not a positive number\n",
 					optchar);
 				return EXIT_FAILURE;
 			}

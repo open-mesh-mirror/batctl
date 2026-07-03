@@ -198,6 +198,7 @@ static int tp_recv_result(struct nl_sock *sock, struct tp_result *result)
 {
 	struct nl_cb *cb;
 	int err = 0;
+	int ret;
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
 	nl_cb_set(cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
@@ -205,8 +206,11 @@ static int tp_recv_result(struct nl_sock *sock, struct tp_result *result)
 		  result);
 	nl_cb_err(cb, NL_CB_CUSTOM, tpmeter_nl_print_error, result);
 
-	while (result->error == 0 && !result->found)
-		nl_recvmsgs(sock, cb);
+	while (result->error == 0 && !result->found) {
+		ret = nl_recvmsgs(sock, cb);
+		if (ret < 0)
+			break;
+	}
 
 	nl_cb_put(cb);
 

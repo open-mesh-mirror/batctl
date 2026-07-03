@@ -495,7 +495,9 @@ int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg)
 	if (ret < 0)
 		goto err_free_msg;
 
-	nl_recvmsgs(sock, cb);
+	ret = nl_recvmsgs(sock, cb);
+	if (ret < 0)
+		err = -EIO;
 
 err_free_msg:
 	nlmsg_free(msg);

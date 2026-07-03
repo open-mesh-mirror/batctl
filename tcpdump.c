@@ -1506,12 +1506,13 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	fd_set tmp_wait_sockets;
 	int ret = EXIT_FAILURE;
 	fd_set wait_sockets;
+	unsigned long tmp;
 	struct timeval tv;
 	int max_sock = 0;
 	ssize_t read_len;
+	char *endptr;
 	int optchar;
 	int res;
-	int tmp;
 
 	dump_level = dump_level_all;
 
@@ -1527,14 +1528,28 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 			read_opt &= ~USE_BAT_HOSTS;
 			break;
 		case 'p':
-			tmp = strtol(optarg, NULL, 10);
-			if (tmp > 0 && tmp <= dump_level_all)
-				dump_level = tmp;
+			tmp = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp == 0 || tmp > dump_level_all) {
+				fprintf(stderr,
+					"Error - the supplied packet type is invalid: %s\n",
+					optarg);
+				tcpdump_usage();
+				return EXIT_FAILURE;
+			}
+			dump_level = tmp;
 			break;
 		case 'x':
-			tmp = strtol(optarg, NULL, 10);
-			if (tmp > 0 && tmp <= dump_level_all)
-				dump_level &= ~tmp;
+			tmp = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp == 0 || tmp > dump_level_all) {
+				fprintf(stderr,
+					"Error - the supplied packet type is invalid: %s\n",
+					optarg);
+				tcpdump_usage();
+				return EXIT_FAILURE;
+			}
+			dump_level &= ~tmp;
 			break;
 		default:
 			tcpdump_usage();

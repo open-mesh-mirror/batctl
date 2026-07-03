@@ -666,6 +666,7 @@ static int query_rtnl_link_single(int mesh_ifindex,
 	};
 	struct nl_cb *cb = NULL;
 	struct nl_sock *sock;
+	int err = 0;
 	int ret;
 
 	link_data->kind_found = false;
@@ -675,42 +676,55 @@ static int query_rtnl_link_single(int mesh_ifindex,
 
 	sock = nl_socket_alloc();
 	if (!sock)
-		return -1;
+		return -ENOMEM;
 
 	ret = nl_connect(sock, NETLINK_ROUTE);
-	if (ret < 0)
+	if (ret < 0) {
+		err = -ENOMEM;
 		goto free_sock;
+	}
 
 	ret = nl_send_simple(sock, RTM_GETLINK, NLM_F_REQUEST,
 			     &ifinfo, sizeof(ifinfo));
-	if (ret < 0)
+	if (ret < 0) {
+		err = -EIO;
 		goto free_sock;
+	}
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
-	if (!cb)
+	if (!cb) {
+		err = -ENOMEM;
 		goto free_sock;
+	}
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, query_rtnl_link_single_parse,
 		  link_data);
-	nl_recvmsgs(sock, cb);
+
+	ret = nl_recvmsgs(sock, cb);
+	if (ret < 0)
+		err = -EIO;
 
 	nl_cb_put(cb);
 free_sock:
 	nl_socket_free(sock);
 
-	return 0;
+	return err;
 }
 
 int translate_vlan_iface(struct state *state, const char *vlandev)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int arg_ifindex;
+	int ret;
 
 	arg_ifindex = if_nametoindex(vlandev);
 	if (arg_ifindex == 0)
 		return -ENODEV;
 
-	query_rtnl_link_single(arg_ifindex, &link_data);
+	ret = query_rtnl_link_single(arg_ifindex, &link_data);
+	if (ret < 0)
+		return ret;
+
 	if (!link_data.vid_found)
 		return -ENODEV;
 
@@ -784,12 +798,16 @@ int translate_hard_iface(struct state *state, const char *hardif)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int arg_ifindex;
+	int ret;
 
 	arg_ifindex = if_nametoindex(hardif);
 	if (arg_ifindex == 0)
 		return -ENODEV;
 
-	query_rtnl_link_single(arg_ifindex, &link_data);
+	ret = query_rtnl_link_single(arg_ifindex, &link_data);
+	if (ret < 0)
+		return ret;
+
 	if (!link_data.master_found)
 		return -ENOLINK;
 
@@ -805,8 +823,12 @@ int translate_hard_iface(struct state *state, const char *hardif)
 static int check_mesh_iface_netlink(unsigned int ifindex)
 {
 	struct rtnl_link_iface_data link_data;
+	int ret;
 
-	query_rtnl_link_single(ifindex, &link_data);
+	ret = query_rtnl_link_single(ifindex, &link_data);
+	if (ret < 0)
+		return ret;
+
 	if (!link_data.kind_found)
 		return -1;
 
@@ -820,12 +842,15 @@ int guess_netdev_type(const char *netdev, enum selector_prefix *type)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int netdev_ifindex;
+	int ret;
 
 	netdev_ifindex = if_nametoindex(netdev);
 	if (netdev_ifindex == 0)
 		return -ENODEV;
 
-	query_rtnl_link_single(netdev_ifindex, &link_data);
+	ret = query_rtnl_link_single(netdev_ifindex, &link_data);
+	if (ret < 0)
+		return ret;
 
 	if (link_data.kind_found && strcmp(link_data.kind, "batadv") == 0) {
 		*type = SP_MESHIF;
@@ -859,12 +884,16 @@ int check_mesh_iface_ownership(struct state *state, char *hard_iface)
 {
 	struct rtnl_link_iface_data link_data;
 	unsigned int hardif_index;
+	int ret;
 
 	hardif_index = if_nametoindex(hard_iface);
 	if (hardif_index == 0)
 		return EXIT_FAILURE;
 
-	query_rtnl_link_single(hardif_index, &link_data);
+	ret = query_rtnl_link_single(hardif_index, &link_data);
+	if (ret < 0)
+		return EXIT_FAILURE;
+
 	if (!link_data.master_found)
 		return EXIT_FAILURE;
 

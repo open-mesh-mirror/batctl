@@ -294,10 +294,14 @@ read_packet:
 
 			printf("\n");
 
-			if (time_delta < min || min == 0.0)
+			if (packets_in == 0)
 				min = time_delta;
+
+			min = fmin(time_delta, min);
+
 			if (time_delta > max)
 				max = time_delta;
+
 			avg += time_delta;
 			mdev += time_delta * time_delta;
 			packets_in++;

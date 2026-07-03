@@ -692,7 +692,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			       nd_nas_target, buff_len);
 			break;
 		default:
-			printf(", destination unreachable, unknown icmp6 type (%u)\n",
+			printf(", unknown icmp6 type (%u)\n",
 			       icmphdr->icmp6_type);
 			break;
 		}

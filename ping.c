@@ -8,6 +8,7 @@
 
 #include <netinet/in.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -90,15 +91,23 @@ static int ping(struct state *state, int argc, char **argv)
 	char *endptr;
 	int optchar;
 	int rr = 0;
+	long tmp;
 	int res;
 	int i;
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
 		switch (optchar) {
 		case 'c':
-			loop_count = strtol(optarg, NULL, 10);
-			if (loop_count < 1)
-				loop_count = -1;
+			tmp = strtol(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp < 1 || tmp > INT_MAX) {
+				fprintf(stderr,
+					"Error - the supplied packet count is invalid: %s\n",
+					optarg);
+				ping_usage();
+				return EXIT_FAILURE;
+			}
+			loop_count = tmp;
 			break;
 		case 'h':
 			ping_usage();

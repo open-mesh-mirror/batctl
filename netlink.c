@@ -316,8 +316,10 @@ int netlink_stop_callback(struct nl_msg *msg, void *arg __maybe_unused)
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int *error = nlmsg_data(nlh);
 
-	if (*error)
+	if (*error) {
 		fprintf(stderr, "Error received: %s\n", strerror(-*error));
+		last_err = *error;
+	}
 
 	return NL_STOP;
 }

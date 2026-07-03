@@ -152,5 +152,8 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 
 	err = debug_table->netlink_fn(state, orig_iface, read_opt,
 				      orig_timeout, watch_interval);
-	return err;
+	if (err < 0)
+		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
 }

@@ -1184,7 +1184,7 @@ static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len,
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	printf("%s: 4ADDR, subtybe %hhu, ttvn %d, ttl %hhu, ",
+	printf("%s: 4ADDR, subtype %hhu, ttvn %d, ttl %hhu, ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->u.dest, read_opt),
 	       unicast_4addr_packet->subtype, unicast_4addr_packet->u.ttvn,
 	       unicast_4addr_packet->u.ttl);

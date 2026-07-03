@@ -397,7 +397,8 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 
 	ret = tp_meter_start(state, dst_mac, time, &cookie);
 	if (ret < 0) {
-		printf("Failed to send tp_meter request to kernel: %d\n", ret);
+		printf("Failed to send tp_meter request to kernel: %s\n",
+		       strerror(-ret));
 		ret = EXIT_FAILURE;
 		goto out;
 	}
@@ -405,7 +406,8 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 	result.cookie = cookie.cookie;
 	ret = tp_recv_result(listen_sock, &result);
 	if (ret < 0) {
-		printf("Failed to recv tp_meter result from kernel: %d\n", ret);
+		printf("Failed to recv tp_meter result from kernel: %s\n",
+		       strerror(-ret));
 		ret = EXIT_FAILURE;
 		goto out;
 	}

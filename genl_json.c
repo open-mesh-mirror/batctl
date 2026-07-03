@@ -219,8 +219,6 @@ static void nljson_print_loglevel(struct nlattr *attrs[], int idx)
 	       val & BIT(3) ? "true" : "false");
 	printf("\"dat\": %s,",
 	       val & BIT(4) ? "true" : "false");
-	printf("\"nc\": %s,",
-	       val & BIT(5) ? "true" : "false");
 	printf("\"mcast\": %s,",
 	       val & BIT(6) ? "true" : "false");
 	printf("\"tp\": %s,",

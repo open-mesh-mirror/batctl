@@ -714,6 +714,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 		    int time_printed)
 {
 	static const char ip_string[] = "IP";
+	char ipinner[INET_ADDRSTRLEN];
 	char ipsrc[INET_ADDRSTRLEN];
 	char ipdst[INET_ADDRSTRLEN];
 	struct udphdr *tmp_udphdr;
@@ -770,9 +771,15 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 
 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
 
+				if (!inet_ntop(AF_INET, &tmp_iphdr->daddr, ipinner,
+					       sizeof(ipinner))) {
+					fprintf(stderr, "Cannot decode unreachable destination IP\n");
+					return;
+				}
+
 				printf("%s: ICMP ", ipdst);
 				printf("%s udp port %hu unreachable, length %zu\n",
-				       ipdst, ntohs(tmp_udphdr->dest),
+				       ipinner, ntohs(tmp_udphdr->dest),
 				       (size_t)buff_len - (iphdr->ihl * 4));
 				break;
 			default:

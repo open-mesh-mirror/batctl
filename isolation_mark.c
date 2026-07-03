@@ -67,7 +67,8 @@ static int parse_isolation_mark(struct state *state, int argc, char *argv[])
 	return 0;
 
 inval_format:
-	fprintf(stderr, "Error - incorrect number of arguments (expected 1)\n");
+	fprintf(stderr, "Error - invalid isolation mark/mask format: %s\n",
+		argv[1]);
 	fprintf(stderr, "The following formats for mark(/mask) are allowed:\n");
 	fprintf(stderr, " * 0x12345678\n");
 	fprintf(stderr, " * 0x12345678/0xabcdef09\n");

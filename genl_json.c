@@ -600,6 +600,8 @@ int handle_json_query(struct state *state, int argc, char **argv)
 	}
 
 	err = netlink_print_query_json(state, json_query);
+	if (err < 0)
+		return EXIT_FAILURE;
 
-	return err;
+	return EXIT_SUCCESS;
 }

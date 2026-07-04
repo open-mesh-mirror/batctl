@@ -22,6 +22,7 @@ static int parse_hop_penalty(struct state *state, int argc, char *argv[])
 {
 	struct settings_data *settings = state->cmd->arg;
 	struct hop_penalty_data *data = settings->data;
+	unsigned long hop_penalty;
 	char *endptr;
 
 	if (argc != 2) {
@@ -29,11 +30,13 @@ static int parse_hop_penalty(struct state *state, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	data->hop_penalty = strtoul(argv[1], &endptr, 0);
-	if (!endptr || *endptr != '\0') {
+	hop_penalty = strtoul(argv[1], &endptr, 0);
+	if (!endptr || *endptr != '\0' || endptr == argv[1] || hop_penalty > UINT8_MAX) {
 		fprintf(stderr, "Error - the supplied argument is invalid: %s\n", argv[1]);
 		return -EINVAL;
 	}
+
+	data->hop_penalty = hop_penalty;
 
 	return 0;
 }

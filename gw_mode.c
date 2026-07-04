@@ -90,6 +90,7 @@ static int parse_gw_limit(char *buff)
 
 static int parse_gw(struct state *state, int argc, char *argv[])
 {
+	unsigned long sel_class;
 	char buff[256];
 	char *endptr;
 	int ret;
@@ -131,13 +132,16 @@ static int parse_gw(struct state *state, int argc, char *argv[])
 					      &gw_globals.sel_class))
 				return -EINVAL;
 		} else {
-			gw_globals.sel_class = strtoul(buff, &endptr, 0);
-			if (!endptr || *endptr != '\0') {
+			sel_class = strtoul(buff, &endptr, 0);
+			if (!endptr || *endptr != '\0' || endptr == buff ||
+			    sel_class > UINT32_MAX) {
 				fprintf(stderr,
 					"Error - unexpected argument for mode \"client\": %s\n",
 					buff);
 				return -EINVAL;
 			}
+
+			gw_globals.sel_class = sel_class;
 		}
 
 		gw_globals.sel_class_found = 1;

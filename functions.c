@@ -905,7 +905,7 @@ bool parse_throughput(char *buff, const char *description, uint32_t *throughput)
 	}
 
 	lthroughput = strtoull(buff, &endptr, 10);
-	if (!endptr || *endptr != '\0') {
+	if (!endptr || *endptr != '\0' || endptr == buff) {
 		fprintf(stderr, "Invalid throughput speed for %s: %s\n",
 			description, buff);
 		return false;

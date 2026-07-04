@@ -357,7 +357,7 @@ int main(int argc, char **argv)
 			fprintf(stderr,
 				"Warning - option -m was deprecated and will be removed in the future\n");
 
-			state.arg_iface = argv[2];
+			state.arg_iface = optarg;
 			break;
 		case 'v':
 			version();

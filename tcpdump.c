@@ -537,18 +537,20 @@ static void dump_tcp(const char ip_string[], unsigned char *packet_buff,
 {
 	uint16_t tcp_header_len;
 	struct tcphdr *tcphdr;
+	size_t tcp_len;
 
 	LEN_CHECK((size_t)buff_len - ip6_header_len,
 		  sizeof(struct tcphdr), "TCP");
 	tcphdr = (struct tcphdr *)(packet_buff + ip6_header_len);
 	tcp_header_len = tcphdr->doff * 4;
+	tcp_len = (size_t)buff_len - ip6_header_len;
 	printf("%s %s.%i > ", ip_string, src_addr, ntohs(tcphdr->source));
 	printf("%s.%i: TCP, Flags [%c%c%c%c%c%c], length %zu\n",
 	       dst_addr, ntohs(tcphdr->dest),
 	       (tcphdr->fin ? 'F' : '.'), (tcphdr->syn ? 'S' : '.'),
 	       (tcphdr->rst ? 'R' : '.'), (tcphdr->psh ? 'P' : '.'),
 	       (tcphdr->ack ? 'A' : '.'), (tcphdr->urg ? 'U' : '.'),
-	       (size_t)buff_len - ip6_header_len - tcp_header_len);
+	       tcp_len > tcp_header_len ? tcp_len - tcp_header_len : 0);
 }
 
 static void dump_udp(const char ip_string[], unsigned char *packet_buff,
@@ -669,14 +671,14 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			break;
 		case ICMP6_TIME_EXCEEDED:
 			printf(" time exceeded in-transit, length %zu\n",
-			       (size_t)buff_len - sizeof(struct icmp6_hdr));
+			       (size_t)buff_len - sizeof(struct ip6_hdr));
 			break;
 		case ND_NEIGHBOR_SOLICIT:
 			LEN_CHECK((size_t)buff_len - (size_t)(sizeof(struct ip6_hdr)),
 				  sizeof(*nd_neigh_sol), "ICMPv6 Neighbor Solicitation");
 			nd_neigh_sol = (struct nd_neighbor_solicit *)icmphdr;
 			inet_ntop(AF_INET6, &nd_neigh_sol->nd_ns_target,
-				  nd_nas_target, 40);
+				  nd_nas_target, sizeof(nd_nas_target));
 			printf(" neighbor solicitation, who has %s, length %zd\n",
 			       nd_nas_target, buff_len);
 			break;
@@ -685,7 +687,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 				  sizeof(*nd_advert), "ICMPv6 Neighbor Advertisement");
 			nd_advert = (struct nd_neighbor_advert *)icmphdr;
 			inet_ntop(AF_INET6, &nd_advert->nd_na_target,
-				  nd_nas_target, 40);
+				  nd_nas_target, sizeof(nd_nas_target));
 			printf(" neighbor advertisement, tgt is %s, length %zd\n",
 			       nd_nas_target, buff_len);
 			break;
@@ -823,7 +825,8 @@ static void dump_vlan(unsigned char *packet_buff, ssize_t buff_len, int read_opt
 		time_printed = print_time();
 
 	vlanhdr->vid = ntohs(vlanhdr->vid);
-	printf("vlan %u, p %u, ", vlanhdr->vid, vlanhdr->vid >> 12);
+	printf("vlan %u, d %u, p %u, ", vlanhdr->vid & 0x0fff, (vlanhdr->vid >> 12) & 0x1,
+	       vlanhdr->vid >> 13);
 
 	/* overwrite vlan tags */
 	memmove(packet_buff + 4, packet_buff, 2 * ETH_ALEN);
@@ -1050,7 +1053,7 @@ static void dump_batman_ucast_frag(unsigned char *packet_buff, ssize_t buff_len,
 	printf("%s: UCAST FRAG, seqno %d, no %d, ttl %hhu\n",
 	       get_name_by_macaddr((struct ether_addr *)frag_packet->dest,
 				   read_opt),
-	       frag_packet->seqno, frag_packet->no, frag_packet->ttl);
+	       ntohs(frag_packet->seqno), frag_packet->no, frag_packet->ttl);
 }
 
 static void dump_batman_bcast(unsigned char *packet_buff, ssize_t buff_len,
@@ -1152,9 +1155,10 @@ static void dump_batman_coded(unsigned char *packet_buff, ssize_t buff_len,
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost,
 				   read_opt));
 
-	printf("%s|%s: CODED, ttvn %d|%d, ttl %hhu\n",
+	printf("%s|",
 	       get_name_by_macaddr((struct ether_addr *)coded_packet->first_orig_dest,
-				   read_opt),
+				   read_opt));
+	printf("%s: CODED, ttvn %d|%d, ttl %hhu\n",
 	       get_name_by_macaddr((struct ether_addr *)coded_packet->second_dest,
 				   read_opt),
 	       coded_packet->first_ttvn, coded_packet->second_ttvn,
@@ -1493,7 +1497,6 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	fd_set tmp_wait_sockets;
 	int ret = EXIT_FAILURE;
 	fd_set wait_sockets;
-	int found_args = 1;
 	struct timeval tv;
 	int max_sock = 0;
 	ssize_t read_len;
@@ -1507,26 +1510,22 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 		switch (optchar) {
 		case 'c':
 			read_opt |= COMPAT_FILTER;
-			found_args += 1;
 			break;
 		case 'h':
 			tcpdump_usage();
 			return EXIT_SUCCESS;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
-			found_args += 1;
 			break;
 		case 'p':
 			tmp = strtol(optarg, NULL, 10);
 			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level = tmp;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		case 'x':
 			tmp = strtol(optarg, NULL, 10);
 			if (tmp > 0 && tmp <= dump_level_all)
 				dump_level &= ~tmp;
-			found_args += ((*((char *)(optarg - 1)) == optchar) ? 1 : 2);
 			break;
 		default:
 			tcpdump_usage();
@@ -1534,7 +1533,7 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 		}
 	}
 
-	if (argc <= found_args) {
+	if (optind >= argc) {
 		fprintf(stderr, "Error - target interface not specified\n");
 		tcpdump_usage();
 		return EXIT_FAILURE;
@@ -1549,8 +1548,8 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	INIT_LIST_HEAD(&dump_if_list);
 	FD_ZERO(&wait_sockets);
 
-	while (argc > found_args) {
-		dump_if = create_dump_interface(argv[found_args]);
+	while (optind < argc) {
+		dump_if = create_dump_interface(argv[optind]);
 		if (!dump_if)
 			goto out;
 
@@ -1559,7 +1558,7 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 
 		FD_SET(dump_if->raw_sock, &wait_sockets);
 		list_add_tail(&dump_if->list, &dump_if_list);
-		found_args++;
+		optind++;
 	}
 
 	while (!is_aborted) {

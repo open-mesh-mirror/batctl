@@ -108,8 +108,12 @@ static int print_routing_algos(struct state *state)
 
 	nl_recvmsgs(state->sock, cb);
 
-	if (!last_err)
+	if (!last_err) {
 		netlink_print_remaining_header(&opts);
+	} else {
+		free(opts.remaining_header);
+		opts.remaining_header = NULL;
+	}
 
 	return last_err;
 }

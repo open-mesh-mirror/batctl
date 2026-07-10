@@ -130,7 +130,14 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
 		strncpy(bat_host->name, name, HOST_NAME_MAX_LEN);
 		bat_host->name[HOST_NAME_MAX_LEN - 1] = '\0';
 
-		hash_add(*hash, bat_host);
+		if (hash_add(*hash, bat_host) < 0) {
+			if (read_opt & USE_BAT_HOSTS)
+				fprintf(stderr,
+					"Error - could not add bat host: %s\n",
+					name);
+			free(bat_host);
+			continue;
+		}
 
 		if ((*hash)->elements * 4 > (*hash)->size) {
 			swaphash = hash_resize((*hash), (*hash)->size * 2);

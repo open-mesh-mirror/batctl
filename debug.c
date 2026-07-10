@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
 
 #include "debug.h"
 #include "functions.h"
@@ -26,7 +27,7 @@ static void debug_table_usage(struct state *state)
 	fprintf(stderr, " \t -h print this help\n");
 	fprintf(stderr, " \t -n don't replace mac addresses with bat-host names\n");
 	fprintf(stderr, " \t -H don't show the header\n");
-	fprintf(stderr, " \t -w [interval] watch mode - refresh the table continuously\n");
+	fprintf(stderr, " \t -w[interval] watch mode - refresh the table continuously\n");
 
 	if (debug_table->option_timeout_interval)
 		fprintf(stderr,
@@ -51,9 +52,11 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 	float watch_interval = 1;
 	char *orig_iface = NULL;
 	int optchar;
+	char tmp;
 	int err;
 
-	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {
+	while ((optchar = getopt(argc, argv, "hnw::t:Humi:")) != -1) {
+		printf("%c\n", optchar);
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(state);
@@ -63,14 +66,13 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			break;
 		case 'w':
 			read_opt |= CLR_CONT_READ;
-			if (optarg[0] == '-') {
-				optind--;
+			if (!optarg)
 				break;
-			}
 
-			if (!sscanf(optarg, "%f", &watch_interval)) {
+			if (sscanf(optarg, "%f%c", &watch_interval, &tmp) != 1 ||
+			    !isfinite(watch_interval) || watch_interval < 0) {
 				fprintf(stderr,
-					"Error - provided argument of '-%c' is not a number\n",
+					"Error - provided argument of '-%c' is not a positive number\n",
 					optchar);
 				return EXIT_FAILURE;
 			}
@@ -83,9 +85,10 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			}
 
 			read_opt |= NO_OLD_ORIGS;
-			if (!sscanf(optarg, "%f", &orig_timeout)) {
+			if (sscanf(optarg, "%f%c", &orig_timeout, &tmp) != 1 ||
+			    !isfinite(orig_timeout) || orig_timeout < 0) {
 				fprintf(stderr,
-					"Error - provided argument of '-%c' is not a number\n",
+					"Error - provided argument of '-%c' is not a positive number\n",
 					optchar);
 				return EXIT_FAILURE;
 			}
@@ -130,9 +133,6 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 			} else if (optopt == 'i') {
 				fprintf(stderr,
 					"Error - option '-i' needs an interface as argument\n");
-			} else if (optopt == 'w') {
-				read_opt |= CLR_CONT_READ;
-				break;
 			} else {
 				fprintf(stderr, "Error - unrecognised option: '-%c'\n", optopt);
 			}
@@ -152,5 +152,8 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 
 	err = debug_table->netlink_fn(state, orig_iface, read_opt,
 				      orig_timeout, watch_interval);
-	return err;
+	if (err < 0)
+		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
 }

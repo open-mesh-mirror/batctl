@@ -78,10 +78,10 @@ static int dat_cache_callback(struct nl_msg *msg, void *arg)
 	last_seen_msecs = last_seen_msecs % 60000;
 	last_seen_secs = last_seen_msecs / 1000;
 
-	if (opts->read_opt & MULTICAST_ONLY && !(addr[0] & 0x01))
+	if (opts->read_opt & MULTICAST_ONLY && !(hwaddr[0] & 0x01))
 		return NL_OK;
 
-	if (opts->read_opt & UNICAST_ONLY && (addr[0] & 0x01))
+	if (opts->read_opt & UNICAST_ONLY && (hwaddr[0] & 0x01))
 		return NL_OK;
 
 	printf(" * %15s ", addr);

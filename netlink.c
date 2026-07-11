@@ -684,7 +684,8 @@ static const int translate_mac_netlink_mandatory[] = {
 };
 
 struct translate_mac_netlink_opts {
-	struct ether_addr mac;
+	struct ether_addr search;
+	struct ether_addr result;
 	uint8_t found:1;
 	struct nlquery_opts query_opts;
 };
@@ -725,10 +726,10 @@ static int translate_mac_netlink_cb(struct nl_msg *msg, void *arg)
 	if (!attrs[BATADV_ATTR_FLAG_BEST])
 		return NL_OK;
 
-	if (memcmp(&opts->mac, addr, ETH_ALEN) != 0)
+	if (memcmp(&opts->search, addr, ETH_ALEN) != 0)
 		return NL_OK;
 
-	memcpy(&opts->mac, orig, ETH_ALEN);
+	memcpy(&opts->result, orig, ETH_ALEN);
 	opts->found = true;
 	opts->query_opts.err = 0;
 
@@ -746,7 +747,7 @@ int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 	};
 	int ret;
 
-	memcpy(&opts.mac, mac, ETH_ALEN);
+	memcpy(&opts.search, mac, ETH_ALEN);
 
 	ret = netlink_query_common(state, state->mesh_ifindex,
 				   BATADV_CMD_GET_TRANSTABLE_GLOBAL,
@@ -758,7 +759,7 @@ int translate_mac_netlink(struct state *state, const struct ether_addr *mac,
 	if (!opts.found)
 		return -ENOENT;
 
-	memcpy(mac_out, &opts.mac, ETH_ALEN);
+	memcpy(mac_out, &opts.result, ETH_ALEN);
 
 	return 0;
 }

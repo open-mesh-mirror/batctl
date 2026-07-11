@@ -132,13 +132,16 @@ static void version(void)
 	printf("batctl %s [batman-adv: ", SOURCE_VERSION);
 
 	ret = read_file(module_ver_path, USE_READ_BUFF | SILENCE_ERRORS);
-	if ((line_ptr) && (line_ptr[strlen(line_ptr) - 1] == '\n'))
-		line_ptr[strlen(line_ptr) - 1] = '\0';
+	if (ret == EXIT_SUCCESS) {
+		size_t line_len = strlen(line_ptr);
 
-	if (ret == EXIT_SUCCESS)
+		if (line_len > 0 && line_ptr[line_len - 1] == '\n')
+			line_ptr[line_len - 1] = '\0';
+
 		printf("%s]\n", line_ptr);
-	else
+	} else {
 		printf("module version unknown]\n");
+	}
 
 	free(line_ptr);
 	exit(EXIT_SUCCESS);

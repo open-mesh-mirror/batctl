@@ -147,15 +147,14 @@ int read_file(const char *full_path, int read_opt)
 	}
 
 	while (getline(&line_ptr, &len, fp) != -1) {
+		res = EXIT_SUCCESS;
+
 		/* the buffer will be handled elsewhere */
 		if (read_opt & USE_READ_BUFF)
 			break;
 
 		printf("%s", line_ptr);
 	}
-
-	if (line_ptr)
-		res = EXIT_SUCCESS;
 
 	fclose(fp);
 	return res;

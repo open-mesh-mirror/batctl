@@ -33,16 +33,18 @@ struct nla_policy_json {
 
 static void sanitize_string(const char *str)
 {
-	while (*str) {
-		if (*str == '"' || *str == '\\') {
+	const unsigned char *c = (const unsigned char *)str;
+
+	while (*c) {
+		if (*c == '"' || *c == '\\') {
 			putchar('\\');
-			putchar(*str);
-		} else if (!isprint(*str)) {
-			printf("\\x%02x", *str);
+			putchar(*c);
+		} else if (!isprint(*c)) {
+			printf("\\u%04x", *c);
 		} else {
-			putchar(*str);
+			putchar(*c);
 		}
-		str++;
+		c++;
 	}
 }
 
@@ -217,8 +219,6 @@ static void nljson_print_loglevel(struct nlattr *attrs[], int idx)
 	       val & BIT(3) ? "true" : "false");
 	printf("\"dat\": %s,",
 	       val & BIT(4) ? "true" : "false");
-	printf("\"nc\": %s,",
-	       val & BIT(5) ? "true" : "false");
 	printf("\"mcast\": %s,",
 	       val & BIT(6) ? "true" : "false");
 	printf("\"tp\": %s,",
@@ -591,10 +591,15 @@ int handle_json_query(struct state *state, int argc, char **argv)
 		case 'h':
 			json_query_usage(state);
 			return EXIT_SUCCESS;
+		default:
+			json_query_usage(state);
+			return EXIT_FAILURE;
 		}
 	}
 
 	err = netlink_print_query_json(state, json_query);
+	if (err < 0)
+		return EXIT_FAILURE;
 
-	return err;
+	return EXIT_SUCCESS;
 }

@@ -202,7 +202,7 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len,
 }
 
 static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
-				      int read_opt __maybe_unused)
+				      int read_opt)
 {
 	struct batadv_tvlv_roam_adv *tvlv = buff;
 
@@ -214,7 +214,7 @@ static void batctl_tvlv_parse_roam_v1(void *buff, ssize_t buff_len,
 	}
 
 	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
-	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),
+	       get_name_by_macaddr((struct ether_addr *)tvlv->client, read_opt),
 	       BATADV_PRINT_VID(ntohs(tvlv->vid)));
 }
 
@@ -624,7 +624,6 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 		icmphdr = (struct icmp6_hdr *)(packet_buff +
 					       sizeof(struct ip6_hdr));
 
-		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
 		if (icmphdr->icmp6_type < ICMP6_INFOMSG_MASK &&
 		    (size_t)(buff_len) > IPV6_MIN_MTU) {
 			fprintf(stderr,
@@ -633,6 +632,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			return;
 		}
 
+		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
 		printf("ICMP6");
 		switch (icmphdr->icmp6_type) {
 		case ICMP6_DST_UNREACH:
@@ -692,7 +692,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
 			       nd_nas_target, buff_len);
 			break;
 		default:
-			printf(", destination unreachable, unknown icmp6 type (%u)\n",
+			printf(", unknown icmp6 type (%u)\n",
 			       icmphdr->icmp6_type);
 			break;
 		}
@@ -714,6 +714,7 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 		    int time_printed)
 {
 	static const char ip_string[] = "IP";
+	char ipinner[INET_ADDRSTRLEN];
 	char ipsrc[INET_ADDRSTRLEN];
 	char ipdst[INET_ADDRSTRLEN];
 	struct udphdr *tmp_udphdr;
@@ -770,9 +771,15 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
 
 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
 
+				if (!inet_ntop(AF_INET, &tmp_iphdr->daddr, ipinner,
+					       sizeof(ipinner))) {
+					fprintf(stderr, "Cannot decode unreachable destination IP\n");
+					return;
+				}
+
 				printf("%s: ICMP ", ipdst);
 				printf("%s udp port %hu unreachable, length %zu\n",
-				       ipdst, ntohs(tmp_udphdr->dest),
+				       ipinner, ntohs(tmp_udphdr->dest),
 				       (size_t)buff_len - (iphdr->ihl * 4));
 				break;
 			default:
@@ -1184,7 +1191,7 @@ static void dump_batman_4addr(unsigned char *packet_buff, ssize_t buff_len,
 	printf("BAT %s > ",
 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt));
 
-	printf("%s: 4ADDR, subtybe %hhu, ttvn %d, ttl %hhu, ",
+	printf("%s: 4ADDR, subtype %hhu, ttvn %d, ttl %hhu, ",
 	       get_name_by_macaddr((struct ether_addr *)unicast_4addr_packet->u.dest, read_opt),
 	       unicast_4addr_packet->subtype, unicast_4addr_packet->u.ttvn,
 	       unicast_4addr_packet->u.ttl);
@@ -1199,6 +1206,8 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len,
 {
 	struct batadv_ogm_packet *batman_ogm_packet;
 	struct ether_header *eth_hdr;
+
+	LEN_CHECK(buff_len, sizeof(*eth_hdr), "ETH HEADER");
 
 	eth_hdr = (struct ether_header *)packet_buff;
 
@@ -1360,10 +1369,10 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len,
 		return;
 
 	shost = wifi_hdr->addr2;
-	if (fc & IEEE80211_FCTL_FROMDS)
-		shost = wifi_hdr->addr3;
-	else if (fc & IEEE80211_FCTL_TODS)
+	if ((fc & IEEE80211_FCTL_FROMDS) && (fc & IEEE80211_FCTL_TODS))
 		shost = wifi_hdr->addr4;
+	else if (fc & IEEE80211_FCTL_FROMDS)
+		shost = wifi_hdr->addr3;
 
 	dhost = wifi_hdr->addr1;
 	if (fc & IEEE80211_FCTL_TODS)
@@ -1497,12 +1506,13 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 	fd_set tmp_wait_sockets;
 	int ret = EXIT_FAILURE;
 	fd_set wait_sockets;
+	unsigned long tmp;
 	struct timeval tv;
 	int max_sock = 0;
 	ssize_t read_len;
+	char *endptr;
 	int optchar;
 	int res;
-	int tmp;
 
 	dump_level = dump_level_all;
 
@@ -1518,14 +1528,28 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 			read_opt &= ~USE_BAT_HOSTS;
 			break;
 		case 'p':
-			tmp = strtol(optarg, NULL, 10);
-			if (tmp > 0 && tmp <= dump_level_all)
-				dump_level = tmp;
+			tmp = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp == 0 || tmp > dump_level_all) {
+				fprintf(stderr,
+					"Error - the supplied packet type is invalid: %s\n",
+					optarg);
+				tcpdump_usage();
+				return EXIT_FAILURE;
+			}
+			dump_level = tmp;
 			break;
 		case 'x':
-			tmp = strtol(optarg, NULL, 10);
-			if (tmp > 0 && tmp <= dump_level_all)
-				dump_level &= ~tmp;
+			tmp = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp == 0 || tmp > dump_level_all) {
+				fprintf(stderr,
+					"Error - the supplied packet type is invalid: %s\n",
+					optarg);
+				tcpdump_usage();
+				return EXIT_FAILURE;
+			}
+			dump_level &= ~tmp;
 			break;
 		default:
 			tcpdump_usage();
@@ -1617,6 +1641,8 @@ static int tcpdump(struct state *state __maybe_unused, int argc, char **argv)
 			fflush(stdout);
 		}
 	}
+
+	ret = EXIT_SUCCESS;
 
 out:
 	list_for_each_entry_safe(dump_if, dump_if_tmp, &dump_if_list, list) {

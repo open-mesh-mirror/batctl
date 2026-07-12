@@ -123,7 +123,7 @@ static int traceroute(struct state *state, int argc, char **argv)
 	       dst_string, mac_string, TTL_MAX, sizeof(icmp_packet_out));
 
 	for (icmp_packet_out.ttl = 1;
-	     !dst_reached && icmp_packet_out.ttl < TTL_MAX;
+	     !dst_reached && icmp_packet_out.ttl <= TTL_MAX;
 	     icmp_packet_out.ttl++) {
 		return_mac = NULL;
 		bat_host = NULL;
@@ -142,12 +142,12 @@ static int traceroute(struct state *state, int argc, char **argv)
 				continue;
 			}
 
-read_packet:
 			start_timer();
 
 			tv.tv_sec = 2;
 			tv.tv_usec = 0;
 
+read_packet:
 			read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
 						       sizeof(icmp_packet_in), &tv);
 			if (read_len <= 0)
@@ -212,7 +212,10 @@ read_packet:
 		printf("\n");
 	}
 
-	ret = EXIT_SUCCESS;
+	if (dst_reached)
+		ret = EXIT_SUCCESS;
+	else
+		ret = EXIT_NOSUCCESS;
 
 out:
 	icmp_interfaces_clean();

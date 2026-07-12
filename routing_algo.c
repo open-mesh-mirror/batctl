@@ -107,6 +107,7 @@ static int print_routing_algos(struct state *state)
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
 	nl_recvmsgs(state->sock, cb);
+	nl_cb_put(cb);
 
 	if (!last_err) {
 		netlink_print_remaining_header(&opts);

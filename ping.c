@@ -8,6 +8,7 @@
 
 #include <netinet/in.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -90,15 +91,23 @@ static int ping(struct state *state, int argc, char **argv)
 	char *endptr;
 	int optchar;
 	int rr = 0;
+	long tmp;
 	int res;
 	int i;
 
 	while ((optchar = getopt(argc, argv, "hc:i:t:RT")) != -1) {
 		switch (optchar) {
 		case 'c':
-			loop_count = strtol(optarg, NULL, 10);
-			if (loop_count < 1)
-				loop_count = -1;
+			tmp = strtol(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp < 1 || tmp > INT_MAX) {
+				fprintf(stderr,
+					"Error - the supplied packet count is invalid: %s\n",
+					optarg);
+				ping_usage();
+				return EXIT_FAILURE;
+			}
+			loop_count = tmp;
 			break;
 		case 'h':
 			ping_usage();
@@ -106,20 +115,29 @@ static int ping(struct state *state, int argc, char **argv)
 		case 'i':
 			errno = 0;
 			ping_interval = strtod(optarg, &endptr);
-			if (errno || *endptr != '\0') {
+			if (errno || *endptr != '\0' || endptr == optarg ||
+			    !isfinite(ping_interval) || ping_interval <= 0) {
 				fprintf(stderr, "Error - invalid ping interval '%s'\n", optarg);
 				goto out;
 			}
 
 			ping_interval = fmax(ping_interval, 0.001);
+			ping_interval = fmin(ping_interval, 1000000000.0);
 			fractional_part = modf(ping_interval, &integral_part);
 			loop_interval.tv_sec = (time_t)integral_part;
 			loop_interval.tv_nsec = (long)(fractional_part * 1000000000l);
 			break;
 		case 't':
-			timeout = strtol(optarg, NULL, 10);
-			if (timeout < 1)
-				timeout = 1;
+			tmp = strtol(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    tmp < 1 || tmp > INT_MAX) {
+				fprintf(stderr,
+					"Error - the supplied timeout is invalid: %s\n",
+					optarg);
+				ping_usage();
+				return EXIT_FAILURE;
+			}
+			timeout = tmp;
 			break;
 		case 'R':
 			rr = 1;
@@ -213,16 +231,16 @@ static int ping(struct state *state, int argc, char **argv)
 			goto sleep;
 		}
 
-read_packet:
+		packets_out++;
+
 		start_timer();
 
+read_packet:
 		read_len = icmp_interface_read((struct batadv_icmp_header *)&icmp_packet_in,
 					       packet_len, &tv);
 
 		if (is_aborted)
 			break;
-
-		packets_out++;
 
 		if (read_len == 0) {
 			printf("Reply from host %s timed out\n", dst_string);
@@ -282,10 +300,14 @@ read_packet:
 
 			printf("\n");
 
-			if (time_delta < min || min == 0.0)
+			if (packets_in == 0)
 				min = time_delta;
+
+			min = fmin(time_delta, min);
+
 			if (time_delta > max)
 				max = time_delta;
+
 			avg += time_delta;
 			mdev += time_delta * time_delta;
 			packets_in++;

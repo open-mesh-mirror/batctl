@@ -17,6 +17,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <net/if.h>
+#include <poll.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,7 @@
 
 static struct ether_addr *dst_mac;
 static struct state *tp_state;
+static volatile sig_atomic_t tp_aborted;
 
 struct tp_result {
 	int error;
@@ -158,13 +160,18 @@ static int tp_meter_start(struct state *state, struct ether_addr *dst_mac,
 	int err = 0;
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb)
+		return -ENOMEM;
+
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, tp_meter_cookie_callback,
 		  cookie);
 	nl_cb_err(cb, NL_CB_CUSTOM, tpmeter_nl_print_error, cookie);
 
 	msg = nlmsg_alloc();
-	if (!msg)
+	if (!msg) {
+		nl_cb_put(cb);
 		return -ENOMEM;
+	}
 
 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family, 0,
 		    0, BATADV_CMD_TP_METER, 1);
@@ -194,19 +201,50 @@ static int no_seq_check(struct nl_msg *msg __maybe_unused,
 	return NL_OK;
 }
 
+static int tp_meter_stop(struct state *state, struct ether_addr *dst_mac);
+
 static int tp_recv_result(struct nl_sock *sock, struct tp_result *result)
 {
+	struct pollfd pfd = {
+		.fd = nl_socket_get_fd(sock),
+		.events = POLLIN,
+	};
+	bool cancel_sent = false;
 	struct nl_cb *cb;
 	int err = 0;
+	int ret;
 
 	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	if (!cb)
+		return -ENOMEM;
+
 	nl_cb_set(cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, tp_meter_result_callback,
 		  result);
 	nl_cb_err(cb, NL_CB_CUSTOM, tpmeter_nl_print_error, result);
 
-	while (result->error == 0 && !result->found)
-		nl_recvmsgs(sock, cb);
+	while (result->error == 0 && !result->found) {
+		if (tp_aborted && !cancel_sent) {
+			cancel_sent = true;
+			tp_meter_stop(tp_state, dst_mac);
+		}
+
+		/* wake up regularly to notice an abort even when the signal
+		 * arrived outside of poll()
+		 */
+		ret = poll(&pfd, 1, 1000);
+		if (ret < 0) {
+			if (errno == EINTR)
+				continue;
+			break;
+		}
+		if (ret == 0)
+			continue;
+
+		ret = nl_recvmsgs(sock, cb);
+		if (ret < 0)
+			break;
+	}
 
 	nl_cb_put(cb);
 
@@ -291,8 +329,7 @@ void tp_sig_handler(int sig)
 	switch (sig) {
 	case SIGINT:
 	case SIGTERM:
-		fflush(stdout);
-		tp_meter_stop(tp_state, dst_mac);
+		tp_aborted = 1;
 		break;
 	default:
 		break;
@@ -325,15 +362,26 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 	};
 	struct bat_host *bat_host;
 	int ret = EXIT_FAILURE;
+	unsigned long time_arg;
 	uint64_t throughput;
 	uint32_t time = 0;
 	char *dst_string;
+	char *endptr;
 	int optchar;
 
 	while ((optchar = getopt(argc, argv, "t:n")) != -1) {
 		switch (optchar) {
 		case 't':
-			time = strtoul(optarg, NULL, 10);
+			time_arg = strtoul(optarg, &endptr, 10);
+			if (!endptr || *endptr != '\0' || endptr == optarg ||
+			    time_arg > UINT32_MAX) {
+				fprintf(stderr,
+					"Error - the supplied test duration is invalid: %s\n",
+					optarg);
+				tp_meter_usage();
+				return EXIT_FAILURE;
+			}
+			time = time_arg;
 			break;
 		case 'n':
 			read_opt &= ~USE_BAT_HOSTS;
@@ -382,14 +430,18 @@ static int throughputmeter(struct state *state, int argc, char **argv)
 
 	ret = tp_meter_start(state, dst_mac, time, &cookie);
 	if (ret < 0) {
-		printf("Failed to send tp_meter request to kernel: %d\n", ret);
+		printf("Failed to send tp_meter request to kernel: %s\n",
+		       strerror(-ret));
+		ret = EXIT_FAILURE;
 		goto out;
 	}
 
 	result.cookie = cookie.cookie;
 	ret = tp_recv_result(listen_sock, &result);
 	if (ret < 0) {
-		printf("Failed to recv tp_meter result from kernel: %d\n", ret);
+		printf("Failed to recv tp_meter result from kernel: %s\n",
+		       strerror(-ret));
+		ret = EXIT_FAILURE;
 		goto out;
 	}
 

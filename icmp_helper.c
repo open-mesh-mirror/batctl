@@ -154,7 +154,7 @@ static int icmp_interface_filter(int sock, int uid)
 
 	if (setsockopt(sock, SOL_SOCKET, SO_ATTACH_FILTER, &filter,
 		       sizeof(filter)))
-		return -1;
+		return -errno;
 
 	return 0;
 }
@@ -176,7 +176,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 	strncpy(iface->name, ifname, IFNAMSIZ);
 	iface->name[sizeof(iface->name) - 1] = '\0';
 
-	iface->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	/* create the socket with protocol 0 so the kernel does not start
+	 * capturing yet - otherwise frames would queue unfiltered between
+	 * socket() and SO_ATTACH_FILTER. Delivery only starts at bind() below,
+	 * by which time the filter is already installed.
+	 */
+	iface->sock = socket(PF_PACKET, SOCK_RAW, 0);
 	if (iface->sock < 0) {
 		perror("Error - can't create raw socket");
 		ret = -errno;
@@ -194,6 +199,12 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 		goto close_sock;
 	}
 
+	ret = icmp_interface_filter(iface->sock, uid);
+	if (ret < 0) {
+		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
+		goto close_sock;
+	}
+
 	memset(&sll, 0, sizeof(sll));
 	sll.sll_family = AF_PACKET;
 	sll.sll_protocol = htons(ETH_P_ALL);
@@ -204,12 +215,6 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
 	if (ret < 0) {
 		perror("Error - can't bind raw socket");
 		ret = -errno;
-		goto close_sock;
-	}
-
-	ret = icmp_interface_filter(iface->sock, uid);
-	if (ret < 0) {
-		fprintf(stderr, "Error - can't add filter to raw socket: %s\n", strerror(-ret));
 		goto close_sock;
 	}
 
@@ -337,9 +342,7 @@ static int icmp_interface_update(struct state *state)
 	/* remove old interfaces */
 	icmp_interface_sweep();
 
-	get_primarymac_netlink(state, primary_mac);
-
-	return 0;
+	return get_primarymac_netlink(state, primary_mac);
 }
 
 static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
@@ -348,6 +351,7 @@ static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
 {
 	struct ether_header header;
 	struct iovec vector[2];
+	ssize_t ret;
 
 	header.ether_type = htons(ETH_P_BATMAN);
 	memcpy(header.ether_shost, iface->mac, ETH_ALEN);
@@ -358,7 +362,11 @@ static int icmp_interface_send(struct batadv_icmp_header *icmp_packet,
 	vector[1].iov_base = icmp_packet;
 	vector[1].iov_len  = packet_len;
 
-	return (int)writev(iface->sock, vector, 2);
+	ret = writev(iface->sock, vector, 2);
+	if (ret < 0)
+		return -errno;
+
+	return (int)ret;
 }
 
 int icmp_interface_write(struct state *state,
@@ -386,7 +394,9 @@ int icmp_interface_write(struct state *state,
 	if (icmp_packet->msg_type != BATADV_ECHO_REQUEST)
 		return -EINVAL;
 
-	icmp_interface_update(state);
+	ret = icmp_interface_update(state);
+	if (ret < 0)
+		return ret;
 
 	if (list_empty(&interface_list))
 		return -EFAULT;
@@ -494,9 +504,12 @@ retry:
 	max_sock = icmp_interface_preselect(&read_sockets);
 
 	res = select(max_sock, &read_sockets, NULL, NULL, tv);
-	/* timeout, or < 0 error */
-	if (res <= 0)
-		return res;
+	if (res < 0)
+		return -errno;
+
+	/* timeout */
+	if (res == 0)
+		return 0;
 
 	read_sock = icmp_interface_get_read_sock(&read_sockets, &iface);
 	if (read_sock < 0)
@@ -509,7 +522,7 @@ retry:
 
 	read_len = readv(read_sock, vector, 2);
 	if (read_len < 0)
-		return read_len;
+		return -errno;
 
 	if (read_len < ETH_HLEN)
 		goto retry;

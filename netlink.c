@@ -316,8 +316,10 @@ int netlink_stop_callback(struct nl_msg *msg, void *arg __maybe_unused)
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	int *error = nlmsg_data(nlh);
 
-	if (*error)
+	if (*error) {
 		fprintf(stderr, "Error received: %s\n", strerror(-*error));
+		last_err = *error;
+	}
 
 	return NL_STOP;
 }
@@ -440,7 +442,8 @@ static int info_callback(struct nl_msg *msg, void *arg)
 			       mesh_name,
 			       mesh_mac[0], mesh_mac[1], mesh_mac[2],
 			       mesh_mac[3], mesh_mac[4], mesh_mac[5],
-			       algo_name, extra_info, extra_header);
+			       algo_name, extra_info ? extra_info : "",
+			       extra_header);
 		if (ret < 0)
 			opts->remaining_header = NULL;
 
@@ -489,10 +492,14 @@ char *netlink_get_info(struct state *state, uint8_t nl_cmd, const char *header)
 	nl_cb_err(cb, NL_CB_CUSTOM, netlink_print_error, NULL);
 
 	ret = nl_recvmsgs(state->sock, cb);
-	if (ret < 0)
+	if (ret < 0) {
+		nl_cb_put(cb);
 		return opts.remaining_header;
+	}
 
 	nl_wait_for_ack(state->sock);
+
+	nl_cb_put(cb);
 
 	return opts.remaining_header;
 }
@@ -530,6 +537,7 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 	};
 	int hardifindex = 0;
 	struct nl_msg *msg;
+	int ret;
 
 	if (!state->sock) {
 		last_err = -EOPNOTSUPP;
@@ -563,8 +571,10 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 								 header);
 
 		msg = nlmsg_alloc();
-		if (!msg)
-			continue;
+		if (!msg) {
+			last_err = -ENOMEM;
+			break;
+		}
 
 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, state->batadv_family,
 			    0, NLM_F_DUMP, nl_cmd, 1);
@@ -579,7 +589,9 @@ int netlink_print_common(struct state *state, char *orig_iface, int read_opt,
 		nlmsg_free(msg);
 
 		last_err = 0;
-		nl_recvmsgs(state->sock, state->cb);
+		ret = nl_recvmsgs(state->sock, state->cb);
+		if (ret < 0)
+			last_err = -EIO;
 
 		/* the header should still be printed when no entry was received */
 		if (!last_err)
@@ -665,7 +677,8 @@ int netlink_query_common(struct state *state,
 
 	ret = nl_recvmsgs(state->sock, cb);
 	if (ret < 0) {
-		query_opts->err = ret;
+		if (query_opts->err == 0)
+			query_opts->err = -EIO;
 		goto err_free_cb;
 	}
 

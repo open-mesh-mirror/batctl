@@ -56,7 +56,6 @@ int handle_debug_table(struct state *state, int argc, char **argv)
 	int err;
 
 	while ((optchar = getopt(argc, argv, "hnw::t:Humi:")) != -1) {
-		printf("%c\n", optchar);
 		switch (optchar) {
 		case 'h':
 			debug_table_usage(state);

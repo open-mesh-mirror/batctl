@@ -24,7 +24,6 @@ struct json_query_data {
 	enum batadv_nl_commands cmd;
 };
 
-void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_opts);
 int handle_json_query(struct state *state, int argc, char **argv);
 
 #endif /* _BATCTL_GENLJSON_H */

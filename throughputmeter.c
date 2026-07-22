@@ -324,7 +324,7 @@ err:
 	return NULL;
 }
 
-void tp_sig_handler(int sig)
+static void tp_sig_handler(int sig)
 {
 	switch (sig) {
 	case SIGINT:

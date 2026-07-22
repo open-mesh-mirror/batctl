@@ -75,7 +75,7 @@ static bool icmp_interfaces_is_my_mac(uint8_t dst[ETH_ALEN])
 	return false;
 }
 
-void icmp_interface_destroy(struct icmp_interface *iface)
+static void icmp_interface_destroy(struct icmp_interface *iface)
 {
 	close(iface->sock);
 	list_del(&iface->list);

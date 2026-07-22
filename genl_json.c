@@ -463,7 +463,7 @@ static const struct nla_policy_json batadv_genl_json[NUM_BATADV_ATTR] = {
 	},
 };
 
-void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_opts)
+static void netlink_print_json_entries(struct nlattr *attrs[], struct json_opts *json_opts)
 {
 	bool first_valid_attr = true;
 	int i;

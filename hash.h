@@ -43,29 +43,15 @@ struct hashtable_t {
 					 */
 };
 
-/* clears the hash */
-void hash_init(struct hashtable_t *hash);
-
 /* allocates and clears the hash */
 struct hashtable_t *hash_new(int size, hashdata_compare_cb compare,
 			     hashdata_choose_cb choose);
-
-/* remove bucket (this might be used in hash_iterate() if you already found
- * the bucket you want to delete and don't need the overhead to find it again
- * with hash_remove(). But usually, you don't want to use this function, as it
- * fiddles with hash-internals.
- */
-void *hash_remove_bucket(struct hashtable_t *hash,
-			 struct hash_it_t *hash_it_t);
 
 /* remove the hash structure. if hashdata_free_cb != NULL,
  * this function will be called to remove the elements inside of the hash.
  * if you don't remove the elements, memory might be leaked.
  */
 void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb);
-
-/* free only the hashtable and the hash itself. */
-void hash_destroy(struct hashtable_t *hash);
 
 /* adds data to the hashtable. returns 0 on success, -1 on error */
 int hash_add(struct hashtable_t *hash, void *data);

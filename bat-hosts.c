@@ -20,7 +20,11 @@
 #include "functions.h"
 
 static struct hashtable_t *host_hash;
-const char *bat_hosts_path[3] = {"/etc/bat-hosts", "~/bat-hosts", "bat-hosts"};
+static const char *bat_hosts_path[] = {
+	"/etc/bat-hosts",
+	"~/bat-hosts",
+	"bat-hosts",
+};
 
 static int compare_mac(void *data1, void *data2)
 {

@@ -10,8 +10,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* free only the hashtable and the hash itself. */
+static void hash_destroy(struct hashtable_t *hash);
+
+/* remove bucket (this might be used in hash_iterate() if you already found
+ * the bucket you want to delete and don't need the overhead to find it again
+ * with hash_remove(). But usually, you don't want to use this function, as it
+ * fiddles with hash-internals.
+ */
+static void *hash_remove_bucket(struct hashtable_t *hash,
+				struct hash_it_t *hash_it_t);
+
 /* clears the hash */
-void hash_init(struct hashtable_t *hash)
+static void hash_init(struct hashtable_t *hash)
 {
 	int i;
 
@@ -83,7 +94,7 @@ static int hash_add_bucket(struct hashtable_t *hash, void *data,
 }
 
 /* free only the hashtable and the hash itself. */
-void hash_destroy(struct hashtable_t *hash)
+static void hash_destroy(struct hashtable_t *hash)
 {
 	free(hash->table);
 	free(hash);
@@ -248,7 +259,7 @@ void *hash_find(struct hashtable_t *hash, void *keydata)
  * with hash_remove(). But usually, you don't want to use this function, as it
  * fiddles with hash-internals.
  */
-void *hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t)
+static void *hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t)
 {
 	void *data_save;
 

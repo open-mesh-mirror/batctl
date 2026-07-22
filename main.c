@@ -19,7 +19,7 @@
 #include "functions.h"
 #include "netlink.h"
 
-char mesh_dfl_iface[] = "bat0";
+static char mesh_dfl_iface[] = "bat0";
 static const char module_ver_path[] = "/sys/module/batman_adv/version";
 
 extern const struct command *__start___command[];

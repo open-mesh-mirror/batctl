@@ -857,7 +857,7 @@ int get_nexthop_netlink(struct state *state, const struct ether_addr *mac,
 			uint8_t *nexthop, char *ifname)
 {
 	struct get_nexthop_netlink_opts opts = {
-		.nexthop = 0,
+		.nexthop = NULL,
 		.found = false,
 		.query_opts = {
 			.err = 0,

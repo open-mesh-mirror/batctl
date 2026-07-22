@@ -31,7 +31,7 @@ define add_command
     endif
   endif
 
-  obj-$$(CONFIG_$(1)) += $(1).o
+  obj-$$(CONFIG_$(1)) += cmd/$(1).o
 endef # add_command
 
 # using the make parameter CONFIG_* (e.g. CONFIG_bisect_iv) with the value 'y'

@@ -101,7 +101,7 @@ static void hash_destroy(struct hashtable_t *hash)
 }
 
 /* free hash_it_t pointer when stopping hash_iterate early */
-void hash_iterate_free(struct hash_it_t *iter_in)
+static void hash_iterate_free(struct hash_it_t *iter_in)
 {
 	free(iter_in);
 }

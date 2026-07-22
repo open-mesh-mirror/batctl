@@ -6,9 +6,6 @@
 #
 # License-Filename: LICENSES/preferred/GPL-2.0
 
-# just for backward compatibility - please use CONFIG_bisect_iv instead
-export CONFIG_BATCTL_BISECT=n
-
 # batctl build
 BINARY_NAME = batctl
 
@@ -34,12 +31,11 @@ define add_command
   obj-$$(CONFIG_$(1)) += cmd/$(1).o
 endef # add_command
 
-# using the make parameter CONFIG_* (e.g. CONFIG_bisect_iv) with the value 'y'
+# using the make parameter CONFIG_* (e.g. CONFIG_aggregation) with the value 'y'
 # enables the related feature and 'n' disables it
 $(eval $(call add_command,aggregation,y))
 $(eval $(call add_command,ap_isolation,y))
 $(eval $(call add_command,backbonetable,y))
-$(eval $(call add_command,bisect_iv,$(CONFIG_BATCTL_BISECT)))
 $(eval $(call add_command,bla_backbone_json,y))
 $(eval $(call add_command,bla_claim_json,y))
 $(eval $(call add_command,bonding,y))

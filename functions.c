@@ -99,17 +99,6 @@ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt)
 	return host_name;
 }
 
-char *get_name_by_macstr(char *mac_str, int read_opt)
-{
-	struct ether_addr *mac_addr;
-
-	mac_addr = ether_aton(mac_str);
-	if (!mac_addr)
-		return mac_str;
-
-	return get_name_by_macaddr(mac_addr, read_opt);
-}
-
 static void file_open_problem_dbg(const char *full_path)
 {
 	fprintf(stderr, "Error - can't open file '%s': %s\n", full_path, strerror(errno));

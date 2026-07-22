@@ -57,15 +57,6 @@ print batctl version and batman-adv version (if the module is loaded)
 .SH COMMANDS
 
 .TP
-\fBbisect_iv\fP [\fB\-l MAC\fP][\fB\-t\fP \fIMAC\fP][\fB\-r\fP \fIMAC\fP][\fB\-s\fP \fImin\fP [\- \fImax\fP]][\fB\-o\fP \fIMAC\fP][\fB\-n\fP] \fIlogfile1\fP ...
-Analyses the B.A.T.M.A.N. IV logfiles to build a small internal database of all sent sequence numbers and routing table
-changes. This database can then be analyzed in a number of different ways. With "\-l" the database can be used to search
-for routing loops. Use "\-t" to trace OGMs of a host throughout the network. Use "\-r" to display routing tables of the
-nodes. The option "\-s" can be used to limit the output to a range of sequence numbers, between min and max, or to one
-specific sequence number, min. Furthermore using "\-o" you can filter the output to a specified originator. If "\-n" is
-given batctl will not replace the MAC addresses with bat\-host names in the output.
-.RE
-.TP
 \fBevent\fP|\fBe\fP [\fB\-t\fP|\fB\-r\fP]
 batctl will monitor for events from the netlink kernel interface of batman-adv. The local timestamp of the event will be printed
 when parameter \fB\-t\fP is specified. Parameter \fB\-r\fP will do the same but with relative timestamps.

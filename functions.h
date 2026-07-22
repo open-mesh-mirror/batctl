@@ -41,7 +41,6 @@ void start_timer(void);
 double end_timer(void);
 char *ether_ntoa_long(const struct ether_addr *addr);
 char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
-char *get_name_by_macstr(char *mac_str, int read_opt);
 int read_file(const char *full_path, int read_opt);
 struct ether_addr *translate_mac(struct state *state,
 				 const struct ether_addr *mac);

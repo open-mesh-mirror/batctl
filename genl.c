@@ -10,7 +10,7 @@
  * This ought to be provided by libnl - but was borrowed from iw/genl.c
  */
 
-#include "netlink.h"
+#include "genl.h"
 #include "main.h"
 
 #include <errno.h>
@@ -22,6 +22,7 @@
 #include <linux/genetlink.h>
 
 #include "batman_adv.h"
+#include "netlink.h"
 
 static int mcast_error_handler(struct sockaddr_nl *nla __maybe_unused,
 			       struct nlmsgerr *err, void *arg)

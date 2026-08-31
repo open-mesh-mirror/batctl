@@ -1,5 +1,77 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2026.3 (2026-08-31)
+===================
+
+* coding style cleanups and refactoring
+* bugs squashed:
+
+  - bat-hosts: compare full path for deduplication
+  - bat-hosts: free bat_host when hash_add fails
+  - dat_cache: fix multicast/unicast filter for MAC address
+  - debug: avoid endless getopt loop for attached '-w' argument
+  - debug: reject non-finite/negative interval/timeout values
+  - debug: reject trailing garbage for intervals
+  - debug: use strict interval/timeout parsing
+  - event: don't print timestamp prefix for skipped events
+  - fix parsing of parameters with arguments
+  - genl_json: avoid negative chars in sanitize_string
+  - genl_json: escape non-printable characters as valid JSON
+  - genl_json: reject unknown options in handle_json_query
+  - handle netlink callback object on error
+  - icmp_helper: attach socket filter before packets can arrive
+  - icmp_helper: fail send when the primary mac is unknown
+  - icmp_helper: return only initialized icmp destination unreached bytes
+  - icmp_helper: return proper errno on syscall failures
+  - improve number parsing error handling
+  - interface: report rtnl query failures
+  - interface: return fail for non-existing interface
+  - isolation_mark: fix error message for invalid mark/mask values
+  - netlink: abort netlink_print_common when message allocation fails
+  - netlink: always 0-terminate hardif name
+  - netlink: check for BATADV_ATTR_MESH_ADDRESS before accessing it
+  - netlink: detect receive errors in netlink_print_common
+  - netlink: detect receive errors in netlink_simple_request
+  - netlink: detect receive errors in query_rtnl_link
+  - netlink: detect receive errors in query_rtnl_link_single
+  - netlink: don't format NULL extra_info in info_callback
+  - netlink: free header lines after error
+  - netlink: report dump errors signalled in the NLMSG_DONE message
+  - netlink: report error on query_rtnl_link send failure
+  - netlink: report kernel errors when writing settings
+  - netlink: report send errors in netlink_simple_request
+  - originators: fix throughput lines with bat_hosts
+  - ping/traceroute: don't restart RTT timer on stray replies
+  - ping: count sent and not received pings
+  - ping: fix rtt minimum tracking when a sample is 0.0
+  - ping: keep huge '-i' intervals from turning into a flood ping
+  - ping: reject invalid packet count argument
+  - ping: reject invalid timeout argument
+  - tcpdump: check frame length before reading the ethernet header
+  - tcpdump: correct output of VLAN IDs
+  - tcpdump: don't label unknown ICMPv6 types as unreachable
+  - tcpdump: fix "subtybe" typo in 4ADDR output
+  - tcpdump: fix coded packet mac dest mac addresses
+  - tcpdump: fix endianness of fragmentation sequence number
+  - tcpdump: fix reported length for ICMP6_TIME_EXCEEDED
+  - tcpdump: fix source address selection for 802.11 data frames
+  - tcpdump: handle TCP packet with bogus data offset
+  - tcpdump: print the unreachable host for ICMP port unreachable
+  - tcpdump: reject invalid packet type arguments
+  - tcpdump: resolve bat-host name for ROAMv1 client
+  - tcpdump: return EXIT_SUCCESS on normal termination
+  - tcpdump: skip partial line for oversized ICMPv6 errors
+  - tpmeter: abort result wait on receive errors
+  - tpmeter: don't cancel test from the signal handler
+  - tpmeter: fix Gbps output
+  - tpmeter: label sub-kByte/s rate in bits per second
+  - tpmeter: reject invalid test duration argument
+  - traceroute: handle fast replies
+  - traceroute: probe the advertised maximum number of hops
+  - traceroute: return EXIT_NOSUCCESS when destination not reached
+  - translate: don't overwrite the search key
+  - version: avoid use of uninitialized read buffer
+
 2026.2 (2026-06-30)
 ===================
 

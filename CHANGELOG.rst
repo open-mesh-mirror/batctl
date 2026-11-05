@@ -1,5 +1,10 @@
 .. SPDX-License-Identifier: GPL-2.0
 
+2026.4 (2026-11-05)
+===================
+
+* drop bisect_iv subcommand
+
 2026.3 (2026-08-31)
 ===================
 
